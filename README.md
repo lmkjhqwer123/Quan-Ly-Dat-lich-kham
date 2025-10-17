@@ -4,7 +4,7 @@ Mỗi khi một thành viên muốn viết code mới, họ sẽ làm theo các 
 
 Bước 1: Lấy code mới nhất về máy
 
-Đầu tiên, hãy đảm bảo bạn đang ở trên nhánh testcode và lấy về những thay đổi mới nhất mà người khác có thể đã đẩy lên.
+Đầu tiên, hãy đảm bảo bạn đang ở trên nhánh **testcode** và lấy về những thay đổi mới nhất mà người khác có thể đã đẩy lên.
 
 Bash
 

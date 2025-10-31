@@ -1,76 +1,38 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 import datetime
+from pydantic import BaseModel
 
 from DataAccessLayer import data_access
 from BusinessLogicLayer import business_logic
 import auth
 
-router = APIRouter(
-    prefix="/api/patients",
-    tags=["Patients"],
-)
-
-# --- Pydantic Models (DTOs) for Patients ---
-class BookAppointmentDto(BaseModel):
-    DoctorId: int
-    SpecialtyId: int
-    AppointmentDatetime: datetime.datetime
-    Symptoms: str
-
-class AppointmentHistoryDto(BaseModel):
-    AppointmentId: int
-    AppointmentDatetime: datetime.datetime
-    Status: str
-    DoctorName: Optional[str] = None
-    SpecialtyName: Optional[str] = None
-    Symptoms: str
-
-class PatientUpdateRequest(BaseModel):
-    FullName: Optional[str] = None
-    Email: Optional[str] = None
-    Phone: Optional[str] = None
+# Define a Pydantic model for the patient profile DTO
+class PatientProfileDto(BaseModel):
+    PatientId: int
+    FullName: str
+    Email: str
+    Phone: str
+    birth_date: Optional[datetime.date] = None
     address: Optional[str] = None
 
-class PasswordUpdateRequest(BaseModel):
-    current_password: str
-    new_password: str
+    class Config:
+        from_attributes = True
 
-# --- Patient API Endpoints ---
-@router.put("/me", status_code=status.HTTP_204_NO_CONTENT)
-def update_patient_profile(
-    request: PatientUpdateRequest,
-    db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
-):
-    result = business_logic.update_patient_profile_logic(db, current_user.id, request.model_dump())
-    if isinstance(result, dict) and "error" in result:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-    return
 
-@router.put("/users/me/password", status_code=status.HTTP_204_NO_CONTENT)
-def update_password(
-    request: PasswordUpdateRequest,
-    db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
-):
-    result = business_logic.update_user_password_logic(db, current_user.id, current_user.role, request.model_dump())
-    if result and "error" in result:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-    return
+router = APIRouter(
+    prefix="/api/patients",
+    tags=["Patients"]
+)
 
-@router.post("/{patient_id}/appointments")
-def book_appointment_for_patient(patient_id: int, booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db)):
-    result = business_logic.book_appointment_logic(db, patient_id, booking_dto.model_dump())
-    return result
+@router.get("/me", response_model=PatientProfileDto)
+def get_patient_profile(current_user: dict = Depends(auth.get_current_user), db: Session = Depends(data_access.get_db)):
+    # The logic for checking role and fetching profile remains the same
+    if current_user.role != "Patient":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied. Only for patients.")
+    patient_profile = business_logic.get_patient_profile_logic(db, current_user.id)
+    if not patient_profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found")
+    return patient_profile
 
-@router.post("/me/appointments")
-def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
-    result = business_logic.book_appointment_logic(db, current_user.PatientId, booking_dto.model_dump())
-    return result
-
-@router.get("/me/history", response_model=List[AppointmentHistoryDto])
-def get_my_history(db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
-    return business_logic.get_my_history_logic(db, current_user.PatientId)

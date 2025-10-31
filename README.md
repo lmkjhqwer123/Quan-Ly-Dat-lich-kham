@@ -31,3 +31,5 @@ Thay vì đẩy lên master, bây giờ bạn sẽ đẩy code của mình lên 
 Bash
 
 git push origin testcode
+
+# Nhớ là làm trên testcode cho chắc rồi hẵng đẩy sang nhánh master nhé

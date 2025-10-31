@@ -24,6 +24,7 @@ git add .
 
 # Ghi lại thay đổi với một tin nhắn
 git commit -m "Them chuc nang XYZ"
+
 Bước 3: Đẩy code lên nhánh testcode
 
 Thay vì đẩy lên master, bây giờ bạn sẽ đẩy code của mình lên nhánh testcode để mọi người cùng xem và kiểm thử.

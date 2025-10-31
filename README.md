@@ -1,3 +1,9 @@
+Phần 1: Thay đổi chuối kết nối trong file DataAccessLayer/data_access.py:
+
+# --- Thay đổi chuỗi kết nối theo cấu hình của bạn ---
+DATABASE_URL = "mssql+pyodbc://tên server của ae/QuanLyKhamBenhDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes&Encrypt=yes&TrustServerCertificate=yes"
+
+
 
 Phần 2: Dành cho các thành viên trong nhóm (Quy trình làm việc hàng ngày)
 Mỗi khi một thành viên muốn viết code mới, họ sẽ làm theo các bước sau:

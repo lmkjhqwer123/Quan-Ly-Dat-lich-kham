@@ -13,6 +13,7 @@ git checkout testcode
 
 # Lấy code mới nhất từ nhánh testcode trên GitHub về
 git pull origin testcode
+
 Bước 2: Viết code và commit
 
 Bây giờ, bạn có thể thoải mái sửa code, thêm chức năng mới. Sau khi hoàn thành một phần công việc, hãy commit như bình thường.

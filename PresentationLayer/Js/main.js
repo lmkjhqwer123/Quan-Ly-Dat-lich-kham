@@ -59,18 +59,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- AUTHENTICATION ---
         const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (!loggedInUser && !window.location.pathname.endsWith('login.html')) {
-            window.location.href = 'login.html';
+            window.location.href = '/GUI/login.html';
             return;
         }
-        if (welcomeUser) {
-            welcomeUser.textContent = `Chào, ${loggedInUser}!`;
+        if (welcomeUser && loggedInUser) { // Check if loggedInUser is not null
+            try {
+                const user = JSON.parse(loggedInUser);
+                // Use the 'name' property from the parsed user object
+                welcomeUser.textContent = `Chào, ${user.name}!`;
+            } catch (error) {
+                console.error("Failed to parse user data:", error);
+                // Fallback for safety, though it might still show the full string on error
+                welcomeUser.textContent = `Chào, ${loggedInUser}!`;
+            }
         }
 
         if (logoutButton) {
             logoutButton.addEventListener('click', () => {
                 sessionStorage.removeItem('loggedInUser');
                 sessionStorage.removeItem('userRole');
-                window.location.href = 'login.html';
+                window.location.href = '/GUI/login.html';
             });
         }
 

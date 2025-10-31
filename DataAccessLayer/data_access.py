@@ -90,6 +90,9 @@ def get_doctor_by_phone(db, phone: str):
 def get_admin_by_username(db, username: str):
     return db.query(Admin).filter(Admin.Username == username).first()
 
+def get_admin_by_id(db, admin_id: int):
+    return db.query(Admin).filter(Admin.AdminId == admin_id).first()
+
 # --- Doctors ---
 def get_all_doctors(db):
     return db.query(Doctor).all()
@@ -147,6 +150,9 @@ def has_appointments(db, doctor_id: int):
     return db.query(Appointment).filter(Appointment.DoctorId == doctor_id).first() is not None
 
 # --- Patients ---
+def get_patient_by_id(db, patient_id: int):
+    return db.query(Patient).filter(Patient.PatientId == patient_id).first()
+
 def get_patient_by_email(db, email: str):
     return db.query(Patient).filter(Patient.Email == email).first()
 
@@ -173,6 +179,15 @@ def update_patient_password(db, patient_id: int, new_password: str):
         db.commit()
         return True
     return False
+
+def update_patient(db, patient_id: int, patient_data: dict):
+    db_patient = get_patient_by_id(db, patient_id)
+    if db_patient:
+        for key, value in patient_data.items():
+            setattr(db_patient, key, value)
+        db.commit()
+        db.refresh(db_patient)
+    return db_patient
 
 # --- Admins ---
 def create_admin(db, admin_data: dict):

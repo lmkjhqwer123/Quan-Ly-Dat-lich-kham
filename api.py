@@ -11,11 +11,15 @@ import datetime
 
 from fastapi.staticfiles import StaticFiles
 
+from fastapi.security import OAuth2PasswordRequestForm
+
 
 
 from BusinessLogicLayer import business_logic
 
 from DataAccessLayer import data_access
+
+import auth
 
 
 
@@ -32,6 +36,16 @@ app = FastAPI(
 
 
 # --- Pydantic Models (DTOs) ---
+
+
+
+class Token(BaseModel):
+
+    access_token: str
+
+    token_type: str
+
+
 
 class LoginRequest(BaseModel):
 
@@ -75,101 +89,51 @@ class DoctorUpdateRequest(BaseModel):
 
 class DoctorDto(BaseModel):
 
-
-
     DoctorId: int
-
-
 
     FullName: str
 
-
-
     Email: str
-
-
 
     Phone: str
 
-
-
     SpecialtyId: int
 
-
-
     SpecialtyName: Optional[str] = None
-
-
 
     Qualifications: str
 
 
 
-
-
-
-
     class Config:
-
-
 
         from_attributes = True
 
 
 
-
-
-
-
 class PatientCreateRequest(BaseModel):
-
-
 
     FullName: str
 
-
-
     Email: str
-
-
 
     Phone: str
 
-
-
     Password: str
 
-
-
     birth_date: Optional[datetime.date] = None
-
-
 
     address: Optional[str] = None
 
 
 
-
-
-
-
 class RegisterRequest(BaseModel):
-
-
 
     role: str = Field(..., pattern="^(patient|doctor)$")
 
-
-
     patient_data: Optional[PatientCreateRequest] = None
 
-
-
     doctor_data: Optional[DoctorCreateRequest] = None
-
-
-
-
 
 
 
@@ -201,57 +165,177 @@ class AppointmentHistoryDto(BaseModel):
 
 
 
+class PatientUpdateRequest(BaseModel):
+
+    FullName: Optional[str] = None
+
+    Email: Optional[str] = None
+
+    Phone: Optional[str] = None
+
+    address: Optional[str] = None
+
+
+
+class PasswordUpdateRequest(BaseModel):
+
+    current_password: str
+
+    new_password: str
+
+
+
 # --- API Endpoints ---
 
-@app.post("/api/auth/login")
-def login(login_request: LoginRequest, db: Session = Depends(data_access.get_db)):
-    user = business_logic.login_user(db, login_request.model_dump())
+
+
+@app.post("/api/auth/token", response_model=Token)
+
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(data_access.get_db)):
+
+    user = business_logic.login_user(db, {"Phone": form_data.username, "Password": form_data.password})
 
     if not user:
+
         raise HTTPException(
+
             status_code=status.HTTP_401_UNAUTHORIZED,
+
             detail="Incorrect username or password",
+
             headers={"WWW-Authenticate": "Bearer"},
+
         )
-    return user
+
+    access_token = auth.create_access_token(
+
+        data={"user_id": user['userId'], "role": user['role']}
+
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+
+@app.post("/api/auth/login")
+
+def login(login_request: LoginRequest, db: Session = Depends(data_access.get_db)):
+
+    user = business_logic.login_user(db, login_request.model_dump())
+
+
+
+    if not user:
+
+        raise HTTPException(
+
+            status_code=status.HTTP_401_UNAUTHORIZED,
+
+            detail="Incorrect username or password",
+
+            headers={"WWW-Authenticate": "Bearer"},
+
+        )
+
+    
+
+    access_token = auth.create_access_token(
+
+        data={"user_id": user['userId'], "role": user['role']}
+
+    )
+
+    
+
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+
+
+
 
 @app.post("/api/auth/register", status_code=status.HTTP_201_CREATED)
 
-
-
 def register_user(request: RegisterRequest, db: Session = Depends(data_access.get_db)):
-
-
 
     result = business_logic.register_user(db, request.model_dump())
 
-
-
     if "error" in result:
-
-
 
         raise HTTPException(
 
-
-
             status_code=status.HTTP_409_CONFLICT,
-
-
 
             detail=result["error"]
 
-
-
         )
-
-
 
     return result
 
 
 
+# --- Users Endpoints ---
 
+
+
+@app.put("/api/patients/me", status_code=status.HTTP_204_NO_CONTENT)
+
+
+
+def update_patient_profile(
+
+
+
+    request: PatientUpdateRequest,
+
+
+
+    db: Session = Depends(data_access.get_db),
+
+
+
+    current_user: dict = Depends(auth.get_current_user)
+
+
+
+):
+
+
+
+    result = business_logic.update_patient_profile_logic(db, current_user.id, request.model_dump())
+
+
+
+    if isinstance(result, dict) and "error" in result:
+
+
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
+
+
+
+    return
+
+
+
+@app.put("/api/users/me/password", status_code=status.HTTP_204_NO_CONTENT)
+
+def update_password(
+
+    request: PasswordUpdateRequest,
+
+    db: Session = Depends(data_access.get_db),
+
+    current_user: dict = Depends(auth.get_current_user)
+
+):
+
+    result = business_logic.update_user_password_logic(db, current_user.id, current_user.role, request.model_dump())
+
+    if result and "error" in result:
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
+
+    return
 
 
 
@@ -261,11 +345,7 @@ def register_user(request: RegisterRequest, db: Session = Depends(data_access.ge
 
 @app.get("/api/doctors", response_model=List[DoctorDto])
 
-
-
 def get_all_doctors(db: Session = Depends(data_access.get_db)):
-
-
 
     return business_logic.get_all_doctors_logic(db)
 
@@ -335,8 +415,6 @@ def delete_doctor_by_id(id: int, db: Session = Depends(data_access.get_db)):
 
 def book_appointment_for_patient(patient_id: int, booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db)):
 
-    # Note: In a real app, you'd verify the logged-in user has permission to do this.
-
     result = business_logic.book_appointment_logic(db, patient_id, booking_dto.model_dump())
 
     return result
@@ -345,15 +423,9 @@ def book_appointment_for_patient(patient_id: int, booking_dto: BookAppointmentDt
 
 @app.post("/api/patients/me/appointments", tags=["Patients"])
 
-def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db)):
+def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
 
-    # Note: This requires authentication to get the current user's ID.
-
-    # Hardcoding patient_id=1 for demonstration as authentication is not fully implemented here.
-
-    current_patient_id = 1 
-
-    result = business_logic.book_appointment_logic(db, current_patient_id, booking_dto.model_dump())
+    result = business_logic.book_appointment_logic(db, current_user.PatientId, booking_dto.model_dump())
 
     return result
 
@@ -361,18 +433,14 @@ def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depen
 
 @app.get("/api/patients/me/history", response_model=List[AppointmentHistoryDto], tags=["Patients"])
 
-def get_my_history(db: Session = Depends(data_access.get_db)):
+def get_my_history(db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
 
-    # Note: This requires authentication to get the current user's ID.
-
-    # Hardcoding patient_id=1 for demonstration.
-
-    current_patient_id = 1
-
-    return business_logic.get_my_history_logic(db, current_patient_id)
+    return business_logic.get_my_history_logic(db, current_user.PatientId)
 
 
 
 app.mount("/", StaticFiles(directory="PresentationLayer"), name="presentation")
+
+
 
 

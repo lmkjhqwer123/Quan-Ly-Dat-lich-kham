@@ -188,10 +188,11 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    sessionStorage.setItem('loggedInUser', JSON.stringify(data));
-                    sessionStorage.setItem('userRole', data.role);
-                    logActivity(data.name || data.Username, 'Đăng nhập thành công');
-                    if (data.role === 'Admin') {
+                    sessionStorage.setItem('accessToken', data.access_token);
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(data.user));
+                    sessionStorage.setItem('userRole', data.user.role);
+                    logActivity(data.user.name || data.user.Username, 'Đăng nhập thành công');
+                    if (data.user.role === 'Admin') {
                         window.location.href = 'admin.html';
                     } else {
                         window.location.href = 'home.html';

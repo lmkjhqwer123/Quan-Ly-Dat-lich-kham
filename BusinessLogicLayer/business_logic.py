@@ -143,3 +143,42 @@ def get_my_history_logic(db, patient_id: int):
             "Symptoms": a.Symptoms
         } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=True)
     ]
+
+# --- User Profile Logic ---
+def update_patient_profile_logic(db, patient_id: int, request: dict):
+    patient = data_access.get_patient_by_id(db, patient_id=patient_id)
+    if not patient:
+        return {"error": "Không tìm thấy bệnh nhân."}
+
+    update_data = {k: v for k, v in request.items() if v is not None}
+
+    if "Email" in update_data and update_data["Email"] != patient.Email:
+        if data_access.get_patient_by_email(db, update_data["Email"]) or data_access.get_doctor_by_email(db, update_data["Email"]):
+            return {"error": "Email đã được sử dụng."}
+
+    if "Phone" in update_data and update_data["Phone"] != patient.Phone:
+        if data_access.get_patient_by_phone(db, update_data["Phone"]) or data_access.get_doctor_by_phone(db, update_data["Phone"]):
+            return {"error": "Số điện thoại đã được sử dụng."}
+
+    updated_patient = data_access.update_patient(db, patient_id, update_data)
+    return updated_patient
+
+def update_user_password_logic(db, user_id: int, role: str, request: dict):
+    user = None
+    if role == 'Patient':
+        user = data_access.get_patient_by_id(db, patient_id=user_id)
+    elif role == 'Doctor':
+        user = data_access.get_doctor_by_id(db, doctor_id=user_id)
+
+    if not user:
+        return {"error": "Không tìm thấy người dùng."}
+
+    if not data_access.verify_password(request["current_password"], user.PasswordHash):
+        return {"error": "Mật khẩu hiện tại không đúng."}
+
+    if role == 'Patient':
+        data_access.update_patient_password(db, user_id, request["new_password"])
+    elif role == 'Doctor':
+        data_access.update_doctor_password(db, user_id, request["new_password"])
+
+    return {"message": "Cập nhật mật khẩu thành công."}

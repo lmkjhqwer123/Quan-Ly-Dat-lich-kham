@@ -9,7 +9,13 @@ def login_user(db, login_request: dict):
     user_info = None
     role = None
 
-    if login_request.get("Phone"):
+    if login_request.get("Username"):
+        admin = data_access.get_admin_by_username(db, login_request["Username"])
+        if admin and data_access.verify_password(login_request["Password"], admin.PasswordHash):
+            user_info = {"userId": admin.AdminId, "name": admin.Username, "email": admin.Email}
+            role = "Admin"
+
+    elif login_request.get("Phone"):
         patient = data_access.get_patient_by_phone(db, login_request["Phone"])
         if patient and data_access.verify_password(login_request["Password"], patient.PasswordHash):
             user_info = {"userId": patient.PatientId, "name": patient.FullName, "email": patient.Email}
@@ -19,12 +25,6 @@ def login_user(db, login_request: dict):
             if doctor and data_access.verify_password(login_request["Password"], doctor.PasswordHash):
                 user_info = {"userId": doctor.DoctorId, "name": doctor.FullName, "email": doctor.Email}
                 role = "Doctor"
-
-    elif login_request.get("Username"):
-        admin = data_access.get_admin_by_username(db, login_request["Username"])
-        if admin and data_access.verify_password(login_request["Password"], admin.PasswordHash):
-            user_info = {"userId": admin.AdminId, "name": admin.Username, "email": admin.Email}
-            role = "Admin"
 
     if user_info:
         return {"role": role, **user_info}
@@ -68,7 +68,7 @@ def request_password_reset_logic(db, email: str):
 
     data_access.create_password_reset_token(db, user_id, role, token, expires_at)
 
-    reset_link = f"http://localhost:8000/GUI/login.html?token={token}#reset-password"
+    reset_link = f"http://localhost:8000/login.html?token={token}#reset-password"
     mail.send_reset_password_email(email, reset_link)
 
     return {"message": "Password reset email sent"}

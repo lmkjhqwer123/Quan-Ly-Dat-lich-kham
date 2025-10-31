@@ -1,33 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const footerPlaceholder = document.getElementById('footer-placeholder');
+    console.log('DOMContentLoaded fired.');
+    console.log('headerPlaceholder:', headerPlaceholder);
+    console.log('footerPlaceholder:', footerPlaceholder);
 
     // --- LOAD HEADER & FOOTER ---
     const getSharePath = () => {
         const currentPath = window.location.pathname;
-        // For files in Page directory (e.g., /GUI/Page/about_us.html)
+        // For files in Page directory (e.g., /Page/about_us.html)
         if (currentPath.includes('/Page/')) {
             return '../Share/';
         }
-        // For files in Admin_page directory (e.g., /GUI/Admin_page/dashboard.html)
+        // For files in Admin_page directory (e.g., /Admin_page/dashboard.html)
         if (currentPath.includes('/Admin_page/')) {
             return '../Share/';
         }
-        // For files directly in GUI directory (e.g., /GUI/home.html, /GUI/admin.html)
-        if (currentPath.includes('/GUI/')) {
-            return 'Share/';
-        }
-        return 'Share/'; // Fallback
+        // For files directly in GUI directory (e.g., /home.html, /admin.html)
+        return 'Share/'; // Fallback for files at the root of GUI
     };
 
     const sharePath = getSharePath();
+    console.log('sharePath:', sharePath);
 
     const loadComponents = async () => {
         // Load Header
         if (headerPlaceholder) {
             try {
-                const response = await fetch(sharePath + '_header.html');
-                const headerHtml = await response.text();
+                const headerResponse = await fetch(sharePath + '_header.html');
+                console.log('Header fetch response:', headerResponse);
+                if (!headerResponse.ok) {
+                    throw new Error(`HTTP error! status: ${headerResponse.status}`);
+                }
+                const headerHtml = await headerResponse.text();
+                console.log('Header HTML:', headerHtml.substring(0, 200) + '...'); // Log first 200 chars
                 headerPlaceholder.innerHTML = headerHtml;
             } catch (error) {
                 console.error('Error loading header:', error);
@@ -38,8 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load Footer
         if (footerPlaceholder) {
             try {
-                const response = await fetch(sharePath + '_footer.html');
-                const footerHtml = await response.text();
+                const footerResponse = await fetch(sharePath + '_footer.html');
+                console.log('Footer fetch response:', footerResponse);
+                if (!footerResponse.ok) {
+                    throw new Error(`HTTP error! status: ${footerResponse.status}`);
+                }
+                const footerHtml = await footerResponse.text();
+                console.log('Footer HTML:', footerHtml.substring(0, 200) + '...'); // Log first 200 chars
                 footerPlaceholder.innerHTML = footerHtml;
             } catch (error) {
                 console.error('Error loading footer:', error);
@@ -59,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- AUTHENTICATION ---
         const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (!loggedInUser && !window.location.pathname.endsWith('login.html')) {
-            window.location.href = '/GUI/login.html';
+            window.location.href = '/login.html';
             return;
         }
         if (welcomeUser && loggedInUser) { // Check if loggedInUser is not null
@@ -78,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             logoutButton.addEventListener('click', () => {
                 sessionStorage.removeItem('loggedInUser');
                 sessionStorage.removeItem('userRole');
-                window.location.href = '/GUI/login.html';
+                window.location.href = '/login.html';
             });
         }
 

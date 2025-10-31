@@ -10,7 +10,7 @@ from DataAccessLayer import data_access
 
 SECRET_KEY = "your-secret-key"  # Replace with a strong, secret key
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_DAYS = 30  # Change to 30 days
 PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = 15
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
@@ -21,6 +21,8 @@ class TokenData(BaseModel):
 
 def create_access_token(data: dict):
     to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
+    to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def create_password_reset_token(data: dict):

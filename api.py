@@ -75,25 +75,101 @@ class DoctorUpdateRequest(BaseModel):
 
 class DoctorDto(BaseModel):
 
+
+
     DoctorId: int
+
+
 
     FullName: str
 
+
+
     Email: str
+
+
 
     Phone: str
 
+
+
     SpecialtyId: int
 
+
+
     SpecialtyName: Optional[str] = None
+
+
 
     Qualifications: str
 
 
 
+
+
+
+
     class Config:
 
+
+
         from_attributes = True
+
+
+
+
+
+
+
+class PatientCreateRequest(BaseModel):
+
+
+
+    FullName: str
+
+
+
+    Email: str
+
+
+
+    Phone: str
+
+
+
+    Password: str
+
+
+
+    birth_date: Optional[datetime.date] = None
+
+
+
+    address: Optional[str] = None
+
+
+
+
+
+
+
+class RegisterRequest(BaseModel):
+
+
+
+    role: str = Field(..., pattern="^(patient|doctor)$")
+
+
+
+    patient_data: Optional[PatientCreateRequest] = None
+
+
+
+    doctor_data: Optional[DoctorCreateRequest] = None
+
+
+
+
 
 
 
@@ -127,25 +203,69 @@ class AppointmentHistoryDto(BaseModel):
 
 # --- API Endpoints ---
 
-
-
-@app.post("/api/auth/login", tags=["Auth"])
-
+@app.post("/api/auth/login")
 def login(login_request: LoginRequest, db: Session = Depends(data_access.get_db)):
-
     user = business_logic.login_user(db, login_request.model_dump())
 
-    if user:
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user
 
-        return user
-
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Thông tin đăng nhập không đúng.")
+@app.post("/api/auth/register", status_code=status.HTTP_201_CREATED)
 
 
 
-@app.get("/api/doctors", response_model=List[DoctorDto], tags=["Doctors"])
+def register_user(request: RegisterRequest, db: Session = Depends(data_access.get_db)):
+
+
+
+    result = business_logic.register_user(db, request.model_dump())
+
+
+
+    if "error" in result:
+
+
+
+        raise HTTPException(
+
+
+
+            status_code=status.HTTP_409_CONFLICT,
+
+
+
+            detail=result["error"]
+
+
+
+        )
+
+
+
+    return result
+
+
+
+
+
+
+
+# --- Doctors Endpoints ---
+
+
+
+@app.get("/api/doctors", response_model=List[DoctorDto])
+
+
 
 def get_all_doctors(db: Session = Depends(data_access.get_db)):
+
+
 
     return business_logic.get_all_doctors_logic(db)
 

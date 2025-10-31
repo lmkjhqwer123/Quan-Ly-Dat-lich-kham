@@ -27,6 +27,33 @@ def login_user(db, login_request: dict):
         return {"role": role, **user_info}
     return None
 
+def register_user(db, request: dict):
+    role = request.get('role')
+    user_data = request.get(f'{role}_data')
+
+    if not user_data:
+        return {"error": "Dữ liệu cho vai trò không hợp lệ."}
+
+    email = user_data.get('Email')
+    phone = user_data.get('Phone')
+
+    # Kiểm tra xem email hoặc SĐT đã tồn tại trong cả hai bảng patient và doctor chưa
+    if data_access.get_patient_by_email(db, email) or data_access.get_doctor_by_email(db, email):
+        return {"error": f"Email '{email}' đã được sử dụng."}
+    if data_access.get_patient_by_phone(db, phone) or data_access.get_doctor_by_phone(db, phone):
+        return {"error": f"Số điện thoại '{phone}' đã được sử dụng."}
+
+    if role == 'patient':
+        new_patient = data_access.create_patient(db, user_data)
+        return {"message": "Đăng ký bệnh nhân thành công!", "userId": new_patient.PatientId}
+    
+    elif role == 'doctor':
+        # Cần kiểm tra xem SpecialtyId có tồn tại không (nếu cần)
+        new_doctor = data_access.create_doctor(db, user_data)
+        return {"message": "Đăng ký bác sĩ thành công!", "userId": new_doctor.DoctorId}
+
+    return {"error": "Vai trò không được hỗ trợ."}
+
 # --- Doctor Logic ---
 def get_all_doctors_logic(db):
     doctors = data_access.get_all_doctors(db)

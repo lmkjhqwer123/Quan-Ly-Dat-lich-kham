@@ -24,7 +24,6 @@
     <div id="login-page" class="flex items-center justify-center min-h-screen">
         <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
             <div class="text-center">
-                <!-- Icon y tế -->
                 <div class="flex justify-center mx-auto mb-4">
                      <svg class="w-12 h-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"></path><path d="M12 12 8 8"></path><path d="m12 12 4 4"></path><path d="m12 12 4-4"></path><path d="m12 12-4 4"></path></svg>
                 </div>
@@ -59,11 +58,101 @@
                     </button>
                 </div>
             </form>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Chưa có tài khoản?
+                    <a href="#" id="show-register-link" class="font-medium text-blue-600 hover:underline">Đăng ký ngay</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- =================================================================
+         TRANG ĐĂNG KÝ (REGISTER PAGE) - Ban đầu bị ẩn
+         ================================================================== -->
+    <div id="register-page" class="hidden flex items-center justify-center min-h-screen py-12">
+        <div class="w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-lg">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-gray-900">Đăng Ký Tài Khoản</h1>
+                <p class="mt-2 text-sm text-gray-600">Chọn vai trò và điền thông tin của bạn</p>
+            </div>
+
+            <!-- Form đăng ký -->
+            <form id="register-form" class="space-y-4">
+                <!-- Chọn vai trò -->
+                <div>
+                    <label class="text-sm font-medium text-gray-700">Bạn là?</label>
+                    <div class="flex items-center mt-2 space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="role" value="patient" checked class="form-radio h-4 w-4 text-blue-600">
+                            <span class="ml-2 text-sm text-gray-700">Bệnh nhân</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="role" value="doctor" class="form-radio h-4 w-4 text-blue-600">
+                            <span class="ml-2 text-sm text-gray-700">Bác sĩ</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Các trường chung -->
+                <div>
+                    <label for="reg-fullname" class="text-sm font-medium text-gray-700">Họ và Tên</label>
+                    <input id="reg-fullname" type="text" required class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="reg-email" class="text-sm font-medium text-gray-700">Email</label>
+                    <input id="reg-email" type="email" required class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="reg-phone" class="text-sm font-medium text-gray-700">Số điện thoại</label>
+                    <input id="reg-phone" type="tel" required class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="reg-password" class="text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <input id="reg-password" type="password" required class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Các trường dành cho Bệnh nhân -->
+                <div id="patient-fields" class="space-y-4">
+                    <div>
+                        <label for="reg-birthdate" class="text-sm font-medium text-gray-700">Ngày sinh</label>
+                        <input id="reg-birthdate" type="date" class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- Các trường dành cho Bác sĩ (ẩn ban đầu) -->
+                <div id="doctor-fields" class="hidden space-y-4">
+                    <div>
+                        <label for="reg-specialty" class="text-sm font-medium text-gray-700">Chuyên khoa (ID)</label>
+                        <input id="reg-specialty" type="number" class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ví dụ: 1 cho Khoa Nội">
+                    </div>
+                    <div>
+                        <label for="reg-qualifications" class="text-sm font-medium text-gray-700">Bằng cấp/Chứng chỉ</label>
+                        <input id="reg-qualifications" type="text" class="w-full px-4 py-2 mt-1 bg-gray-100 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ví dụ: Tiến sĩ, Bác sĩ Nội trú">
+                    </div>
+                </div>
+                
+                <!-- Thông báo lỗi đăng ký -->
+                <div id="register-error-message" class="text-sm text-red-600 hidden-message text-center"></div>
+
+                <div>
+                    <button type="submit"
+                            class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out">
+                        Đăng ký
+                    </button>
+                </div>
+            </form>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    Đã có tài khoản?
+                    <a href="#" id="show-login-link" class="font-medium text-blue-600 hover:underline">Đăng nhập tại đây</a>
+                </p>
+            </div>
         </div>
     </div>
 
     <script>
-        // Hàm để ghi lại hoạt động
+        // ================= LOGIN LOGIC =================
         function logActivity(user, action) {
             const history = JSON.parse(localStorage.getItem('activityHistory')) || [];
             const newLog = {
@@ -71,60 +160,43 @@
                 action: action,
                 timestamp: new Date().toLocaleString('vi-VN')
             };
-            history.unshift(newLog); // Thêm vào đầu mảng
-            localStorage.setItem('activityHistory', JSON.stringify(history.slice(0, 50))); // Giới hạn 50 mục
+            history.unshift(newLog); 
+            localStorage.setItem('activityHistory', JSON.stringify(history.slice(0, 50)));
         }
 
         const loginForm = document.getElementById('login-form');
         const errorMessage = document.getElementById('error-message');
 
         loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Ngăn form tải lại trang
-
+            event.preventDefault();
             const usernameInput = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
             let loginData = {};
-            // check if usernameInput is a number
             if (!isNaN(usernameInput) && usernameInput.trim() !== '') {
-                loginData = {
-                    Phone: usernameInput,
-                    Password: password
-                };
+                loginData = { Phone: usernameInput, Password: password };
             } else {
-                loginData = {
-                    Username: usernameInput,
-                    Password: password
-                };
+                loginData = { Username: usernameInput, Password: password };
             }
 
             try {
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(loginData)
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    
-                    // Lưu trạng thái đăng nhập
                     sessionStorage.setItem('loggedInUser', JSON.stringify(data));
                     sessionStorage.setItem('userRole', data.role);
-
-                    // Ghi lại hoạt động đăng nhập
                     logActivity(data.name || data.Username, 'Đăng nhập thành công');
-
-                    // Chuyển hướng dựa trên vai trò
                     if (data.role === 'Admin') {
                         window.location.href = 'admin.html';
                     } else {
                         window.location.href = 'home.html';
                     }
                 } else {
-                    // Hiển thị thông báo lỗi
                     errorMessage.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác.";
                     errorMessage.classList.remove('hidden-message');
                 }
@@ -134,6 +206,111 @@
                 errorMessage.classList.remove('hidden-message');
             }
         });
+
+        // ================= UI TOGGLE LOGIC =================
+        const loginPage = document.getElementById('login-page');
+        const registerPage = document.getElementById('register-page');
+        const showRegisterLink = document.getElementById('show-register-link');
+        const showLoginLink = document.getElementById('show-login-link');
+
+        showRegisterLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginPage.classList.add('hidden');
+            registerPage.classList.remove('hidden');
+        });
+
+        showLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+        });
+
+        // ================= DYNAMIC REGISTER FORM LOGIC =================
+        const roleRadios = document.querySelectorAll('input[name="role"]');
+        const doctorFields = document.getElementById('doctor-fields');
+        const patientFields = document.getElementById('patient-fields');
+
+        roleRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'doctor') {
+                    doctorFields.classList.remove('hidden');
+                    patientFields.classList.add('hidden');
+                } else {
+                    doctorFields.classList.add('hidden');
+                    patientFields.classList.remove('hidden');
+                }
+            });
+        });
+
+        // ================= REGISTER API CALL LOGIC =================
+        const registerForm = document.getElementById('register-form');
+        const registerErrorMessage = document.getElementById('register-error-message');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            registerErrorMessage.classList.add('hidden-message'); // Ẩn thông báo lỗi cũ
+
+            const role = document.querySelector('input[name="role"]:checked').value;
+            const fullName = document.getElementById('reg-fullname').value;
+            const email = document.getElementById('reg-email').value;
+            const phone = document.getElementById('reg-phone').value;
+            const password = document.getElementById('reg-password').value;
+
+            let payload = { role: role };
+
+            if (role === 'patient') {
+                const birthDate = document.getElementById('reg-birthdate').value;
+                payload.patient_data = {
+                    FullName: fullName,
+                    Email: email,
+                    Phone: phone,
+                    Password: password,
+                    birth_date: birthDate
+                };
+            } else if (role === 'doctor') {
+                const specialtyId = document.getElementById('reg-specialty').value;
+                const qualifications = document.getElementById('reg-qualifications').value;
+                
+                if (!specialtyId) {
+                    registerErrorMessage.textContent = "Vui lòng nhập ID chuyên khoa.";
+                    registerErrorMessage.classList.remove('hidden-message');
+                    return;
+                }
+
+                payload.doctor_data = {
+                    FullName: fullName,
+                    Email: email,
+                    Phone: phone,
+                    Password: password,
+                    SpecialtyId: parseInt(specialtyId),
+                    Qualifications: qualifications
+                };
+            }
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message); // Hiển thị thông báo thành công
+                    showLoginLink.click(); // Tự động chuyển về trang đăng nhập
+                    registerForm.reset(); // Xóa các trường đã nhập
+                } else {
+                    registerErrorMessage.textContent = result.detail || "Đã có lỗi xảy ra.";
+                    registerErrorMessage.classList.remove('hidden-message');
+                }
+            } catch (error) {
+                console.error('Lỗi đăng ký:', error);
+                registerErrorMessage.textContent = "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
+                registerErrorMessage.classList.remove('hidden-message');
+            }
+        });
+
     </script>
 </body>
 </html>

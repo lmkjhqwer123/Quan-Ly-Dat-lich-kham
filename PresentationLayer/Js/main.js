@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // --- AUTHENTICATION ---
         const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (!loggedInUser && !window.location.pathname.endsWith('login.html')) {
-            window.location.href = 'login.html';
+            window.location.href = '/GUI/login.html';
             return;
         }
         if (welcomeUser && loggedInUser) { // Check if loggedInUser is not null
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
             logoutButton.addEventListener('click', () => {
                 sessionStorage.removeItem('loggedInUser');
                 sessionStorage.removeItem('userRole');
-                window.location.href = 'login.html';
+                window.location.href = '/GUI/login.html';
             });
         }
 

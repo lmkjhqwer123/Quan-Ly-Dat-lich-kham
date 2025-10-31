@@ -2,6 +2,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 import bcrypt
+import datetime
 
 # --- Database Setup ---
 DATABASE_URL = "mssql+pyodbc://DESKTOP-V9NP2C3/QuanLyKhamBenhDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes&Encrypt=yes&TrustServerCertificate=yes"
@@ -151,11 +152,12 @@ def get_patient_by_email(db, email: str):
 
 def create_patient(db, patient_data: dict):
     hashed_password = hash_password(patient_data["Password"])
+    birth_date = patient_data.get("birth_date") or datetime.date.today()
     db_patient = Patient(
         FullName=patient_data["FullName"],
         Email=patient_data["Email"],
         Phone=patient_data["Phone"],
-        birth_date=patient_data.get("birth_date"),
+        birth_date=birth_date,
         address=patient_data.get("address"),
         PasswordHash=hashed_password
     )

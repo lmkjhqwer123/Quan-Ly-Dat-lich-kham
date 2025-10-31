@@ -186,6 +186,11 @@ def get_my_history_logic(db, patient_id: int):
     ]
 
 # --- User Profile Logic ---
+def get_patient_profile_logic(db, patient_id: int):
+    patient = data_access.get_patient_by_id(db, patient_id=patient_id)
+    return patient
+
+
 def update_patient_profile_logic(db, patient_id: int, request: dict):
     patient = data_access.get_patient_by_id(db, patient_id=patient_id)
     if not patient:
@@ -223,4 +228,3 @@ def update_user_password_logic(db, user_id: int, role: str, request: dict):
         data_access.update_doctor_password(db, user_id, request["new_password"])
 
     return {"message": "Cập nhật mật khẩu thành công."}
-

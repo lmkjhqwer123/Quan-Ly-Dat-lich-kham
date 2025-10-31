@@ -6,7 +6,7 @@ import datetime
 
 # --- Database Setup ---
 # --- Thay đổi chuỗi kết nối theo cấu hình của bạn ---
-DATABASE_URL = "mssql+pyodbc://DESKTOP-V9NP2C3/QuanLyKhamBenhDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes&Encrypt=yes&TrustServerCertificate=yes"
+DATABASE_URL = "mssql+pyodbc://DESKTOP-4UC3VNU/QuanLyKhamBenhDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes&Encrypt=yes&TrustServerCertificate=yes"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

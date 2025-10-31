@@ -10,13 +10,13 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 import datetime
+from routers import patient_router
 
 from fastapi.staticfiles import StaticFiles
 
 from fastapi.security import OAuth2PasswordRequestForm
 
 from dotenv import load_dotenv
-
 
 
 from BusinessLogicLayer import business_logic
@@ -204,6 +204,9 @@ class PasswordUpdateRequest(BaseModel):
     current_password: str
 
     new_password: str
+
+
+app.include_router(patient_router.router)
 
 
 
@@ -470,9 +473,3 @@ def get_my_history(db: Session = Depends(data_access.get_db), current_user: dict
 
 
 app.mount("/", StaticFiles(directory="PresentationLayer"), name="presentation")
-
-
-
-
-
-

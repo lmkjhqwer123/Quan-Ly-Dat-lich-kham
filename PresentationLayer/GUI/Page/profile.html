@@ -139,123 +139,154 @@
         </div>
     </div>
 
-    <script src="../../Js/main.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = sessionStorage.getItem('accessToken');
-            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = sessionStorage.getItem('accessToken');
 
-            if (!token || !user) {
-                window.location.href = 'login.html';
-                return;
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // helper: populate UI from user object
+    function populateUI(user) {
+        if (!user) return;
+        document.getElementById('user-fullname').textContent = user.FullName || 'Chưa cập nhật';
+        document.getElementById('user-email').textContent = user.Email || 'Chưa cập nhật';
+        document.getElementById('user-phone').textContent = user.Phone || 'Chưa cập nhật';
+        document.getElementById('user-address').textContent = user.address || user.address || 'Chưa cập nhật';
+    }
+
+    // try fetch real profile from API
+    let user = null;
+    try {
+        const resp = await fetch('/api/patients/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (resp.ok) {
+            user = await resp.json();
+            // keep server copy in sessionStorage
+            sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+        } else if (resp.status === 401 || resp.status === 403) {
+            // token invalid / expired: force login
+            sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('loggedInUser');
+            window.location.href = 'login.html';
+            return;
+        } else {
+            // other error: fallback to sessionStorage
+            user = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null');
+        }
+    } catch (e) {
+        // network error: fallback to sessionStorage
+        user = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null');
+    }
+
+    populateUI(user);
+
+    const modal = document.getElementById('edit-profile-modal');
+    const editBtn = document.getElementById('edit-profile-btn');
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    const editForm = document.getElementById('edit-profile-form');
+    const errorMessage = document.getElementById('edit-error-message');
+
+    editBtn.addEventListener('click', () => {
+        // ensure we use latest data (from sessionStorage or fetched user)
+        const u = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null') || user || {};
+        document.getElementById('edit-fullname').value = u.FullName || '';
+        document.getElementById('edit-email').value = u.Email || '';
+        document.getElementById('edit-phone').value = u.Phone || '';
+        document.getElementById('edit-address').value = u.address || '';
+        modal.classList.remove('hidden');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        editForm.reset();
+        errorMessage.classList.add('hidden');
+    });
+
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMessage.classList.add('hidden');
+
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (newPassword && newPassword !== confirmPassword) {
+            errorMessage.textContent = 'Mật khẩu mới không khớp.';
+            errorMessage.classList.remove('hidden');
+            return;
+        }
+
+        const profileData = {
+            FullName: document.getElementById('edit-fullname').value,
+            Email: document.getElementById('edit-email').value,
+            Phone: document.getElementById('edit-phone').value,
+            address: document.getElementById('edit-address').value,
+        };
+
+        try {
+            const profileResponse = await fetch('/api/patients/me', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(profileData)
+            });
+
+            if (!profileResponse.ok) {
+                const errorData = await profileResponse.json().catch(()=> ({}));
+                throw new Error(errorData.detail || 'Lỗi cập nhật thông tin.');
             }
 
-            // Populate user info
-            document.getElementById('user-fullname').textContent = user.FullName || 'Chưa cập nhật';
-            document.getElementById('user-email').textContent = user.Email || 'Chưa cập nhật';
-            document.getElementById('user-phone').textContent = user.Phone || 'Chưa cập nhật';
-            document.getElementById('user-address').textContent = user.address || 'Chưa cập nhật';
+            // Update local user object and UI
+            const updatedUser = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null') || user || {};
+            updatedUser.FullName = profileData.FullName;
+            updatedUser.Email = profileData.Email;
+            updatedUser.Phone = profileData.Phone;
+            updatedUser.address = profileData.address;
+            sessionStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
+            populateUI(updatedUser);
 
-            const modal = document.getElementById('edit-profile-modal');
-            const editBtn = document.getElementById('edit-profile-btn');
-            const cancelBtn = document.getElementById('cancel-edit-btn');
-            const editForm = document.getElementById('edit-profile-form');
-            const errorMessage = document.getElementById('edit-error-message');
-
-            editBtn.addEventListener('click', () => {
-                // Populate form with current data
-                document.getElementById('edit-fullname').value = user.FullName || '';
-                document.getElementById('edit-email').value = user.Email || '';
-                document.getElementById('edit-phone').value = user.Phone || '';
-                document.getElementById('edit-address').value = user.address || '';
-                modal.classList.remove('hidden');
-            });
-
-            cancelBtn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                editForm.reset();
-                errorMessage.classList.add('hidden');
-            });
-
-            editForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                errorMessage.classList.add('hidden');
-
-                const newPassword = document.getElementById('new-password').value;
-                const confirmPassword = document.getElementById('confirm-password').value;
-
-                if (newPassword && newPassword !== confirmPassword) {
-                    errorMessage.textContent = 'Mật khẩu mới không khớp.';
-                    errorMessage.classList.remove('hidden');
-                    return;
-                }
-
-                const profileData = {
-                    FullName: document.getElementById('edit-fullname').value,
-                    Email: document.getElementById('edit-email').value,
-                    Phone: document.getElementById('edit-phone').value,
-                    address: document.getElementById('edit-address').value,
+            const newPwd = document.getElementById('new-password').value;
+            if (newPwd) {
+                const passwordData = {
+                    current_password: document.getElementById('current-password').value,
+                    new_password: newPwd
                 };
 
-                try {
-                    const profileResponse = await fetch('/api/patients/me', {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(profileData)
-                    });
+                const passwordResponse = await fetch('/api/users/me/password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(passwordData)
+                });
 
-                    if (!profileResponse.ok) {
-                        const errorData = await profileResponse.json();
-                        throw new Error(errorData.detail || 'Lỗi cập nhật thông tin.');
-                    }
-
-                    // Update local user object and UI
-                    user.FullName = profileData.FullName;
-                    user.Email = profileData.Email;
-                    user.Phone = profileData.Phone;
-                    user.address = profileData.address;
-                    sessionStorage.setItem('loggedInUser', JSON.stringify(user));
-                    document.getElementById('user-fullname').textContent = user.FullName;
-                    document.getElementById('user-email').textContent = user.Email;
-                    document.getElementById('user-phone').textContent = user.Phone;
-                    document.getElementById('user-address').textContent = user.address;
-
-                    const newPassword = document.getElementById('new-password').value;
-                    if (newPassword) {
-                        const passwordData = {
-                            current_password: document.getElementById('current-password').value,
-                            new_password: newPassword
-                        };
-
-                        const passwordResponse = await fetch('/api/users/me/password', {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify(passwordData)
-                        });
-
-                        if (!passwordResponse.ok) {
-                            const errorData = await passwordResponse.json();
-                            throw new Error(errorData.detail || 'Lỗi đổi mật khẩu.');
-                        }
-                    }
-
-                    alert('Cập nhật thông tin thành công!');
-                    modal.classList.add('hidden');
-                    editForm.reset();
-
-                } catch (error) {
-                    errorMessage.textContent = error.message;
-                    errorMessage.classList.remove('hidden');
+                if (!passwordResponse.ok) {
+                    const errorData = await passwordResponse.json().catch(()=> ({}));
+                    throw new Error(errorData.detail || 'Lỗi đổi mật khẩu.');
                 }
-            });
-        });
-    </script>
+            }
 
+            alert('Cập nhật thông tin thành công!');
+            modal.classList.add('hidden');
+            editForm.reset();
+
+        } catch (error) {
+            errorMessage.textContent = error.message;
+            errorMessage.classList.remove('hidden');
+        }
+    });
+});
+</script>
 </body>
 </html>

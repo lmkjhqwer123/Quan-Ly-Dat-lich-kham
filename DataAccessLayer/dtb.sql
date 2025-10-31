@@ -1,4 +1,4 @@
-﻿-- =================================================================
+-- =================================================================
 --      DATABASE SCRIPT FOR ONLINE BOOKING SYSTEM
 --      Re-ordered for logical dependency.
 --      Converted for Microsoft SQL Server (T-SQL).

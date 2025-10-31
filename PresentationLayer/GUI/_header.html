@@ -22,8 +22,10 @@
 
             <!-- User Info and Logout -->
             <div class="flex items-center space-x-4">
-                <span id="welcome-user" class="text-gray-700 font-medium hidden sm:block"></span>
-                <button id="logout-button" class="flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-600 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                <a href="profile.html" title="Thông tin cá nhân" class="relative group">
+                    <span id="welcome-user" class="text-gray-700 font-medium"></span>
+                </a>
+                <button id="logout-button" class="flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-600 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
                     Đăng xuất
                 </button>
@@ -34,7 +36,6 @@
             <a href="home.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Trang chủ 🏠</a>
             <a href="appointments.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Lịch hẹn 📆</a>
             <a href="notifications.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Thông báo 🔔</a>
-            <a href="profile.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Cá nhân 😀</a>
         </nav>
     </div>
 </header>

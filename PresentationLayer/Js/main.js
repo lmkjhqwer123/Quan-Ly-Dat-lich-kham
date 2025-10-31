@@ -3,11 +3,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const footerPlaceholder = document.getElementById('footer-placeholder');
 
     // --- LOAD HEADER & FOOTER ---
+    const getSharePath = () => {
+        const currentPath = window.location.pathname;
+        // For files in Page directory (e.g., /GUI/Page/about_us.html)
+        if (currentPath.includes('/Page/')) {
+            return '../Share/';
+        }
+        // For files in Admin_page directory (e.g., /GUI/Admin_page/dashboard.html)
+        if (currentPath.includes('/Admin_page/')) {
+            return '../Share/';
+        }
+        // For files directly in GUI directory (e.g., /GUI/home.html, /GUI/admin.html)
+        if (currentPath.includes('/GUI/')) {
+            return 'Share/';
+        }
+        return 'Share/'; // Fallback
+    };
+
+    const sharePath = getSharePath();
+
     const loadComponents = async () => {
         // Load Header
         if (headerPlaceholder) {
             try {
-                const response = await fetch('_header.html');
+                const response = await fetch(sharePath + '_header.html');
                 const headerHtml = await response.text();
                 headerPlaceholder.innerHTML = headerHtml;
             } catch (error) {
@@ -19,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load Footer
         if (footerPlaceholder) {
             try {
-                const response = await fetch('_footer.html');
+                const response = await fetch(sharePath + '_footer.html');
                 const footerHtml = await response.text();
                 footerPlaceholder.innerHTML = footerHtml;
             } catch (error) {

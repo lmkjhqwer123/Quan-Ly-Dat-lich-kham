@@ -5,5 +5,6 @@ bcrypt
 pydantic
 python-jose[cryptography]
 passlib[bcrypt]
-pyodbc
+# pyodbc==5.1.0
+python-dotenv==0.21.1
 python-multipart

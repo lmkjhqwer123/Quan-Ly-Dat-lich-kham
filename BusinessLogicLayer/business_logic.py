@@ -1,5 +1,8 @@
 
 from DataAccessLayer import data_access
+from datetime import datetime, timedelta
+import auth
+import mail
 
 # --- Auth Logic ---
 def login_user(db, login_request: dict):
@@ -53,6 +56,44 @@ def register_user(db, request: dict):
         return {"message": "Đăng ký bác sĩ thành công!", "userId": new_doctor.DoctorId}
 
     return {"error": "Vai trò không được hỗ trợ."}
+
+def request_password_reset_logic(db, email: str):
+    user, role = data_access.get_user_by_email(db, email)
+    if not user:
+        return {"error": "Email not found"}
+
+    user_id = user.PatientId if role == "Patient" else user.DoctorId
+    token = auth.create_password_reset_token(data={"sub": email, "user_id": user_id, "role": role})
+    expires_at = datetime.utcnow() + timedelta(minutes=auth.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)
+
+    data_access.create_password_reset_token(db, user_id, role, token, expires_at)
+
+    reset_link = f"http://localhost:8000/GUI/login.html?token={token}#reset-password"
+    mail.send_reset_password_email(email, reset_link)
+
+    return {"message": "Password reset email sent"}
+
+def reset_password_logic(db, token: str, new_password: str):
+    decoded_token = auth.verify_password_reset_token(token)
+    if not decoded_token:
+        return {"error": "Invalid or expired token"}
+
+    db_token = data_access.get_password_reset_token(db, token)
+    if not db_token or db_token.expires_at < datetime.utcnow():
+        return {"error": "Invalid or expired token"}
+
+    user_id = db_token.user_id
+    role = db_token.user_role
+
+    if role == 'Patient':
+        data_access.update_patient_password(db, user_id, new_password)
+    elif role == 'Doctor':
+        data_access.update_doctor_password(db, user_id, new_password)
+    else:
+        return {"error": "Invalid role"}
+
+    data_access.delete_password_reset_token(db, token)
+    return {"message": "Password updated successfully"}
 
 # --- Doctor Logic ---
 def get_all_doctors_logic(db):
@@ -182,3 +223,4 @@ def update_user_password_logic(db, user_id: int, role: str, request: dict):
         data_access.update_doctor_password(db, user_id, request["new_password"])
 
     return {"message": "Cập nhật mật khẩu thành công."}
+

@@ -5,6 +5,7 @@ import bcrypt
 import datetime
 
 # --- Database Setup ---
+# --- Thay đổi chuỗi kết nối theo cấu hình của bạn ---
 DATABASE_URL = "mssql+pyodbc://DESKTOP-V9NP2C3/QuanLyKhamBenhDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes&Encrypt=yes&TrustServerCertificate=yes"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -60,6 +61,14 @@ class Appointment(Base):
     doctor = relationship("Doctor", back_populates="appointments")
     specialty = relationship("Specialty")
 
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    user_role = Column(String(50), nullable=False)
+    token = Column(String(255), unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
 
@@ -81,6 +90,15 @@ def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 # --- User/Auth ---
+def get_user_by_email(db, email: str):
+    user = db.query(Patient).filter(Patient.Email == email).first()
+    if user:
+        return user, "Patient"
+    user = db.query(Doctor).filter(Doctor.Email == email).first()
+    if user:
+        return user, "Doctor"
+    return None, None
+
 def get_patient_by_phone(db, phone: str):
     return db.query(Patient).filter(Patient.Phone == phone).first()
 
@@ -124,7 +142,7 @@ def update_doctor(db, doctor_id: int, doctor_data: dict):
         db_doctor.FullName = doctor_data["FullName"]
         db_doctor.Email = doctor_data["Email"]
         db_doctor.Phone = doctor_data["Phone"]
-        db_doctor.SpecialtyId = doctor_data["SpecialtyId"]
+        db_doctor.SpecialtyId = doctor_data["SpecialtyId"],
         db_doctor.Qualifications = doctor_data["Qualifications"]
         db.commit()
         db.refresh(db_doctor)
@@ -202,7 +220,7 @@ def create_admin(db, admin_data: dict):
     db.refresh(db_admin)
     return db_admin
 
-def update_admin_password(db, admin_id: int, new_password: str):
+def update_admin__password(db, admin_id: int, new_password: str):
     db_admin = db.query(Admin).filter(Admin.AdminId == admin_id).first()
     if db_admin:
         db_admin.PasswordHash = hash_password(new_password)
@@ -220,3 +238,27 @@ def create_appointment(db, appointment_data: dict):
 
 def get_appointments_by_patient_id(db, patient_id: int):
     return db.query(Appointment).filter(Appointment.PatientId == patient_id).all()
+
+# --- Password Reset Tokens ---
+def create_password_reset_token(db, user_id: int, user_role: str, token: str, expires_at: datetime):
+    db_token = PasswordResetToken(
+        user_id=user_id,
+        user_role=user_role,
+        token=token,
+        expires_at=expires_at
+    )
+    db.add(db_token)
+    db.commit()
+    db.refresh(db_token)
+    return db_token
+
+def get_password_reset_token(db, token: str):
+    return db.query(PasswordResetToken).filter(PasswordResetToken.token == token).first()
+
+def delete_password_reset_token(db, token: str):
+    db_token = get_password_reset_token(db, token)
+    if db_token:
+        db.delete(db_token)
+        db.commit()
+        return True
+    return False

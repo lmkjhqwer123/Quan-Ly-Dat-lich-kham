@@ -4,12 +4,14 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 from DataAccessLayer import data_access
 
 SECRET_KEY = "your-secret-key"  # Replace with a strong, secret key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = 15
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
@@ -20,6 +22,20 @@ class TokenData(BaseModel):
 def create_access_token(data: dict):
     to_encode = data.copy()
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def create_password_reset_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verify_password_reset_token(token: str):
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return decoded_token
+    except JWTError:
+        return None
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(data_access.get_db)):
     credentials_exception = HTTPException(

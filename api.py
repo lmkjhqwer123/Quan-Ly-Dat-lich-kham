@@ -1,4 +1,6 @@
 
+
+
 from fastapi import FastAPI, Depends, HTTPException, status
 
 from pydantic import BaseModel, Field
@@ -13,6 +15,8 @@ from fastapi.staticfiles import StaticFiles
 
 from fastapi.security import OAuth2PasswordRequestForm
 
+from dotenv import load_dotenv
+
 
 
 from BusinessLogicLayer import business_logic
@@ -20,6 +24,10 @@ from BusinessLogicLayer import business_logic
 from DataAccessLayer import data_access
 
 import auth
+
+
+
+load_dotenv()  # Load environment variables from .env file
 
 
 
@@ -54,6 +62,20 @@ class LoginRequest(BaseModel):
     Username: Optional[str] = None
 
     Password: str
+
+
+
+class PasswordResetRequest(BaseModel):
+
+    email: str
+
+
+
+class PasswordReset(BaseModel):
+
+    token: str
+
+    new_password: str
 
 
 
@@ -251,8 +273,6 @@ def login(login_request: LoginRequest, db: Session = Depends(data_access.get_db)
 
 
 
-
-
 @app.post("/api/auth/register", status_code=status.HTTP_201_CREATED)
 
 def register_user(request: RegisterRequest, db: Session = Depends(data_access.get_db)):
@@ -273,45 +293,55 @@ def register_user(request: RegisterRequest, db: Session = Depends(data_access.ge
 
 
 
+@app.post("/api/auth/request-password-reset")
+
+def request_password_reset(request: PasswordResetRequest, db: Session = Depends(data_access.get_db)):
+
+    result = business_logic.request_password_reset_logic(db, request.email)
+
+    if "error" in result:
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
+
+    return result
+
+
+
+@app.post("/api/auth/reset-password")
+
+def reset_password(request: PasswordReset, db: Session = Depends(data_access.get_db)):
+
+    result = business_logic.reset_password_logic(db, request.token, request.new_password)
+
+    if "error" in result:
+
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
+
+    return result
+
+
+
 # --- Users Endpoints ---
 
 
 
 @app.put("/api/patients/me", status_code=status.HTTP_204_NO_CONTENT)
 
-
-
 def update_patient_profile(
-
-
 
     request: PatientUpdateRequest,
 
-
-
     db: Session = Depends(data_access.get_db),
-
-
 
     current_user: dict = Depends(auth.get_current_user)
 
-
-
 ):
-
-
 
     result = business_logic.update_patient_profile_logic(db, current_user.id, request.model_dump())
 
-
-
     if isinstance(result, dict) and "error" in result:
 
-
-
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-
-
 
     return
 
@@ -440,6 +470,8 @@ def get_my_history(db: Session = Depends(data_access.get_db), current_user: dict
 
 
 app.mount("/", StaticFiles(directory="PresentationLayer"), name="presentation")
+
+
 
 
 

@@ -78,38 +78,59 @@
         const loginForm = document.getElementById('login-form');
         const errorMessage = document.getElementById('error-message');
 
-        loginForm.addEventListener('submit', (event) => {
+        loginForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // Ngăn form tải lại trang
 
-            const username = document.getElementById('username').value;
+            const usernameInput = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // --- GIẢ LẬP CSDL NGƯỜI DÙNG VỚI VAI TRÒ ---
-            const users = {
-                admin: { password: '123', role: 'admin' },
-                khach: { password: '123', role: 'guest' }
-            };
-
-            const user = users[username];
-
-            // --- KIỂM TRA ĐĂNG NHẬP ---
-            if (user && user.password === password) {
-                // Lưu trạng thái đăng nhập (ví dụ: tên người dùng)
-                // sessionStorage chỉ lưu dữ liệu trong phiên làm việc của tab
-                sessionStorage.setItem('loggedInUser', username);
-                sessionStorage.setItem('userRole', user.role);
-
-                // Ghi lại hoạt động đăng nhập
-                logActivity(username, 'Đăng nhập thành công');
-
-                // Chuyển hướng dựa trên vai trò
-                if (user.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'home.html';
-                }
+            let loginData = {};
+            // check if usernameInput is a number
+            if (!isNaN(usernameInput) && usernameInput.trim() !== '') {
+                loginData = {
+                    Phone: usernameInput,
+                    Password: password
+                };
             } else {
-                // Hiển thị thông báo lỗi
+                loginData = {
+                    Username: usernameInput,
+                    Password: password
+                };
+            }
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Lưu trạng thái đăng nhập
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(data));
+                    sessionStorage.setItem('userRole', data.role);
+
+                    // Ghi lại hoạt động đăng nhập
+                    logActivity(data.name || data.Username, 'Đăng nhập thành công');
+
+                    // Chuyển hướng dựa trên vai trò
+                    if (data.role === 'Admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'home.html';
+                    }
+                } else {
+                    // Hiển thị thông báo lỗi
+                    errorMessage.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác.";
+                    errorMessage.classList.remove('hidden-message');
+                }
+            } catch (error) {
+                console.error('Lỗi đăng nhập:', error);
+                errorMessage.textContent = "Đã có lỗi xảy ra. Vui lòng thử lại.";
                 errorMessage.classList.remove('hidden-message');
             }
         });

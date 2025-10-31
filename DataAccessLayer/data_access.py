@@ -1,0 +1,205 @@
+
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+import bcrypt
+
+# --- Database Setup ---
+DATABASE_URL = "mssql+pyodbc://DESKTOP-V9NP2C3/QuanLyKhamBenhDB?driver=ODBC+Driver+17+for+SQL+Server&Trusted_Connection=yes&Encrypt=yes&TrustServerCertificate=yes"
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+# --- SQLAlchemy Models ---
+class Patient(Base):
+    __tablename__ = "patients"
+    PatientId = Column('patient_id', Integer, primary_key=True, index=True)
+    FullName = Column('full_name', String, index=True)
+    Email = Column('email', String, unique=True, index=True)
+    Phone = Column('phone', String, unique=True, index=True)
+    PasswordHash = Column('password_hash', String)
+    birth_date = Column('birth_date', Date)
+    address = Column('address', String)
+    appointments = relationship("Appointment", back_populates="patient")
+
+class Doctor(Base):
+    __tablename__ = "doctors"
+    DoctorId = Column('doctor_id', Integer, primary_key=True, index=True)
+    FullName = Column('full_name', String, index=True)
+    Email = Column('email', String, unique=True, index=True)
+    Phone = Column('phone', String, unique=True, index=True)
+    SpecialtyId = Column('specialty_id', Integer, ForeignKey("specialties.specialty_id"))
+    Qualifications = Column('qualifications', String)
+    PasswordHash = Column('password_hash', String)
+    specialty = relationship("Specialty")
+    appointments = relationship("Appointment", back_populates="doctor")
+
+class Admin(Base):
+    __tablename__ = "admins"
+    AdminId = Column('admin_id', Integer, primary_key=True, index=True)
+    Username = Column('username', String, unique=True, index=True)
+    Email = Column('email', String, unique=True)
+    PasswordHash = Column('password_hash', String)
+
+class Specialty(Base):
+    __tablename__ = "specialties"
+    SpecialtyId = Column('specialty_id', Integer, primary_key=True, index=True)
+    Name = Column('name', String, index=True)
+    description = Column('description', String)
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+    AppointmentId = Column('appointment_id', Integer, primary_key=True, index=True)
+    PatientId = Column('patient_id', Integer, ForeignKey("patients.patient_id"))
+    DoctorId = Column('doctor_id', Integer, ForeignKey("doctors.doctor_id"))
+    SpecialtyId = Column('specialty_id', Integer, ForeignKey("specialties.specialty_id"))
+    AppointmentDatetime = Column('appointment_datetime', DateTime)
+    Symptoms = Column('symptoms', Text)
+    Status = Column('status', String)
+    patient = relationship("Patient", back_populates="appointments")
+    doctor = relationship("Doctor", back_populates="appointments")
+    specialty = relationship("Specialty")
+
+# Create all tables in the database
+Base.metadata.create_all(bind=engine)
+
+# --- Data Access Functions ---
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def verify_password(plain_password, hashed_password):
+    if not hashed_password:
+        return False
+    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+def hash_password(password):
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+# --- User/Auth ---
+def get_patient_by_phone(db, phone: str):
+    return db.query(Patient).filter(Patient.Phone == phone).first()
+
+def get_doctor_by_phone(db, phone: str):
+    return db.query(Doctor).filter(Doctor.Phone == phone).first()
+
+def get_admin_by_username(db, username: str):
+    return db.query(Admin).filter(Admin.Username == username).first()
+
+# --- Doctors ---
+def get_all_doctors(db):
+    return db.query(Doctor).all()
+
+def get_doctor_by_id(db, doctor_id: int):
+    return db.query(Doctor).filter(Doctor.DoctorId == doctor_id).first()
+
+def get_doctor_by_email(db, email: str):
+    return db.query(Doctor).filter(Doctor.Email == email).first()
+
+def create_doctor(db, doctor_data: dict):
+    hashed_password = hash_password(doctor_data["Password"])
+    db_doctor = Doctor(
+        FullName=doctor_data["FullName"],
+        Email=doctor_data["Email"],
+        Phone=doctor_data["Phone"],
+        SpecialtyId=doctor_data["SpecialtyId"],
+        Qualifications=doctor_data["Qualifications"],
+        PasswordHash=hashed_password
+    )
+    db.add(db_doctor)
+    db.commit()
+    db.refresh(db_doctor)
+    return db_doctor
+
+def update_doctor(db, doctor_id: int, doctor_data: dict):
+    db_doctor = get_doctor_by_id(db, doctor_id)
+    if db_doctor:
+        db_doctor.FullName = doctor_data["FullName"]
+        db_doctor.Email = doctor_data["Email"]
+        db_doctor.Phone = doctor_data["Phone"]
+        db_doctor.SpecialtyId = doctor_data["SpecialtyId"]
+        db_doctor.Qualifications = doctor_data["Qualifications"]
+        db.commit()
+        db.refresh(db_doctor)
+    return db_doctor
+    
+def update_doctor_password(db, doctor_id: int, new_password: str):
+    db_doctor = db.query(Doctor).filter(Doctor.DoctorId == doctor_id).first()
+    if db_doctor:
+        db_doctor.PasswordHash = hash_password(new_password)
+        db.commit()
+        return True
+    return False
+
+def delete_doctor(db, doctor_id: int):
+    db_doctor = get_doctor_by_id(db, doctor_id)
+    if db_doctor:
+        db.delete(db_doctor)
+        db.commit()
+        return True
+    return False
+
+def has_appointments(db, doctor_id: int):
+    return db.query(Appointment).filter(Appointment.DoctorId == doctor_id).first() is not None
+
+# --- Patients ---
+def get_patient_by_email(db, email: str):
+    return db.query(Patient).filter(Patient.Email == email).first()
+
+def create_patient(db, patient_data: dict):
+    hashed_password = hash_password(patient_data["Password"])
+    db_patient = Patient(
+        FullName=patient_data["FullName"],
+        Email=patient_data["Email"],
+        Phone=patient_data["Phone"],
+        birth_date=patient_data.get("birth_date"),
+        address=patient_data.get("address"),
+        PasswordHash=hashed_password
+    )
+    db.add(db_patient)
+    db.commit()
+    db.refresh(db_patient)
+    return db_patient
+
+def update_patient_password(db, patient_id: int, new_password: str):
+    db_patient = db.query(Patient).filter(Patient.PatientId == patient_id).first()
+    if db_patient:
+        db_patient.PasswordHash = hash_password(new_password)
+        db.commit()
+        return True
+    return False
+
+# --- Admins ---
+def create_admin(db, admin_data: dict):
+    hashed_password = hash_password(admin_data["Password"])
+    db_admin = Admin(
+        Username=admin_data["Username"],
+        Email=admin_data["Email"],
+        PasswordHash=hashed_password
+    )
+    db.add(db_admin)
+    db.commit()
+    db.refresh(db_admin)
+    return db_admin
+
+def update_admin_password(db, admin_id: int, new_password: str):
+    db_admin = db.query(Admin).filter(Admin.AdminId == admin_id).first()
+    if db_admin:
+        db_admin.PasswordHash = hash_password(new_password)
+        db.commit()
+        return True
+    return False
+
+# --- Appointments ---
+def create_appointment(db, appointment_data: dict):
+    db_appointment = Appointment(**appointment_data)
+    db.add(db_appointment)
+    db.commit()
+    db.refresh(db_appointment)
+    return db_appointment
+
+def get_appointments_by_patient_id(db, patient_id: int):
+    return db.query(Appointment).filter(Appointment.PatientId == patient_id).all()

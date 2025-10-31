@@ -65,3 +65,6 @@ Thumbs.db
 *.db
 
 # Custom additions
+
+__pycache__/
+*.pyc

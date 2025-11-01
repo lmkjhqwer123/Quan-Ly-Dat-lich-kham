@@ -2,6 +2,7 @@
 
 
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from pydantic import BaseModel, Field
 
@@ -22,6 +23,8 @@ from BusinessLogicLayer import business_logic
 from DataAccessLayer import data_access
 
 import auth
+from routers.auth import auth_router
+from routers.auth import update_password
 
 
 
@@ -35,7 +38,9 @@ app = FastAPI(
 
     description="API for managing appointments in a hospital.",
 
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
 
 )
 
@@ -205,120 +210,20 @@ class PasswordUpdateRequest(BaseModel):
 
 
 app.include_router(patient_router.router)
+app.include_router(auth_router.router)
+app.include_router(update_password.router)
 
 
+
+app.mount("/GUI", StaticFiles(directory="PresentationLayer/GUI"), name="gui")
+app.mount("/Js", StaticFiles(directory="PresentationLayer/Js"), name="js")
+app.mount("/", StaticFiles(directory="PresentationLayer/GUI"), name="root_gui")
 
 # --- API Endpoints ---
 
 
 
-@app.post("/api/auth/token", response_model=Token)
 
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(data_access.get_db)):
-
-    user = business_logic.login_user(db, {"Phone": form_data.username, "Password": form_data.password})
-
-    if not user:
-
-        raise HTTPException(
-
-            status_code=status.HTTP_401_UNAUTHORIZED,
-
-            detail="Incorrect username or password",
-
-            headers={"WWW-Authenticate": "Bearer"},
-
-        )
-
-    access_token = auth.create_access_token(
-
-        data={"user_id": user['userId'], "role": user['role']}
-
-    )
-
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-
-@app.post("/api/auth/login")
-
-def login(login_request: LoginRequest, db: Session = Depends(data_access.get_db)):
-
-    user = business_logic.login_user(db, login_request.model_dump())
-
-
-
-    if not user:
-
-        raise HTTPException(
-
-            status_code=status.HTTP_401_UNAUTHORIZED,
-
-            detail="Incorrect username or password",
-
-            headers={"WWW-Authenticate": "Bearer"},
-
-        )
-
-    
-
-    access_token = auth.create_access_token(
-
-        data={"user_id": user['userId'], "role": user['role']}
-
-    )
-
-    
-
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
-
-
-
-@app.post("/api/auth/register", status_code=status.HTTP_201_CREATED)
-
-def register_user(request: RegisterRequest, db: Session = Depends(data_access.get_db)):
-
-    result = business_logic.register_user(db, request.model_dump())
-
-    if "error" in result:
-
-        raise HTTPException(
-
-            status_code=status.HTTP_409_CONFLICT,
-
-            detail=result["error"]
-
-        )
-
-    return result
-
-
-
-@app.post("/api/auth/request-password-reset")
-
-def request_password_reset(request: PasswordResetRequest, db: Session = Depends(data_access.get_db)):
-
-    result = business_logic.request_password_reset_logic(db, request.email)
-
-    if "error" in result:
-
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-
-    return result
-
-
-
-@app.post("/api/auth/reset-password")
-
-def reset_password(request: PasswordReset, db: Session = Depends(data_access.get_db)):
-
-    result = business_logic.reset_password_logic(db, request.token, request.new_password)
-
-    if "error" in result:
-
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-
-    return result
 
 
 
@@ -326,47 +231,11 @@ def reset_password(request: PasswordReset, db: Session = Depends(data_access.get
 
 
 
-@app.put("/api/patients/me", status_code=status.HTTP_204_NO_CONTENT)
-
-def update_patient_profile(
-
-    request: PatientUpdateRequest,
-
-    db: Session = Depends(data_access.get_db),
-
-    current_user: dict = Depends(auth.get_current_user)
-
-):
-
-    result = business_logic.update_patient_profile_logic(db, current_user.id, request.model_dump())
-
-    if isinstance(result, dict) and "error" in result:
-
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-
-    return
 
 
 
-@app.put("/api/users/me/password", status_code=status.HTTP_204_NO_CONTENT)
 
-def update_password(
 
-    request: PasswordUpdateRequest,
-
-    db: Session = Depends(data_access.get_db),
-
-    current_user: dict = Depends(auth.get_current_user)
-
-):
-
-    result = business_logic.update_user_password_logic(db, current_user.id, current_user.role, request.model_dump())
-
-    if result and "error" in result:
-
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=result["error"])
-
-    return
 
 
 
@@ -470,4 +339,4 @@ def get_my_history(db: Session = Depends(data_access.get_db), current_user: dict
 
 
 
-app.mount("/", StaticFiles(directory="PresentationLayer"), name="presentation")
+

@@ -13,6 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Load header and footer
-    loadComponent('header-placeholder', 'Share/_header.html');
-    loadComponent('footer-placeholder', 'Share/_footer.html');
+    loadComponent('header-placeholder', '/GUI/Share/_header.html');
+    loadComponent('footer-placeholder', '/GUI/Share/_footer.html');
 });

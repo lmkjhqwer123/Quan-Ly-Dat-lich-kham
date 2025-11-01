@@ -7,17 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LOAD HEADER & FOOTER ---
     const getSharePath = () => {
-        const currentPath = window.location.pathname;
-        // For files in Page directory (e.g., /Page/about_us.html)
-        if (currentPath.includes('/Page/')) {
-            return '../Share/';
-        }
-        // For files in Admin_page directory (e.g., /Admin_page/dashboard.html)
-        if (currentPath.includes('/Admin_page/')) {
-            return '../Share/';
-        }
-        // For files directly in GUI directory (e.g., /home.html, /admin.html)
-        return 'Share/'; // Fallback for files at the root of GUI
+        return '/GUI/Share/';
     };
 
     const sharePath = getSharePath();
@@ -77,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const user = JSON.parse(loggedInUser);
                 // Use the 'name' property from the parsed user object
-                welcomeUser.textContent = `Chào, ${user.name}!`;
+                welcomeUser.textContent = `Chào, ${user.FullName}!`;
             } catch (error) {
                 console.error("Failed to parse user data:", error);
                 // Fallback for safety, though it might still show the full string on error

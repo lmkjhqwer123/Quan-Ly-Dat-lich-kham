@@ -269,9 +269,9 @@
                     sessionStorage.setItem('userRole', data.user.role);
                     logActivity(data.user.name || data.user.Username, 'Đăng nhập thành công');
                     if (data.user.role === 'Admin') {
-                        window.location.href = 'admin.html';
+                        window.location.href = '/GUI/admin.html';
                     } else {
-                        window.location.href = 'home.html';
+                        window.location.href = '/GUI/home.html';
                     }
                 } else {
                     errorMessage.textContent = "Tên đăng nhập hoặc mật khẩu không chính xác.";

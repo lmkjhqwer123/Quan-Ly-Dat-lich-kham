@@ -259,7 +259,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (newPwd) {
                 const passwordData = {
                     current_password: document.getElementById('current-password').value,
-                    new_password: newPwd
+                    new_password: newPwd,
+                    confirm_new_password: confirmPassword
                 };
 
                 const passwordResponse = await fetch('/api/users/me/password', {
@@ -288,5 +289,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 </script>
+    <script src="/Js/main.js"></script>
 </body>
 </html>

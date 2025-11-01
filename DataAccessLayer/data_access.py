@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Foreign
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 import bcrypt
 import datetime
+from typing import Optional
 
 # --- Database Setup ---
 # --- Thay đổi chuỗi kết nối theo cấu hình của bạn ---
@@ -175,6 +176,25 @@ def get_patient_by_id(db, patient_id: int):
 def get_patient_by_email(db, email: str):
     return db.query(Patient).filter(Patient.Email == email).first()
 
+def get_all_patients(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    query = db.query(Patient)
+    if sort_by == "name":
+        if sort_direction == "desc":
+            query = query.order_by(Patient.FullName.desc())
+        else:
+            query = query.order_by(Patient.FullName.asc())
+    elif sort_by == "email":
+        if sort_direction == "desc":
+            query = query.order_by(Patient.Email.desc())
+        else:
+            query = query.order_by(Patient.Email.asc())
+    elif sort_by == "id":
+        if sort_direction == "desc":
+            query = query.order_by(Patient.PatientId.desc())
+        else:
+            query = query.order_by(Patient.PatientId.asc())
+    return query.all()
+
 def create_patient(db, patient_data: dict):
     hashed_password = hash_password(patient_data["Password"])
     birth_date = patient_data.get("birth_date") or datetime.date.today()
@@ -207,6 +227,34 @@ def update_patient(db, patient_id: int, patient_data: dict):
         db.commit()
         db.refresh(db_patient)
     return db_patient
+
+def search_patients(db, query: str, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    search_pattern_starts_with = f"{query}%"
+    search_pattern_contains = f"%{query}%"
+
+    base_query = db.query(Patient).filter(
+        (Patient.FullName.ilike(search_pattern_starts_with)) |
+        (Patient.Email.ilike(search_pattern_contains)) |
+        (Patient.Phone.ilike(search_pattern_contains)) |
+        (Patient.address.ilike(search_pattern_contains))
+    )
+
+    if sort_by == "name":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Patient.FullName.desc())
+        else:
+            base_query = base_query.order_by(Patient.FullName.asc())
+    elif sort_by == "email":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Patient.Email.desc())
+        else:
+            base_query = base_query.order_by(Patient.Email.asc())
+    elif sort_by == "id":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Patient.PatientId.desc())
+        else:
+            base_query = base_query.order_by(Patient.PatientId.asc())
+    return base_query.all()
 
 # --- Admins ---
 def create_admin(db, admin_data: dict):

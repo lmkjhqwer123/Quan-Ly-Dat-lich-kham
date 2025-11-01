@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const user = JSON.parse(loggedInUser);
                 // Use the 'name' property from the parsed user object
-                welcomeUser.textContent = `Chào, ${user.FullName}!`;
+                welcomeUser.textContent = `Chào, ${user.name}!`;
             } catch (error) {
                 console.error("Failed to parse user data:", error);
                 // Fallback for safety, though it might still show the full string on error

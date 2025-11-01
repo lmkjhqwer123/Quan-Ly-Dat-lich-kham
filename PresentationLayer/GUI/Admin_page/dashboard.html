@@ -6,7 +6,7 @@
             <!-- Card 1: Bác sĩ -->
             <div class="bg-blue-600 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between h-48">
                 <div>
-                    <h3 class="text-3xl font-bold">5</h3>
+                    <h3 id="doctor-count" class="text-3xl font-bold">5</h3>
                     <p class="text-blue-100">Bác sĩ</p>
                 </div>
                 <div class="h-16">
@@ -17,7 +17,7 @@
             <!-- Card 2: Bệnh nhân hôm nay -->
             <div class="bg-cyan-500 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between h-48">
                 <div>
-                    <h3 class="text-3xl font-bold">12</h3>
+                    <h3 id="patient-today-count" class="text-3xl font-bold">12</h3>
                     <p class="text-cyan-100">Số lượt bệnh nhân hôm nay</p>
                 </div>
                 <div class="h-16">
@@ -28,7 +28,7 @@
             <!-- Card 3: Tổng lịch hẹn -->
             <div class="bg-yellow-500 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between h-48">
                 <div>
-                    <h3 class="text-3xl font-bold">11</h3>
+                    <h3 id="appointment-total-count" class="text-3xl font-bold">11</h3>
                     <p class="text-yellow-100">Tổng lịch hẹn hôm nay</p>
                 </div>
                 <div class="h-16">
@@ -39,7 +39,7 @@
             <!-- Card 4: Lượt khám bị hủy -->
             <div class="bg-red-600 text-white p-6 rounded-xl shadow-lg flex flex-col justify-between h-48">
                 <div>
-                    <h3 class="text-3xl font-bold">7</h3>
+                    <h3 id="cancelled-count" class="text-3xl font-bold">7</h3>
                     <p class="text-red-100">Số lượt khám bị hủy</p>
                 </div>
                 <div class="h-16">
@@ -60,7 +60,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            
+           
+
             // --- Hàm trợ giúp tạo data cho biểu đồ mini ---
             const createMiniChartData = (borderColor) => ({
                 labels: ['1', '2', '3', '4', '5', '6', '7'],

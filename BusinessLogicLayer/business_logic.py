@@ -3,6 +3,7 @@ from DataAccessLayer import data_access
 from datetime import datetime, timedelta
 import auth
 import mail
+from typing import Optional
 
 # --- Auth Logic ---
 def login_user(db, login_request: dict):
@@ -185,10 +186,32 @@ def get_my_history_logic(db, patient_id: int):
         } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=True)
     ]
 
+def get_all_patients_logic(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    patients = data_access.get_all_patients(db, sort_by, sort_direction)
+    return [
+        {
+            "PatientId": p.PatientId,
+            "FullName": p.FullName,
+            "Email": p.Email,
+            "Phone": p.Phone,
+            "birth_date": p.birth_date,
+            "address": p.address
+        } for p in patients
+    ]
+
 # --- User Profile Logic ---
 def get_patient_profile_logic(db, patient_id: int):
     patient = data_access.get_patient_by_id(db, patient_id=patient_id)
-    return patient
+    if patient:
+        return {
+            "PatientId": patient.PatientId,
+            "FullName": patient.FullName,
+            "Email": patient.Email,
+            "Phone": patient.Phone,
+            "birth_date": patient.birth_date,
+            "address": patient.address
+        }
+    return None
 
 
 def update_patient_profile_logic(db, patient_id: int, request: dict):
@@ -228,3 +251,16 @@ def update_user_password_logic(db, user_id: int, role: str, request: dict):
         data_access.update_doctor_password(db, user_id, request["new_password"])
 
     return {"message": "Cập nhật mật khẩu thành công."}
+
+def search_patients_logic(db, query: str, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    patients = data_access.search_patients(db, query, sort_by, sort_direction)
+    return [
+        {
+            "PatientId": p.PatientId,
+            "FullName": p.FullName,
+            "Email": p.Email,
+            "Phone": p.Phone,
+            "birth_date": p.birth_date,
+            "address": p.address
+        } for p in patients
+    ]

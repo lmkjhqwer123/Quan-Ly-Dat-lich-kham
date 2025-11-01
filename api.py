@@ -25,6 +25,8 @@ from DataAccessLayer import data_access
 import auth
 from routers.auth import auth_router
 from routers.auth import update_password
+from routers.admin import dashboard_stats
+from routers.admin import patient_management
 
 
 
@@ -209,9 +211,12 @@ class PasswordUpdateRequest(BaseModel):
     new_password: str
 
 
+
 app.include_router(patient_router.router)
 app.include_router(auth_router.router)
 app.include_router(update_password.router)
+app.include_router(dashboard_stats.router)
+app.include_router(patient_management.router)
 
 
 

@@ -49,18 +49,18 @@
                 <!-- Hàng 1: Tìm kiếm & Nút -->
                 <div class="flex flex-wrap items-center gap-4 mb-4">
                     <div class="relative flex-grow" style="min-width: 300px;">
-                        <input type="text" placeholder="Bạn đang cần tìm gì?" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="search-input" placeholder="Bạn đang cần tìm gì?" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                         </svg>
                     </div>
-                    <button class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
+                    <button id="search-button" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
                         Tìm kiếm
                     </button>
-                    <button class="px-6 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors">
+                    <button id="refresh-patients-btn" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors">
                         Làm mới
                     </button>
-                    <button class="px-6 py-2 bg-gray-700 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors">
+                    <button id="create-patient-btn" class="px-6 py-2 bg-gray-700 text-white font-semibold rounded-md hover:bg-gray-800 transition-colors">
                         Tạo mới
                     </button>
                 </div>
@@ -71,8 +71,8 @@
                         <label for="sort-direction" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo chiều</label>
                         <select id="sort-direction" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="" disabled selected>Chọn...</option>
-                            <option value="asc">Từ trên xuống dưới</option>
-                            <option value="desc">Từ dưới lên trên</option>
+                            <option value="asc">Tăng dần</option>
+                            <option value="desc">Giảm dần</option>
                         </select>
                     </div>
                     <div>
@@ -81,6 +81,7 @@
                             <option value="" disabled selected>Chọn...</option>
                             <option value="name">Tên</option>
                             <option value="email">Email</option>
+                            <option value="id">Mã bệnh nhân</option>
                         </select>
                     </div>
                 </div>
@@ -95,103 +96,364 @@
                     <table class="w-full text-left">
                         <thead class="bg-gray-50">
                             <tr class="text-sm text-gray-600 uppercase">
+                                <th class="py-3 px-6 font-medium">Mã bệnh nhân</th>
                                 <th class="py-3 px-6 font-medium"></th>
                                 <th class="py-3 px-6 font-medium">Tên</th>
                                 <th class="py-3 px-6 font-medium">Email</th>
                                 <th class="py-3 px-6 font-medium">Số điện thoại</th>
+                                <th class="py-3 px-6 font-medium">Địa chỉ</th>
                                 <th class="py-3 px-6 font-medium text-center">Hành động</th>
                             </tr>
                         </thead>
-                        <tbody class="text-gray-700">
-                            <!-- Dữ liệu mẫu 1 -->
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-4 px-6">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/40x40/EBF8FF/3182CE?text=TL" alt="Avatar">
-                                </td>
-                                <td class="py-4 px-6">
-                                    <span class="font-medium">Tiểu Long Nữ</span>
-                                    <p class="text-xs text-gray-500">Ngày sinh: 2022-05-01</p>
-                                </td>
-                                <td class="py-4 px-6">guest@gmail.com</td>
-                                <td class="py-4 px-6">0123456789</td>
-                                <td class="py-4 px-6 text-center space-x-2">
-                                    <button class="btn-action btn-edit">Sửa</button>
-                                    <button class="btn-action btn-detail">Chi tiết</button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Dữ liệu mẫu 2 -->
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-4 px-6">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/40x40/4A5568/FFFFFF?text=ĐĐ" alt="Avatar">
-                                </td>
-                                <td class="py-4 px-6">
-                                    <span class="font-medium">Đoàn Đại Hiệp</span>
-                                    <p class="text-xs text-gray-500">Ngày sinh: 2022-12-05</p>
-                                </td>
-                                <td class="py-4 px-6"></td>
-                                <td class="py-4 px-6">0366253623</td>
-                                <td class="py-4 px-6 text-center space-x-2">
-                                    <button class="btn-action btn-edit">Sửa</button>
-                                    <button class="btn-action btn-detail">Chi tiết</button>
-                                </td>
-                            </tr>
-                            
-                            <!-- Dữ liệu mẫu 3 -->
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-4 px-6">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/40x40/EBF8FF/3182CE?text=DQ" alt="Avatar">
-                                </td>
-                                <td class="py-4 px-6">
-                                    <span class="font-medium">Dương Quá</span>
-                                    <p class="text-xs text-gray-500">Ngày sinh: 1986-11-14</p>
-                                </td>
-                                <td class="py-4 px-6"></td>
-                                <td class="py-4 px-6">0979580835</td>
-                                <td class="py-4 px-6 text-center space-x-2">
-                                    <button class="btn-action btn-edit">Sửa</button>
-                                    <button class="btn-action btn-detail">Chi tiết</button>
-                                </td>
-                            </tr>
-
-                            <!-- Dữ liệu mẫu 4 -->
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-4 px-6">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/40x40/ECC94B/FFFFFF?text=KP" alt="Avatar">
-                                </td>
-                                <td class="py-4 px-6">
-                                    <span class="font-medium">Kiều Phong</span>
-                                    <p class="text-xs text-gray-500">Ngày sinh: 2022-12-06</p>
-                                </td>
-                                <td class="py-4 px-6"></td>
-                                <td class="py-4 px-6">0794104124</td>
-                                <td class="py-4 px-6 text-center space-x-2">
-                                    <button class="btn-action btn-edit">Sửa</button>
-                                    <button class="btn-action btn-detail">Chi tiết</button>
-                                </td>
-                            </tr>
-
-                            <!-- Dữ liệu mẫu 5 -->
-                            <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                <td class="py-4 px-6">
-                                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/40x40/EBF8FF/3182CE?text=ĐT" alt="Avatar">
-                                </td>
-                                <td class="py-4 px-6">
-                                    <span class="font-medium">Diệu Tư Đình</span>
-                                    <p class="text-xs text-gray-500">Ngày sinh: 1986-11-14</p>
-                                </td>
-                                <td class="py-4 px-6">phongkaster100@gmail.com</td>
-                                <td class="py-4 px-6">0979835580</td>
-                                <td class="py-4 px-6 text-center space-x-2">
-                                    <button class="btn-action btn-edit">Sửa</button>
-                                    <button class="btn-action btn-detail">Chi tiết</button>
-                                </td>
-                            </tr>
+                        <tbody id="patient-table-body" class="text-gray-700">
+                            <!-- Patient data will be loaded here by JavaScript -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </main>
+    <script>
+        const patientTableBody = document.getElementById('patient-table-body');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const refreshPatientsBtn = document.getElementById('refresh-patients-btn');
+        const sortDirectionDropdown = document.getElementById('sort-direction');
+        const sortValueDropdown = document.getElementById('sort-value');
+
+        const patientDetailModal = document.getElementById('patient-detail-modal');
+        const closePatientDetailModalBtn = document.getElementById('close-patient-detail-modal');
+        const closePatientDetailBtn = document.getElementById('close-patient-detail-btn');
+
+        const fetchPatients = async (searchQuery = '', sortDirection = '', sortValue = '') => {
+            console.log('Attempting to call fetchPatients() with query:', searchQuery);
+            try {
+                const token = sessionStorage.getItem('accessToken');
+                if (!token) {
+                    console.error('No access token found. User not authenticated.');
+                    // Optionally redirect to login page
+                    // window.location.href = '/login.html';
+                    return;
+                }
+
+                let url = '/api/admin/patients';
+                const params = new URLSearchParams();
+
+                if (searchQuery) {
+                    params.append('query', searchQuery);
+                }
+                if (sortDirection) {
+                    params.append('sort_direction', sortDirection);
+                }
+                if (sortValue) {
+                    params.append('sort_by', sortValue);
+                }
+
+                if (params.toString()) {
+                    url += `?${params.toString()}`;
+                }
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const patients = await response.json();
+                console.log('Fetched patients:', patients);
+
+                // Clear existing table rows before adding new ones
+                patientTableBody.innerHTML = '';
+
+                if (patients.length === 0) {
+                    patientTableBody.innerHTML = `<tr><td colspan="7" class="py-3 px-6 text-center text-gray-500">Không tìm thấy bệnh nhân nào.</td></tr>`;
+                    return;
+                }
+
+                patients.forEach(patient => {
+                    const row = patientTableBody.insertRow();
+                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+
+                    row.innerHTML = `
+                        <td class="py-3 px-6">${patient.PatientId}</td>
+                        <td class="py-3 px-6">
+                            <img src="https://via.placeholder.com/40" alt="Avatar" class="h-10 w-10 rounded-full object-cover">
+                        </td>
+                        <td class="py-3 px-6 font-medium">${patient.FullName}</td>
+                        <td class="py-3 px-6">${patient.Email}</td>
+                        <td class="py-3 px-6">${patient.Phone}</td>
+                        <td class="py-3 px-6">${patient.address || 'N/A'}</td>
+                        <td class="py-3 px-6">
+                            
+                            <button class="btn-action btn-detail view-patient-detail-btn" data-patient-id="${patient.PatientId}">Chi tiết</button>
+                        </td>
+                    `;
+                });
+
+            } catch (error) {
+                console.error('Error fetching patients:', error);
+                patientTableBody.innerHTML = `<tr><td colspan="7" class="py-3 px-6 text-center text-red-500">Lỗi khi tải dữ liệu bệnh nhân.</td></tr>`;
+            }
+        };
+
+        // Initial load of patients
+        fetchPatients(searchInput.value.trim(), sortDirectionDropdown.value, sortValueDropdown.value);
+
+        // Event listener for search button
+        if (searchButton) {
+            searchButton.addEventListener('click', () => {
+                const query = searchInput.value.trim();
+                fetchPatients(query, sortDirectionDropdown.value, sortValueDropdown.value);
+            });
+        }
+
+        // Event listener for search input (Enter key)
+        if (searchInput) {
+            searchInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    const query = searchInput.value.trim();
+                    fetchPatients(query, sortDirectionDropdown.value, sortValueDropdown.value);
+                }
+            });
+        }
+
+        // Event listener for refresh button
+        if (refreshPatientsBtn) {
+            refreshPatientsBtn.addEventListener('click', () => {
+                searchInput.value = ''; // Clear search input
+                sortDirectionDropdown.value = ''; // Clear sort direction
+                sortValueDropdown.value = ''; // Clear sort value
+                fetchPatients(); // Fetch all patients with default sorting
+            });
+        }
+
+        // Event listeners for sort dropdowns
+        if (sortDirectionDropdown) {
+            sortDirectionDropdown.addEventListener('change', () => {
+                fetchPatients(searchInput.value.trim(), sortDirectionDropdown.value, sortValueDropdown.value);
+            });
+        }
+
+        if (sortValueDropdown) {
+            sortValueDropdown.addEventListener('change', () => {
+                fetchPatients(searchInput.value.trim(), sortDirectionDropdown.value, sortValueDropdown.value);
+            });
+        }
+
+        const createPatientBtn = document.getElementById('create-patient-btn');
+        const createPatientModal = document.getElementById('create-patient-modal');
+        const closePatientModalBtn = document.getElementById('close-patient-modal');
+        const newPatientForm = document.getElementById('new-patient-form');
+        const cancelNewPatientBtn = document.getElementById('cancel-new-patient');
+
+        if (createPatientBtn) {
+            createPatientBtn.addEventListener('click', () => {
+                createPatientModal.classList.remove('hidden');
+            });
+        }
+
+        if (closePatientModalBtn) {
+            closePatientModalBtn.addEventListener('click', () => {
+                createPatientModal.classList.add('hidden');
+                newPatientForm.reset();
+            });
+        }
+
+        if (cancelNewPatientBtn) {
+            cancelNewPatientBtn.addEventListener('click', () => {
+                createPatientModal.classList.add('hidden');
+                newPatientForm.reset();
+            });
+        }
+
+        if (newPatientForm) {
+            newPatientForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const fullName = document.getElementById('new-patient-fullname').value;
+                const email = document.getElementById('new-patient-email').value;
+                const phone = document.getElementById('new-patient-phone').value;
+                const password = document.getElementById('new-patient-password').value;
+                const birthDate = document.getElementById('new-patient-birthdate').value;
+                const address = document.getElementById('new-patient-address').value;
+
+                if (!fullName || !email || !phone || !password) {
+                    alert('Full Name, Email, Phone, and Password are required!');
+                    return;
+                }
+
+                const newPatient = {
+                    FullName: fullName,
+                    Email: email,
+                    Phone: phone,
+                    password: password,
+                    birth_date: birthDate || null,
+                    address: address || null
+                };
+
+                try {
+                    const token = sessionStorage.getItem('accessToken');
+                    const response = await fetch('/api/admin/patients', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(newPatient)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    alert('Patient created successfully!');
+                    createPatientModal.classList.add('hidden');
+                    newPatientForm.reset();
+                    fetchPatients(); // Refresh the list
+                } catch (error) {
+                    console.error('Error creating patient:', error);
+                    alert('Error creating patient.');
+                }
+            });
+        }
+
+        // Event listener for view patient detail buttons
+        patientTableBody.addEventListener('click', async (event) => {
+            if (event.target.classList.contains('view-patient-detail-btn')) {
+                const patientId = event.target.dataset.patientId;
+                if (patientId) {
+                    try {
+                        const token = sessionStorage.getItem('accessToken');
+                        if (!token) {
+                            console.error('No access token found. User not authenticated.');
+                            return;
+                        }
+                        const response = await fetch(`/api/admin/patients/${patientId}`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
+                        const patient = await response.json();
+                        
+                        document.getElementById('detail-patient-id').textContent = patient.PatientId;
+                        document.getElementById('detail-full-name').textContent = patient.FullName;
+                        document.getElementById('detail-email').textContent = patient.Email;
+                        document.getElementById('detail-phone').textContent = patient.Phone;
+                        document.getElementById('detail-birth-date').textContent = patient.birth_date || 'N/A';
+                        document.getElementById('detail-address').textContent = patient.address || 'N/A';
+
+                        patientDetailModal.classList.remove('hidden');
+                        // Hide edit button when detail modal is open
+                        const editButton = event.target.previousElementSibling; // Assuming edit button is before detail button
+                        if (editButton && editButton.classList.contains('edit-patient-btn')) {
+                            editButton.classList.add('hidden');
+                        }
+
+                    } catch (error) {
+                        console.error('Error fetching patient details:', error);
+                        alert('Error fetching patient details.');
+                    }
+                }
+            }
+        });
+
+        // Close patient detail modal
+        if (closePatientDetailModalBtn) {
+            closePatientDetailModalBtn.addEventListener('click', () => {
+                patientDetailModal.classList.add('hidden');
+                // Show edit button again when modal is closed
+                const editButton = document.querySelector('.edit-patient-btn.hidden');
+                if (editButton) {
+                    editButton.classList.remove('hidden');
+                }
+            });
+        }
+
+        if (closePatientDetailBtn) {
+            closePatientDetailBtn.addEventListener('click', () => {
+                patientDetailModal.classList.add('hidden');
+                // Show edit button again when modal is closed
+                const editButton = document.querySelector('.edit-patient-btn.hidden');
+                if (editButton) {
+                    editButton.classList.remove('hidden');
+                }
+            });
+        }
+    </script>
+
+    <!-- Create Patient Modal -->
+    <div id="create-patient-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 class="text-lg font-bold">Tạo bệnh nhân mới</h3>
+                <button id="close-patient-modal" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <form id="new-patient-form">
+                <div class="mb-4">
+                    <label for="new-patient-fullname" class="block text-sm font-medium text-gray-700">Họ và tên</label>
+                    <input type="text" id="new-patient-fullname" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="new-patient-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="new-patient-email" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="new-patient-phone" class="block text-sm font-medium text-gray-700">Số điện thoại</label>
+                    <input type="tel" id="new-patient-phone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="new-patient-password" class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+                    <input type="password" id="new-patient-password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="new-patient-birthdate" class="block text-sm font-medium text-gray-700">Ngày sinh</label>
+                    <input type="date" id="new-patient-birthdate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label for="new-patient-address" class="block text-sm font-medium text-gray-700">Địa chỉ</label>
+                    <input type="text" id="new-patient-address" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="cancel-new-patient" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 mr-2">Hủy</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Patient Detail Modal -->
+    <div id="patient-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 class="text-lg font-bold">Thông tin chi tiết bệnh nhân</h3>
+                <button id="close-patient-detail-modal" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div id="patient-detail-content" class="mt-4 text-gray-700">
+                <!-- Patient details will be loaded here -->
+                <p><strong>Mã bệnh nhân:</strong> <span id="detail-patient-id"></span></p>
+                <p><strong>Họ và tên:</strong> <span id="detail-full-name"></span></p>
+                <p><strong>Email:</strong> <span id="detail-email"></span></p>
+                <p><strong>Số điện thoại:</strong> <span id="detail-phone"></span></p>
+                <p><strong>Ngày sinh:</strong> <span id="detail-birth-date"></span></p>
+                <p><strong>Địa chỉ:</strong> <span id="detail-address"></span></p>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button id="close-patient-detail-btn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">Đóng</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

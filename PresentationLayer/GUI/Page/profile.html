@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = sessionStorage.getItem('accessToken');
 
     if (!token) {
-        window.location.href = 'login.html';
+        window.location.href = '/login.html';
         return;
     }
 
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             // token invalid / expired: force login
             sessionStorage.removeItem('accessToken');
             sessionStorage.removeItem('loggedInUser');
-            window.location.href = 'login.html';
+            window.location.href = '/login.html';
             return;
         } else {
             // other error: fallback to sessionStorage

@@ -94,72 +94,17 @@
                 <table class="w-full text-left">
                     <thead class="bg-gray-50">
                         <tr class="text-sm text-gray-600 uppercase">
-                            <th class="py-3 px-6 font-medium"></th>
                             <th class="py-3 px-6 font-medium">ID</th>
                             <th class="py-3 px-6 font-medium">Tên chuyên khoa</th>
-                            <th class="py-3 px-6 font-medium">Số lượng bác sĩ</th>
                             <th class="py-3 px-6 font-medium">Hành động</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-700">
-                        <!-- Dữ liệu mẫu -->
-                        <tr class="border-b border-gray-200 hover:bg-gray-50">
-                            <td class="py-4 px-6 cursor-move text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                            </td>
-                            <td class="py-4 px-6 font-medium">1</td>
-                            <td class="py-4 px-6">
-                                <div class="flex items-center space-x-3">
-                                    <img src="https://placehold.co/100x60/EBF8FF/3182CE?text=Hinh+Anh" alt="Hỗ trợ viên" class="w-24 h-14 object-cover rounded-md">
-                                    <span class="font-medium">Hỗ trợ viên</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-6">1</td>
-                            <td class="py-4 px-6 space-x-2">
-                                <button class="btn-action btn-edit">Sửa</button>
-                                <button class="btn-action btn-delete">Xóa</button>
-                            </td>
-                        </tr>
-                        
-                        <tr class="border-b border-gray-200 hover:bg-gray-50">
-                            <td class="py-4 px-6 cursor-move text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                            </td>
-                            <td class="py-4 px-6 font-medium">3</td>
-                            <td class="py-4 px-6">
-                                <div class="flex items-center space-x-3">
-                                    <img src="https://placehold.co/100x60/E6FFFA/38B2AC?text=Hinh+Anh" alt="Nhi khoa" class="w-24 h-14 object-cover rounded-md">
-                                    <span class="font-medium">Nhi khoa</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-6">0</td>
-                            <td class="py-4 px-6 space-x-2">
-                                <button class="btn-action btn-edit">Sửa</button>
-                                <button class="btn-action btn-delete">Xóa</button>
-                            </td>
-                        </tr>
-
-                        <tr class="border-b border-gray-200 hover:bg-gray-50">
-                            <td class="py-4 px-6 cursor-move text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
-                            </td>
-                            <td class="py-4 px-6 font-medium">6</td>
-                            <td class="py-4 px-6">
-                                <div class="flex items-center space-x-3">
-                                    <img src="https://placehold.co/100x60/FFFBEB/F59E0B?text=Hinh+Anh" alt="Châm cứu" class="w-24 h-14 object-cover rounded-md">
-                                    <span class="font-medium">Châm cứu</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-6">0</td>
-                            <td class="py-4 px-6 space-x-2">
-                                <button class="btn-action btn-edit">Sửa</button>
-                                <button class="btn-action btn-delete">Xóa</button>
-                            </td>
-                        </tr>
+                    <tbody class="text-gray-700" id="specialty-table-body">
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+    <script src="/Js/specialty.js"></script>
 </body>
 </html>

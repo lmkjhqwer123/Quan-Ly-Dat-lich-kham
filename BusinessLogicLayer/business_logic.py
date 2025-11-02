@@ -166,6 +166,64 @@ def delete_doctor_by_id_logic(db, doctor_id: int):
     
     return {"error": "Không tìm thấy bác sĩ."}
 
+# --- Specialty Logic ---
+def get_all_specialties_logic(db):
+    specialties = data_access.get_all_specialties(db)
+    return [
+        {
+            "SpecialtyId": s.SpecialtyId,
+            "Name": s.Name,
+            "description": s.description
+        } for s in specialties
+    ]
+
+def get_specialty_by_id_logic(db, specialty_id: int):
+    specialty = data_access.get_specialty_by_id(db, specialty_id)
+    if specialty:
+        return {
+            "SpecialtyId": specialty.SpecialtyId,
+            "Name": specialty.Name,
+            "description": specialty.description
+        }
+    return None
+
+def create_new_specialty_logic(db, request: dict):
+    # Optional: Add validation here if needed, e.g., check for duplicate specialty names
+    existing_specialty = data_access.get_specialty_by_name(db, request["Name"])
+    if existing_specialty:
+        return {"error": "Tên chuyên khoa đã tồn tại."}
+
+    new_specialty = data_access.create_specialty(db, request)
+    return {
+        "SpecialtyId": new_specialty.SpecialtyId,
+        "Name": new_specialty.Name,
+        "description": new_specialty.description
+    }
+
+def update_specialty_info_logic(db, specialty_id: int, request: dict):
+    specialty = data_access.get_specialty_by_id(db, specialty_id)
+    if not specialty:
+        return {"error": "Không tìm thấy chuyên khoa."}
+
+    if "Name" in request and request["Name"] != specialty.Name:
+        existing_specialty = data_access.get_specialty_by_name(db, request["Name"])
+        if existing_specialty and existing_specialty.SpecialtyId != specialty_id:
+            return {"error": "Tên chuyên khoa đã được sử dụng bởi chuyên khoa khác."}
+
+    updated_specialty = data_access.update_specialty(db, specialty_id, request)
+    return {
+        "SpecialtyId": updated_specialty.SpecialtyId,
+        "Name": updated_specialty.Name,
+        "description": updated_specialty.description
+    }
+
+def delete_specialty_by_id_logic(db, specialty_id: int):
+    # Optional: Check for dependencies (e.g., doctors associated with this specialty)
+    # For now, assuming direct deletion is allowed.
+    if data_access.delete_specialty(db, specialty_id):
+        return {"message": "Xóa chuyên khoa thành công."}
+    return {"error": "Không tìm thấy chuyên khoa."}
+
 # --- Patient/Appointment Logic ---
 def book_appointment_logic(db, patient_id: int, booking_dto: dict):
     booking_dto['PatientId'] = patient_id

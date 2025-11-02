@@ -39,21 +39,21 @@ def create_doctor(doctor_request: DoctorCreateRequest, db: Session = Depends(dat
     """
     Create a new doctor.
     """
-    return business_logic.create_doctor(db, doctor_request)
+    return business_logic.create_new_doctor_logic(db, doctor_request.model_dump())
 
 @router.get("/doctors/", response_model=List[DoctorDto])
-def get_doctors(db: Session = Depends(data_access.get_db)):
+def get_all_doctors(db: Session = Depends(data_access.get_db)):
     """
     Get all doctors.
     """
-    return business_logic.get_doctors(db)
+    return business_logic.get_all_doctors_logic(db)
 
 @router.get("/doctors/{doctor_id}", response_model=DoctorDto)
 def get_doctor(doctor_id: int, db: Session = Depends(data_access.get_db)):
     """
     Get a doctor by ID.
     """
-    db_doctor = business_logic.get_doctor(db, doctor_id)
+    db_doctor = business_logic.get_doctor_by_id_logic(db, doctor_id)
     if db_doctor is None:
         raise HTTPException(status_code=404, detail="Doctor not found")
     return db_doctor
@@ -63,7 +63,7 @@ def update_doctor(doctor_id: int, doctor_request: DoctorUpdateRequest, db: Sessi
     """
     Update a doctor.
     """
-    db_doctor = business_logic.update_doctor(db, doctor_id, doctor_request)
+    db_doctor = business_logic.update_doctor_info_logic(db, doctor_id, doctor_request.model_dump())
     if db_doctor is None:
         raise HTTPException(status_code=404, detail="Doctor not found")
     return db_doctor
@@ -73,7 +73,7 @@ def delete_doctor(doctor_id: int, db: Session = Depends(data_access.get_db)):
     """
     Delete a doctor.
     """
-    success = business_logic.delete_doctor(db, doctor_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Doctor not found")
+    success = business_logic.delete_doctor_by_id_logic(db, doctor_id)
+    if "error" in success:
+        raise HTTPException(status_code=404, detail=success["error"])
     return {"ok": True}

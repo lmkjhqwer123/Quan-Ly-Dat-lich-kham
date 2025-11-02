@@ -89,10 +89,19 @@
                         mainContent.innerHTML = data;
                         // Re-run scripts from the loaded content
                         const scripts = mainContent.querySelectorAll('script');
-                        scripts.forEach(script => {
-                            const newScript = document.createElement('script');
-                            newScript.innerHTML = script.innerHTML;
-                            mainContent.appendChild(newScript);
+                        scripts.forEach(oldScript => {
+                            if (oldScript.src) {
+                                const newScript = document.createElement('script');
+                                newScript.src = oldScript.src;
+                                mainContent.appendChild(newScript);
+                            } else {
+                                // For inline scripts, execute their content directly
+                                try {
+                                    eval(oldScript.textContent);
+                                } catch (e) {
+                                    console.error("Error executing inline script:", e);
+                                }
+                            }
                         });
                     });
             };

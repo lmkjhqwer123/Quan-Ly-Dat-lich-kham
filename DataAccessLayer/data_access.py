@@ -169,6 +169,43 @@ def delete_doctor(db, doctor_id: int):
 def has_appointments(db, doctor_id: int):
     return db.query(Appointment).filter(Appointment.DoctorId == doctor_id).first() is not None
 
+# --- Specialties ---
+def get_all_specialties(db):
+    return db.query(Specialty).all()
+
+def get_specialty_by_id(db, specialty_id: int):
+    return db.query(Specialty).filter(Specialty.SpecialtyId == specialty_id).first()
+
+def create_specialty(db, specialty_data: dict):
+    db_specialty = Specialty(
+        Name=specialty_data["Name"],
+        description=specialty_data.get("description")
+    )
+    db.add(db_specialty)
+    db.commit()
+    db.refresh(db_specialty)
+    return db_specialty
+
+def update_specialty(db, specialty_id: int, specialty_data: dict):
+    db_specialty = get_specialty_by_id(db, specialty_id)
+    if db_specialty:
+        for key, value in specialty_data.items():
+            setattr(db_specialty, key, value)
+        db.commit()
+        db.refresh(db_specialty)
+    return db_specialty
+
+def delete_specialty(db, specialty_id: int):
+    db_specialty = get_specialty_by_id(db, specialty_id)
+    if db_specialty:
+        db.delete(db_specialty)
+        db.commit()
+        return True
+    return False
+
+def get_specialty_by_name(db, name: str):
+    return db.query(Specialty).filter(Specialty.Name == name).first()
+
 # --- Patients ---
 def get_patient_by_id(db, patient_id: int):
     return db.query(Patient).filter(Patient.PatientId == patient_id).first()

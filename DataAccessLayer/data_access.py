@@ -170,8 +170,38 @@ def has_appointments(db, doctor_id: int):
     return db.query(Appointment).filter(Appointment.DoctorId == doctor_id).first() is not None
 
 # --- Specialties ---
-def get_all_specialties(db):
-    return db.query(Specialty).all()
+def get_all_specialties(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    query = db.query(Specialty)
+    if sort_by == "name":
+        if sort_direction == "desc":
+            query = query.order_by(Specialty.Name.desc())
+        else:
+            query = query.order_by(Specialty.Name.asc())
+    elif sort_by == "id":
+        if sort_direction == "desc":
+            query = query.order_by(Specialty.SpecialtyId.desc())
+        else:
+            query = query.order_by(Specialty.SpecialtyId.asc())
+    return query.all()
+
+def search_specialties(db, query: str, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    search_pattern = f"%{query}%"
+    base_query = db.query(Specialty).filter(
+        (Specialty.Name.ilike(search_pattern)) |
+        (Specialty.description.ilike(search_pattern))
+    )
+
+    if sort_by == "name":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Specialty.Name.desc())
+        else:
+            base_query = base_query.order_by(Specialty.Name.asc())
+    elif sort_by == "id":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Specialty.SpecialtyId.desc())
+        else:
+            base_query = base_query.order_by(Specialty.SpecialtyId.asc())
+    return base_query.all()
 
 def get_specialty_by_id(db, specialty_id: int):
     return db.query(Specialty).filter(Specialty.SpecialtyId == specialty_id).first()

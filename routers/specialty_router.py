@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from BusinessLogicLayer import business_logic
 from DataAccessLayer import data_access
 from routers.specialty.models import SpecialtyCreateRequest, SpecialtyUpdateRequest, SpecialtyDto
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api/admin",
+    tags=["Admin Specialty Management"]
+)
 
 @router.post("/specialties/", response_model=SpecialtyDto, status_code=status.HTTP_201_CREATED)
 def create_specialty(specialty_request: SpecialtyCreateRequest, db: Session = Depends(data_access.get_db)):
@@ -18,11 +21,14 @@ def create_specialty(specialty_request: SpecialtyCreateRequest, db: Session = De
     return result
 
 @router.get("/specialties/", response_model=List[SpecialtyDto])
-def get_all_specialties(db: Session = Depends(data_access.get_db)):
+def get_all_specialties(db: Session = Depends(data_access.get_db), query: Optional[str] = None, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
     """
-    Get all specialties.
+    Get all specialties, with optional search and sorting.
     """
-    return business_logic.get_all_specialties_logic(db)
+    if query:
+        return business_logic.search_specialties_logic(db, query, sort_by, sort_direction)
+    else:
+        return business_logic.get_all_specialties_logic(db, sort_by, sort_direction)
 
 @router.get("/specialties/{specialty_id}", response_model=SpecialtyDto)
 def get_specialty(specialty_id: int, db: Session = Depends(data_access.get_db)):

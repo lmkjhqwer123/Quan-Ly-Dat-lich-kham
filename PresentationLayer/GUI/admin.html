@@ -46,21 +46,21 @@
                 <div class="separator"></div>
 
                 <h3>Lịch khám bệnh</h3>
-                <a href="#thu-tu-kham">Thứ tự khám</a>
-                <a href="#sap-xep-thu-tu">Sắp xếp thứ tự</a>
-                <a href="#lich-hen">Lịch hẹn</a>
+                <a href="#thu_tu_kham">Thứ tự khám</a>
+                <a href="#queue_admin">Sắp xếp thứ tự</a>
+                <a href="#lich_hen">Lịch hẹn</a>
                 <div class="separator"></div>
 
                 <h3>Quản trị viên</h3>
-                <a href="#chuyen-khoa">Chuyên khoa</a>
-                <a href="#bac-si">Bác sĩ</a>
-                <a href="#benh-nhan">Bệnh nhân</a>
-                <a href="#dich-vu">Dịch vụ</a>
+                <a href="#chuyen_khoa">Chuyên khoa</a>
+                <a href="#bac_si">Bác sĩ</a>
+                <a href="#benh_nhan">Bệnh nhân</a>
+                <a href="#dich_vu">Dịch vụ</a>
                 <div class="separator"></div>
 
                 <h3>Khám chữa bệnh</h3>
-                <a href="#phac-do">Phác đồ điều trị</a>
-                <a href="#benh-an">Bệnh án</a>
+                <a href="#phac_do">Phác đồ điều trị</a>
+                <a href="#benh_an">Bệnh án</a>
                 <div class="separator"></div>
 
                 <h3>Cá nhân</h3>
@@ -79,95 +79,76 @@
 
     <script src="/Js/main.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const mainContent = document.getElementById('main-content');
+        const mainContent = document.getElementById('main-content');
+        const adminMenu = document.querySelector('.admin-menu');
 
-            const loadContent = (page) => {
-                fetch(page)
-                    .then(response => response.text())
-                    .then(data => {
-                        mainContent.innerHTML = data;
-                        // Re-run scripts from the loaded content
-                        const scripts = mainContent.querySelectorAll('script');
-                        scripts.forEach(oldScript => {
-                            if (oldScript.src) {
-                                const newScript = document.createElement('script');
-                                newScript.src = oldScript.src;
-                                mainContent.appendChild(newScript);
-                            } else {
-                                // For inline scripts, execute their content directly
-                                try {
-                                    eval(oldScript.textContent);
-                                } catch (e) {
-                                    console.error("Error executing inline script:", e);
-                                }
+        const loadContent = (pageUrl) => {
+            fetch(pageUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    mainContent.innerHTML = html;
+                    // Find and re-execute scripts within the loaded content
+                    const scripts = mainContent.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        if (script.src) {
+                            // Handle external scripts with cache-busting
+                            const newScript = document.createElement('script');
+                            Array.from(script.attributes).forEach(attr => {
+                                newScript.setAttribute(attr.name, attr.value);
+                            });
+                            newScript.src = script.src.split('?')[0] + '?t=' + new Date().getTime();
+                            script.parentNode.removeChild(script);
+                            document.body.appendChild(newScript);
+                        } else {
+                            // Handle inline scripts by evaluating their content
+                            try {
+                                eval(script.innerText);
+                            } catch (e) {
+                                console.error("Error executing inline script: ", e);
+                                console.error("Script content:", script.innerText);
                             }
-                        });
+                        }
                     });
-            };
+                })
+                .catch(error => {
+                    console.error('Error loading page:', error);
+                    mainContent.innerHTML = `<p class="text-center text-red-500">Failed to load content. Please check the console.</p>`;
+                });
+        };
 
-                            loadContent('/GUI/Admin_page/dashboard.html');
-            // Add click listener to dashboard link
-            const dashboardLink = document.querySelector('.admin-menu a[href="#dashboard"]');
-            dashboardLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('Admin_page/dashboard.html');
-            });
-
-            const sapXepThuTuLink = document.querySelector('.admin-menu a[href="#sap-xep-thu-tu"]');
-            sapXepThuTuLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/queue_admin.html');
-            });
-
-            const thuTuKhamLink = document.querySelector('.admin-menu a[href="#thu-tu-kham"]');
-            thuTuKhamLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/thu_tu_kham.html');
-            });
-
-            const lichHenLink = document.querySelector('.admin-menu a[href="#lich-hen"]');
-            lichHenLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/lich_hen.html');
-            });
-
-            const chuyenKhoaLink = document.querySelector('.admin-menu a[href="#chuyen-khoa"]');
-            chuyenKhoaLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/chuyen_khoa.html');
-            });
-
-            const bacSiLink = document.querySelector('.admin-menu a[href="#bac-si"]');
-            bacSiLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/bac_si.html');
-            });
-
-            const benhNhanLink = document.querySelector('.admin-menu a[href="#benh-nhan"]');
-            benhNhanLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/benh_nhan.html');
-            });
-
-            const dichVuLink = document.querySelector('.admin-menu a[href="#dich-vu"]');
-            dichVuLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/dich_vu.html');
-            });
-
-            const phacDoLink = document.querySelector('.admin-menu a[href="#phac-do"]');
-            phacDoLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/phac_do.html');
-            });
-
-            const benhAnLink = document.querySelector('.admin-menu a[href="#benh-an"]');
-            benhAnLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loadContent('/GUI/Admin_page/benh_an.html');
-            });
+        // Use event delegation for navigation
+        adminMenu.addEventListener('click', (event) => {
+            const link = event.target.closest('a');
+            if (link && link.getAttribute('href')?.startsWith('#')) {
+                event.preventDefault();
+                const page = link.getAttribute('href').substring(1);
+                if (page) {
+                    // Construct the correct path
+                    const pagePath = `/GUI/Admin_page/${page}.html`;
+                    // Update URL hash for better history management
+                    window.location.hash = page;
+                    loadContent(pagePath);
+                }
+            }
         });
+
+        // Function to load content based on URL hash
+        const loadContentFromHash = () => {
+            const page = window.location.hash.substring(1) || 'dashboard'; // Default to dashboard
+            const pagePath = `/GUI/Admin_page/${page}.html`;
+            loadContent(pagePath);
+        };
+
+        // Load initial content based on the URL hash, or default to dashboard
+        loadContentFromHash();
+
+        // Listen for hash changes (e.g., browser back/forward buttons)
+        window.addEventListener('hashchange', loadContentFromHash);
     </script>
 </body>
 </html>

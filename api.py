@@ -328,7 +328,7 @@ app.include_router(patient_management.router)
 
 app.include_router(doctor_router.router, prefix="/api")
 
-app.include_router(specialty_router.router, prefix="/api")
+app.include_router(specialty_router.router)
 
 
 

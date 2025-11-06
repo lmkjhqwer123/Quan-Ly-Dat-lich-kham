@@ -167,8 +167,18 @@ def delete_doctor_by_id_logic(db, doctor_id: int):
     return {"error": "Không tìm thấy bác sĩ."}
 
 # --- Specialty Logic ---
-def get_all_specialties_logic(db):
-    specialties = data_access.get_all_specialties(db)
+def get_all_specialties_logic(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    specialties = data_access.get_all_specialties(db, sort_by, sort_direction)
+    return [
+        {
+            "SpecialtyId": s.SpecialtyId,
+            "Name": s.Name,
+            "description": s.description
+        } for s in specialties
+    ]
+
+def search_specialties_logic(db, query: str, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    specialties = data_access.search_specialties(db, query, sort_by, sort_direction)
     return [
         {
             "SpecialtyId": s.SpecialtyId,

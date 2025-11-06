@@ -1,6 +1,5 @@
-
 import os
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date, DECIMAL, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 import bcrypt
 import datetime
@@ -70,6 +69,14 @@ class PasswordResetToken(Base):
     user_role = Column(String(50), nullable=False)
     token = Column(String(255), unique=True, index=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
+
+class Service(Base):
+    __tablename__ = "SERVICES"
+    service_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(DECIMAL(10, 2), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
@@ -378,3 +385,62 @@ def delete_password_reset_token(db, token: str):
         db.commit()
         return True
     return False
+
+# --- Services ---
+def get_all_services(db, query: Optional[str] = None, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    base_query = db.query(Service)
+
+    if query:
+        search_pattern = f"%{query}%"
+        base_query = base_query.filter(
+            (Service.name.ilike(search_pattern)) |
+            (Service.description.ilike(search_pattern))
+        )
+
+    if sort_by == "name":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Service.name.desc())
+        else:
+            base_query = base_query.order_by(Service.name.asc())
+    elif sort_by == "id":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Service.service_id.desc())
+        else:
+            base_query = base_query.order_by(Service.service_id.asc())
+    
+    return base_query.all()
+
+def get_service_by_id(db, service_id: int):
+    return db.query(Service).filter(Service.service_id == service_id).first()
+
+def create_service(db, service_data: dict):
+    db_service = Service(
+        name=service_data["name"],
+        description=service_data.get("description"),
+        price=service_data["price"],
+        is_active=service_data.get("is_active", True)
+    )
+    db.add(db_service)
+    db.commit()
+    db.refresh(db_service)
+    return db_service
+
+def update_service(db, service_id: int, service_data: dict):
+    db_service = get_service_by_id(db, service_id)
+    if db_service:
+        for key, value in service_data.items():
+            setattr(db_service, key, value)
+        db.commit()
+        db.refresh(db_service)
+    return db_service
+
+def delete_service(db, service_id: int):
+    db_service = get_service_by_id(db, service_id)
+    if db_service:
+        db.delete(db_service)
+        db.commit()
+        return True
+    return False
+
+def get_service_by_name(db, name: str):
+    return db.query(Service).filter(Service.name == name).first()

@@ -18,7 +18,7 @@ from typing import List, Optional
 
 import datetime
 
-from routers import patient_router, doctor_router, specialty_router
+from routers import patient_router, doctor_router, specialty_router, service_router
 
 
 
@@ -329,6 +329,7 @@ app.include_router(patient_management.router)
 app.include_router(doctor_router.router, prefix="/api")
 
 app.include_router(specialty_router.router)
+app.include_router(service_router.router, prefix="/api")
 
 
 

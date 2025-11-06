@@ -62,6 +62,27 @@ def seed_database():
         }
         data_access.create_admin(db, admin_data)
 
+    # --- Khởi tạo Dịch vụ ---
+    print("Kiểm tra và tạo mới dịch vụ mẫu...")
+    services_to_seed = [
+        {"name": "Khám tổng quát", "description": "Kiểm tra sức khỏe tổng thể", "price": 200000.00, "is_active": True},
+        {"name": "Xét nghiệm máu", "description": "Phân tích các chỉ số trong máu", "price": 150000.00, "is_active": True},
+        {"name": "Chụp X-Quang", "description": "Chụp X-Quang các bộ phận cơ thể", "price": 300000.00, "is_active": True},
+        {"name": "Siêu âm", "description": "Siêu âm chẩn đoán hình ảnh", "price": 250000.00, "is_active": True},
+        {"name": "Tư vấn dinh dưỡng", "description": "Tư vấn chế độ ăn uống khoa học", "price": 100000.00, "is_active": False},
+    ]
+
+    for service_data in services_to_seed:
+        existing_service = db.query(data_access.Service).filter(data_access.Service.name == service_data["name"]).first()
+        if not existing_service:
+            db_service = data_access.Service(**service_data)
+            db.add(db_service)
+            db.commit()
+            db.refresh(db_service)
+            print(f"Đã thêm dịch vụ: {db_service.name}")
+        else:
+            print(f"Dịch vụ '{service_data['name']}' đã tồn tại.")
+
     print("Hoàn tất khởi tạo dữ liệu!")
     db.close()
 

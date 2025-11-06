@@ -162,6 +162,27 @@ CREATE TABLE PRESCRIPTIONS (
     CONSTRAINT FK_Prescriptions_Medicines FOREIGN KEY (medicine_id) REFERENCES MEDICINES(medicine_id)
 );
 GO
+-- Bảng Dịch vụ Khám (SERVICES)
+CREATE TABLE SERVICES (
+    service_id INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(200) NOT NULL,
+    description NVARCHAR(MAX) NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    is_active BIT NOT NULL DEFAULT 1
+);
+GO
+-- Bảng Dịch vụ đi kèm Lịch hẹn (APPOINTMENT_SERVICES)
+CREATE TABLE APPOINTMENT_SERVICES (
+    appointment_service_id INT IDENTITY(1,1) PRIMARY KEY,
+    appointment_id INT NOT NULL,
+    service_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,       -- số lần / số lượt
+    notes NVARCHAR(MAX) NULL,
+
+    CONSTRAINT FK_AppSvc_Appointments FOREIGN KEY (appointment_id) REFERENCES APPOINTMENTS(appointment_id),
+    CONSTRAINT FK_AppSvc_Services FOREIGN KEY (service_id) REFERENCES SERVICES(service_id)
+);
+GO
 
 -- =================================================================
 --  Step 4: Chèn dữ liệu mẫu (đã cập nhật)
@@ -224,5 +245,18 @@ INSERT INTO AI_RECOMMENDATIONS (patient_id, symptoms_input, specialty_id, recomm
 VALUES
 (1, N'Đau bụng âm ỉ, ợ chua', 1, GETDATE());
 GO
+
+INSERT INTO SERVICES (name, description, price) VALUES
+(N'Xét nghiệm máu', N'Kiểm tra tổng phân tích máu', 120000),
+(N'Chụp X-Quang', N'Chụp X-Quang chuẩn đoán', 250000),
+(N'Siêu âm bụng tổng quát', N'Kiểm tra ổ bụng bằng siêu âm', 300000);
+GO
+
+-- Gán dịch vụ cho lịch hẹn mẫu (appointment_id = 1)
+INSERT INTO APPOINTMENT_SERVICES (appointment_id, service_id, quantity) VALUES
+(1, 1, 1),   -- Xét nghiệm máu
+(1, 3, 1);   -- Siêu âm bụng
+GO
+
 
 PRINT 'Database QuanLyKhamBenhDB created and seeded successfully.';

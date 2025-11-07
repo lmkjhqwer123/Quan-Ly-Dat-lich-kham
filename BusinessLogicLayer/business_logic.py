@@ -250,9 +250,41 @@ def get_my_history_logic(db, patient_id: int):
             "Status": a.Status,
             "DoctorName": a.doctor.FullName if a.doctor else None,
             "SpecialtyName": a.specialty.Name if a.specialty else None,
-            "Symptoms": a.Symptoms
+            "Symptoms": a.Symptoms,
+            "PatientName": a.patient.FullName if a.patient else None
         } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=True)
     ]
+
+def get_all_appointments_logic(db):
+    appointments = data_access.get_all_appointments(db)
+    return [
+        {
+            "AppointmentId": a.AppointmentId,
+            "AppointmentDatetime": a.AppointmentDatetime,
+            "Status": a.Status,
+            "DoctorName": a.doctor.FullName if a.doctor else None,
+            "SpecialtyName": a.specialty.Name if a.specialty else None,
+            "Symptoms": a.Symptoms,
+            "PatientName": a.patient.FullName if a.patient else None,
+            "Services": [{"id": aps.service.service_id, "name": aps.service.name, "quantity": aps.quantity} for aps in a.appointment_services]
+        } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=True)
+    ]
+
+def get_appointment_by_id_logic(db, appointment_id: int):
+    appointment = data_access.get_appointment_by_id(db, appointment_id)
+    if appointment:
+        return {
+            "AppointmentId": appointment.AppointmentId,
+            "AppointmentDatetime": appointment.AppointmentDatetime,
+            "Status": appointment.Status,
+            "DoctorName": appointment.doctor.FullName if appointment.doctor else None,
+            "SpecialtyName": appointment.specialty.Name if appointment.specialty else None,
+            "Symptoms": appointment.Symptoms,
+            "PatientName": appointment.patient.FullName if appointment.patient else None,
+            "Services": [{"id": aps.service.service_id, "name": aps.service.name, "quantity": aps.quantity} for aps in appointment.appointment_services]
+        }
+
+    return None
 
 def get_all_patients_logic(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
     patients = data_access.get_all_patients(db, sort_by, sort_direction)

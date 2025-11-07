@@ -1,6 +1,6 @@
 import os
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date, DECIMAL, Boolean
-from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base, joinedload
 import bcrypt
 import datetime
 from typing import Optional
@@ -61,6 +61,18 @@ class Appointment(Base):
     patient = relationship("Patient", back_populates="appointments")
     doctor = relationship("Doctor", back_populates="appointments")
     specialty = relationship("Specialty")
+    appointment_services = relationship("AppointmentService", back_populates="appointment", lazy='joined')
+
+class AppointmentService(Base):
+    __tablename__ = "appointment_services"
+    appointment_service_id = Column('appointment_service_id', Integer, primary_key=True, index=True)
+    appointment_id = Column('appointment_id', Integer, ForeignKey("appointments.appointment_id"))
+    service_id = Column('service_id', Integer, ForeignKey("SERVICES.service_id"))
+    quantity = Column('quantity', Integer, default=1)
+    notes = Column('notes', String)
+
+    appointment = relationship("Appointment", back_populates="appointment_services")
+    service = relationship("Service", back_populates="appointment_services")
 
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
@@ -77,6 +89,7 @@ class Service(Base):
     description = Column(Text, nullable=True)
     price = Column(DECIMAL(10, 2), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
+    appointment_services = relationship("AppointmentService", back_populates="service")
 
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
@@ -353,14 +366,31 @@ def update_admin__password(db, admin_id: int, new_password: str):
 
 # --- Appointments ---
 def create_appointment(db, appointment_data: dict):
+    services_data = appointment_data.pop("Services", [])
     db_appointment = Appointment(**appointment_data)
     db.add(db_appointment)
     db.commit()
     db.refresh(db_appointment)
+
+    for service_item in services_data:
+        db_appointment_service = AppointmentService(
+            appointment_id=db_appointment.AppointmentId,
+            service_id=service_item["service_id"],
+            quantity=service_item.get("quantity", 1)
+        )
+        db.add(db_appointment_service)
+    db.commit()
+    db.refresh(db_appointment) # Refresh again to load the newly added appointment_services
     return db_appointment
 
 def get_appointments_by_patient_id(db, patient_id: int):
     return db.query(Appointment).filter(Appointment.PatientId == patient_id).all()
+
+def get_all_appointments(db):
+    return db.query(Appointment).options(joinedload(Appointment.patient), joinedload(Appointment.doctor), joinedload(Appointment.specialty), joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)).all()
+
+def get_appointment_by_id(db, appointment_id: int):
+    return db.query(Appointment).options(joinedload(Appointment.patient), joinedload(Appointment.doctor), joinedload(Appointment.specialty), joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)).filter(Appointment.AppointmentId == appointment_id).first()
 
 # --- Password Reset Tokens ---
 def create_password_reset_token(db, user_id: int, user_role: str, token: str, expires_at: datetime):
@@ -444,3 +474,10 @@ def delete_service(db, service_id: int):
 
 def get_service_by_name(db, name: str):
     return db.query(Service).filter(Service.name == name).first()
+
+def create_appointment_service(db, appointment_service_data: dict):
+    db_appointment_service = AppointmentService(**appointment_service_data)
+    db.add(db_appointment_service)
+    db.commit()
+    db.refresh(db_appointment_service)
+    return db_appointment_service

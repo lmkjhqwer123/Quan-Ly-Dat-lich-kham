@@ -50,7 +50,17 @@ from routers.admin import dashboard_stats
 
 from routers.admin import patient_management
 
+from routers.admin import appointment_management
+
+
+
 from routers.doctor.models import DoctorCreateRequest, DoctorUpdateRequest, DoctorDto
+
+
+
+
+
+
 
 
 
@@ -64,7 +74,23 @@ load_dotenv()  # Load environment variables from .env file
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 app = FastAPI(
+
+
+
+
 
 
 
@@ -72,19 +98,47 @@ app = FastAPI(
 
 
 
+
+
+
+
     description="API for managing appointments in a hospital.",
+
+
+
+
 
 
 
     version="1.0.0",
 
+
+
     docs_url="/api/docs",
+
+
 
     redoc_url="/api/redoc"
 
 
 
+
+
+
+
 )
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -100,11 +154,31 @@ app = FastAPI(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class Token(BaseModel):
 
 
 
+
+
+
+
     access_token: str
+
+
+
+
 
 
 
@@ -116,7 +190,23 @@ class Token(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class LoginRequest(BaseModel):
+
+
+
+
 
 
 
@@ -124,7 +214,15 @@ class LoginRequest(BaseModel):
 
 
 
+
+
+
+
     Username: Optional[str] = None
+
+
+
+
 
 
 
@@ -136,7 +234,23 @@ class LoginRequest(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class PasswordResetRequest(BaseModel):
+
+
+
+
 
 
 
@@ -148,7 +262,23 @@ class PasswordResetRequest(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 class PasswordReset(BaseModel):
+
+
+
+
 
 
 
@@ -156,7 +286,27 @@ class PasswordReset(BaseModel):
 
 
 
+
+
+
+
     new_password: str
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -172,7 +322,15 @@ class PatientCreateRequest(BaseModel):
 
 
 
+
+
+
+
     FullName: str
+
+
+
+
 
 
 
@@ -180,7 +338,15 @@ class PatientCreateRequest(BaseModel):
 
 
 
+
+
+
+
     Phone: str
+
+
+
+
 
 
 
@@ -188,11 +354,27 @@ class PatientCreateRequest(BaseModel):
 
 
 
+
+
+
+
     birth_date: Optional[datetime.date] = None
 
 
 
+
+
+
+
     address: Optional[str] = None
+
+
+
+
+
+
+
+
 
 
 
@@ -204,11 +386,23 @@ class RegisterRequest(BaseModel):
 
 
 
+
+
+
+
     role: str = Field(..., pattern="^(patient|doctor)$")
 
 
 
+
+
+
+
     patient_data: Optional[PatientCreateRequest] = None
+
+
+
+
 
 
 
@@ -220,7 +414,19 @@ class RegisterRequest(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
 class BookAppointmentDto(BaseModel):
+
+
+
+
 
 
 
@@ -228,7 +434,15 @@ class BookAppointmentDto(BaseModel):
 
 
 
+
+
+
+
     SpecialtyId: int
+
+
+
+
 
 
 
@@ -236,7 +450,19 @@ class BookAppointmentDto(BaseModel):
 
 
 
+
+
+
+
     Symptoms: str
+
+
+
+
+
+
+
+
 
 
 
@@ -248,7 +474,15 @@ class AppointmentHistoryDto(BaseModel):
 
 
 
+
+
+
+
     AppointmentId: int
+
+
+
+
 
 
 
@@ -256,7 +490,15 @@ class AppointmentHistoryDto(BaseModel):
 
 
 
+
+
+
+
     Status: str
+
+
+
+
 
 
 
@@ -264,7 +506,15 @@ class AppointmentHistoryDto(BaseModel):
 
 
 
+
+
+
+
     SpecialtyName: Optional[str] = None
+
+
+
+
 
 
 
@@ -276,7 +526,19 @@ class AppointmentHistoryDto(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
 class PatientUpdateRequest(BaseModel):
+
+
+
+
 
 
 
@@ -284,11 +546,23 @@ class PatientUpdateRequest(BaseModel):
 
 
 
+
+
+
+
     Email: Optional[str] = None
 
 
 
+
+
+
+
     Phone: Optional[str] = None
+
+
+
+
 
 
 
@@ -300,11 +574,27 @@ class PatientUpdateRequest(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
 class PasswordUpdateRequest(BaseModel):
 
 
 
+
+
+
+
     current_password: str
+
+
+
+
 
 
 
@@ -316,20 +606,43 @@ class PasswordUpdateRequest(BaseModel):
 
 
 
+
+
+
+
+
+
+
+
 app.include_router(patient_router.router)
+
+
 
 app.include_router(auth_router.router)
 
+
+
 app.include_router(update_password.router)
+
+
 
 app.include_router(dashboard_stats.router)
 
+
+
 app.include_router(patient_management.router)
+
+app.include_router(appointment_management.router)
+
+
 
 app.include_router(doctor_router.router, prefix="/api")
 
+
+
 app.include_router(specialty_router.router)
-app.include_router(service_router.router, prefix="/api")
+
+app.include_router(service_router.router)
 
 
 

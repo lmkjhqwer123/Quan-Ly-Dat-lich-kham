@@ -83,6 +83,78 @@ def seed_database():
         else:
             print(f"Dịch vụ '{service_data['name']}' đã tồn tại.")
 
+    # --- Khởi tạo Chuyên khoa (nếu chưa có) ---
+    specialty_name = "Nội Tổng Quát"
+    specialty = db.query(data_access.Specialty).filter(data_access.Specialty.Name == specialty_name).first()
+    if not specialty:
+        specialty_data = {"Name": specialty_name, "description": "Chuyên khoa khám và điều trị các bệnh lý nội khoa tổng quát."}
+        specialty = data_access.create_specialty(db, specialty_data)
+        print(f"Đã thêm chuyên khoa: {specialty.Name}")
+    else:
+        print(f"Chuyên khoa '{specialty_name}' đã tồn tại.")
+
+    # Lấy lại các đối tượng đã tạo để đảm bảo chúng có ID
+    patient = data_access.get_patient_by_phone(db, patient_phone)
+    doctor = data_access.get_doctor_by_phone(db, doctor_phone)
+    service1 = db.query(data_access.Service).filter(data_access.Service.name == "Khám tổng quát").first()
+    service2 = db.query(data_access.Service).filter(data_access.Service.name == "Xét nghiệm máu").first()
+
+    # --- Khởi tạo Lịch hẹn và Dịch vụ cho lịch hẹn ---
+    if patient and doctor and specialty and service1 and service2:
+        print("Kiểm tra và tạo mới lịch hẹn mẫu...")
+        # Tạo lịch hẹn 1
+        appointment_data_1 = {
+            "PatientId": patient.PatientId,
+            "DoctorId": doctor.DoctorId,
+            "SpecialtyId": specialty.SpecialtyId,
+            "AppointmentDatetime": datetime.datetime.now() + datetime.timedelta(days=7, hours=10),
+            "Symptoms": "Đau đầu, sốt nhẹ",
+            "Status": "pending",
+            "Services": [
+                {"service_id": service1.service_id, "quantity": 1, "notes": "Kiểm tra tổng quát"},
+                {"service_id": service2.service_id, "quantity": 1, "notes": "Xét nghiệm máu cơ bản"}
+            ]
+        }
+        existing_appointment_1 = db.query(data_access.Appointment).filter(
+            data_access.Appointment.PatientId == patient.PatientId,
+            data_access.Appointment.DoctorId == doctor.DoctorId,
+            data_access.Appointment.AppointmentDatetime == appointment_data_1["AppointmentDatetime"]
+        ).first()
+
+        if not existing_appointment_1:
+            appointment_1 = data_access.create_appointment(db, appointment_data_1)
+            print(f"Đã tạo lịch hẹn {appointment_1.AppointmentId} với dịch vụ.")
+        else:
+            print(f"Lịch hẹn 1 đã tồn tại: {existing_appointment_1.AppointmentId}")
+
+        # Tạo lịch hẹn 2 (ví dụ thêm)
+        appointment_data_2 = {
+            "PatientId": patient.PatientId,
+            "DoctorId": doctor.DoctorId,
+            "SpecialtyId": specialty.SpecialtyId,
+            "AppointmentDatetime": datetime.datetime.now() + datetime.timedelta(days=14, hours=14),
+            "Symptoms": "Kiểm tra định kỳ",
+            "Status": "confirmed",
+            "Services": [
+                {"service_id": service1.service_id, "quantity": 1, "notes": "Kiểm tra tổng quát"}
+            ]
+        }
+        existing_appointment_2 = db.query(data_access.Appointment).filter(
+            data_access.Appointment.PatientId == patient.PatientId,
+            data_access.Appointment.DoctorId == doctor.DoctorId,
+            data_access.Appointment.AppointmentDatetime == appointment_data_2["AppointmentDatetime"]
+        ).first()
+
+        if not existing_appointment_2:
+            appointment_2 = data_access.create_appointment(db, appointment_data_2)
+            print(f"Đã tạo lịch hẹn {appointment_2.AppointmentId} với dịch vụ.")
+        else:
+            print(f"Lịch hẹn 2 đã tồn tại: {existing_appointment_2.AppointmentId}")
+        else:
+            print(f"Lịch hẹn 2 đã tồn tại: {existing_appointment_2.AppointmentId}")
+    else:
+        print("Không thể tạo lịch hẹn mẫu vì thiếu thông tin bệnh nhân, bác sĩ, chuyên khoa hoặc dịch vụ.")
+
     print("Hoàn tất khởi tạo dữ liệu!")
     db.close()
 

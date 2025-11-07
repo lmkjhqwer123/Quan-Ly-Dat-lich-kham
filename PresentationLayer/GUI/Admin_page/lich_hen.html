@@ -25,15 +25,15 @@
             <!-- Hàng 1: Tìm kiếm & Nút -->
             <div class="flex flex-wrap items-center gap-4 mb-4">
                 <div class="relative flex-grow" style="min-width: 300px;">
-                    <input type="text" placeholder="Bạn đang cần tìm gì?" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="search-input" placeholder="Bạn đang cần tìm gì?" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
                 </div>
-                <button class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
+                <button id="search-button" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
                     Tìm kiếm
                 </button>
-                <button class="px-6 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors">
+                <button id="refresh-button" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors">
                     Làm mới
                 </button>
             </div>
@@ -50,7 +50,7 @@
                 </div>
                 <div>
                     <label for="sort-value" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo giá trị</label>
-                    <select id="sort-value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="sort-value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus="ring-blue-500">
                         <option value="" disabled selected>Chọn...</option>
                         <option value="time">Giờ hẹn</option>
                         <option value="patient_name">Tên bệnh nhân</option>
@@ -89,35 +89,17 @@
                 <table class="w-full text-left">
                     <thead class="bg-gray-50">
                         <tr class="text-sm text-gray-600 uppercase">
-                            <th class="py-3 px-6 font-medium"></th>
+                            <th class="py-3 px-6 font-medium">Mã lịch hẹn</th>
+                            <th class="py-3 px-6 font-medium">Tên bác sĩ</th>
+                            <th class="py-3 px-6 font-medium">Chuyên khoa</th>
+                            <th class="py-3 px-6 font-medium">Thời gian hẹn</th>
                             <th class="py-3 px-6 font-medium">Dịch vụ</th>
-                            <th class="py-3 px-6 font-medium">Giờ hẹn</th>
-                            <th class="py-3 px-6 font-medium">Tên người đặt</th>
-                            <th class="py-3 px-6 font-medium">Tên bệnh nhân</th>
                             <th class="py-3 px-6 font-medium">Trạng thái</th>
                             <th class="py-3 px-6 font-medium text-center">Hành động</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-700">
-                        <!-- Dữ liệu mẫu -->
-                        <tr class="border-b border-gray-200 hover:bg-gray-50">
-                            <td class="py-4 px-6 text-sm text-gray-500">97</td>
-                            <td class="py-4 px-6 font-medium">Xét nghiệm máu</td>
-                            <td class="py-4 px-6">16:00</td>
-                            <td class="py-4 px-6">PhongKaster</td>
-                            <td class="py-4 px-6">
-                                <span class="font-medium">PhongKaster</span>
-                                <p class="text-xs text-gray-500">Ngày sinh: 2022-12-05</p>
-                            </td>
-                            <td class="py-4 px-6">
-                                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Đang xử lý</span>
-                            </td>
-                            <td class="py-4 px-6 text-center space-x-2">
-                                <button class="px-3 py-1 text-sm text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50">Chi tiết</button>
-                                <button class="px-3 py-1 text-sm text-gray-700 border border-gray-400 rounded-md hover:bg-gray-100">Khác</button>
-                            </td>
-                        </tr>
-                        <!-- Thêm các hàng dữ liệu khác nếu cần -->
+                    <tbody id="appointment-table-body" class="text-gray-700">
+                        <!-- Appointment data will be loaded here by JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -130,5 +112,29 @@
             </div>
         </div>
     </div>
+    <!-- Appointment Detail Modal -->
+    <div id="appointment-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 class="text-lg font-bold">Chi tiết lịch hẹn</h3>
+                <button id="close-appointment-detail-modal" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="mt-2 text-gray-600">
+                <p><strong>Mã lịch hẹn:</strong> <span id="detail-appointment-id"></span></p>
+                <p><strong>Tên bệnh nhân:</strong> <span id="detail-patient-name"></span></p>
+                <p><strong>Tên bác sĩ:</strong> <span id="detail-doctor-name"></span></p>
+                <p><strong>Chuyên khoa:</strong> <span id="detail-specialty-name"></span></p>
+                <p><strong>Thời gian hẹn:</strong> <span id="detail-appointment-datetime"></span></p>
+                <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
+                <p><strong>Triệu chứng:</strong> <span id="detail-symptoms"></span></p>
+                <p><strong>Dịch vụ:</strong></p>
+                <ul id="detail-services" class="list-disc list-inside ml-4"></ul>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button id="close-appointment-detail-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700">Đóng</button>
+            </div>
+        </div>
+    </div>
+    <script src="/Js/lich_hen.js"></script>
 </body>
 </html>

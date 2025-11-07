@@ -36,7 +36,7 @@ if (typeof window.initDichVuPage === 'undefined') {
                     return;
                 }
 
-                let url = '/api/services/';
+                let url = '/api/services';
                 const params = new URLSearchParams();
 
                 if (searchQuery) {
@@ -181,6 +181,7 @@ if (typeof window.initDichVuPage === 'undefined') {
             }
 
             const newService = {
+                id: 0, // Temporary workaround: Backend API is unexpectedly requiring an ID for creation
                 name: name,
                 description: description,
                 price: price,
@@ -189,7 +190,7 @@ if (typeof window.initDichVuPage === 'undefined') {
 
             try {
                 const token = sessionStorage.getItem('accessToken');
-                const response = await fetch('/api/services/', {
+                const response = await fetch('/api/services', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -333,6 +334,7 @@ if (typeof window.initDichVuPage === 'undefined') {
             }
 
             const updatedService = {
+                id: serviceId,
                 name: name,
                 description: description,
                 price: price,

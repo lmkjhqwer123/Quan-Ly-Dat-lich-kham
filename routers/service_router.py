@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
-from typing import List, Optional
 from sqlalchemy.orm import Session
-import sys
-import os
+from typing import List, Optional
+from pydantic import BaseModel
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from BusinessLogicLayer import business_logic
 from DataAccessLayer import data_access
+import auth
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Services"]
+)
 
 class ServiceBase(BaseModel):
     name: str
@@ -17,70 +18,73 @@ class ServiceBase(BaseModel):
     price: float
     is_active: bool = True
 
-class ServiceCreate(ServiceBase):
+class ServiceCreateDto(ServiceBase):
     pass
 
-class ServiceUpdate(ServiceBase):
+class ServiceUpdateDto(ServiceBase):
     name: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
     is_active: Optional[bool] = None
 
-class Service(ServiceBase):
+class ServiceDto(ServiceBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-@router.post("/services/", response_model=Service, status_code=status.HTTP_201_CREATED, tags=["Services"])
-def create_service(service: ServiceCreate, db: Session = Depends(data_access.get_db)):
-    try:
-        new_service = business_logic.create_service_logic(db, service.dict())
-        return new_service
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/services", response_model=List[ServiceDto])
+def get_all_services(db: Session = Depends(data_access.get_db),
+                       current_user: dict = Depends(auth.get_current_user),
+                       query: Optional[str] = None,
+                       sort_by: Optional[str] = None,
+                       sort_direction: Optional[str] = None):
+    # Only admins can view all services for management purposes
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can view all services")
+    
+    services = business_logic.get_all_services_logic(db, query, sort_by, sort_direction)
+    return services
 
-@router.get("/services/", response_model=List[Service], tags=["Services"])
-def get_all_services(
-    name: Optional[str] = None,
-    sort_by: Optional[str] = None,
-    sort_direction: Optional[str] = None,
-    db: Session = Depends(data_access.get_db)
-):
-    try:
-        services = business_logic.get_all_services_logic(db, query=name, sort_by=sort_by, sort_direction=sort_direction)
-        if not services:
-            raise HTTPException(status_code=404, detail="No services found")
-        return services
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/services/{service_id}", response_model=ServiceDto)
+def get_service_by_id(service_id: int, db: Session = Depends(data_access.get_db),
+                        current_user: dict = Depends(auth.get_current_user)):
+    # Only admins can view service details for management purposes
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can view service details")
+    
+    service = business_logic.get_service_by_id_logic(db, service_id)
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
+    return service
 
-@router.get("/services/{service_id}", response_model=Service, tags=["Services"])
-def get_service_by_id(service_id: int, db: Session = Depends(data_access.get_db)):
-    try:
-        service = business_logic.get_service_by_id_logic(db, service_id)
-        if not service:
-            raise HTTPException(status_code=404, detail="Service not found")
-        return service
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.post("/services", response_model=ServiceDto, status_code=status.HTTP_201_CREATED)
+def create_service(service_data: ServiceDto, db: Session = Depends(data_access.get_db),
+                   current_user: dict = Depends(auth.get_current_user)):
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can create services")
+    
+    new_service = business_logic.create_service_logic(db, service_data.dict())
+    return new_service
 
-@router.put("/services/{service_id}", response_model=Service, tags=["Services"])
-def update_service(service_id: int, service: ServiceUpdate, db: Session = Depends(data_access.get_db)):
-    try:
-        updated_service = business_logic.update_service_logic(db, service_id, service.dict(exclude_unset=True))
-        if not updated_service:
-            raise HTTPException(status_code=404, detail="Service not found")
-        return updated_service
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.put("/services/{service_id}", response_model=ServiceDto)
+def update_service(service_id: int, service_data: ServiceDto, db: Session = Depends(data_access.get_db),
+                   current_user: dict = Depends(auth.get_current_user)):
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update services")
+    
+    updated_service = business_logic.update_service_logic(db, service_id, service_data.dict())
+    if not updated_service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
+    return updated_service
 
-@router.delete("/services/{service_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Services"])
-def delete_service(service_id: int, db: Session = Depends(data_access.get_db)):
-    try:
-        success = business_logic.delete_service_logic(db, service_id)
-        if not success:
-            raise HTTPException(status_code=404, detail="Service not found")
-        return {"message": "Service deleted successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@router.delete("/services/{service_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_service(service_id: int, db: Session = Depends(data_access.get_db),
+                   current_user: dict = Depends(auth.get_current_user)):
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete services")
+    
+    result = business_logic.delete_service_logic(db, service_id)
+    if "error" in result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=result["error"])
+    return

@@ -268,7 +268,7 @@
                     sessionStorage.setItem('loggedInUser', JSON.stringify(data.user));
                     sessionStorage.setItem('userRole', data.user.role);
                     logActivity(data.user.name || data.user.Username, 'Đăng nhập thành công');
-                    if (data.user.role === 'Admin') {
+                    if (data.user.role === 'Admin' || data.user.role === 'Doctor') {
                         window.location.href = '/GUI/admin.html';
                     } else {
                         window.location.href = '/GUI/home.html';

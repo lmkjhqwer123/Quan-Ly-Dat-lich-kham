@@ -255,8 +255,8 @@ def get_my_history_logic(db, patient_id: int):
         } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=True)
     ]
 
-def get_all_appointments_logic(db):
-    appointments = data_access.get_all_appointments(db)
+def get_all_appointments_logic(db, status: Optional[str] = None, date: Optional[datetime.date] = None):
+    appointments = data_access.get_all_appointments(db, status=status, date=date)
     return [
         {
             "AppointmentId": a.AppointmentId,
@@ -267,7 +267,7 @@ def get_all_appointments_logic(db):
             "Symptoms": a.Symptoms,
             "PatientName": a.patient.FullName if a.patient else None,
             "Services": [{"id": aps.service.service_id, "name": aps.service.name, "quantity": aps.quantity} for aps in a.appointment_services]
-        } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=True)
+        } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=False)
     ]
 
 def get_appointment_by_id_logic(db, appointment_id: int):

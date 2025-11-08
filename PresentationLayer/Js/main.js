@@ -58,11 +58,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const welcomeUser = document.getElementById('welcome-user');
 
         // --- AUTHENTICATION ---
-        const loggedInUser = sessionStorage.getItem('loggedInUser');
-        if (!loggedInUser && !window.location.pathname.endsWith('login.html')) {
-            window.location.href = '/login.html';
+        const accessToken = sessionStorage.getItem('accessToken');
+        if (!accessToken && !window.location.pathname.endsWith('login.html')) {
+            window.location.href = '/GUI/login.html';
             return;
         }
+
+        const loggedInUser = sessionStorage.getItem('loggedInUser');
         if (welcomeUser && loggedInUser) { // Check if loggedInUser is not null
             try {
                 const user = JSON.parse(loggedInUser);

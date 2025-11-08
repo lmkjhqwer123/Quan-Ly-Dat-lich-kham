@@ -91,10 +91,29 @@ class Service(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     appointment_services = relationship("AppointmentService", back_populates="service")
 
+import pyodbc
+
 # Create all tables in the database
 Base.metadata.create_all(bind=engine)
 
 # --- Data Access Functions ---
+
+def get_raw_db_connection():
+    """
+    Provides a direct pyodbc connection to the database.
+    The caller is responsible for closing the connection.
+    """
+    try:
+        # The DATABASE_URL is for SQLAlchemy, we need to construct a pyodbc one
+        # This is a simplified example. In a real app, parse DATABASE_URL or use separate configs.
+        conn_str = os.getenv("DATABASE_URL_PYODBC", "DRIVER={ODBC Driver 17 for SQL Server};SERVER=DESKTOP-V9NP2C3;DATABASE=QuanLyKhamBenhDB;Trusted_Connection=yes;Encrypt=yes;TrustServerCertificate=yes")
+        conn = pyodbc.connect(conn_str)
+        return conn
+    except pyodbc.Error as ex:
+        sqlstate = ex.args[0]
+        print(f"PYODBC Connection Error: {sqlstate}")
+        print(ex)
+        return None
 
 def get_db():
     db = SessionLocal()
@@ -386,8 +405,18 @@ def create_appointment(db, appointment_data: dict):
 def get_appointments_by_patient_id(db, patient_id: int):
     return db.query(Appointment).filter(Appointment.PatientId == patient_id).all()
 
-def get_all_appointments(db):
-    return db.query(Appointment).options(joinedload(Appointment.patient), joinedload(Appointment.doctor), joinedload(Appointment.specialty), joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)).all()
+def get_all_appointments(db, status: Optional[str] = None, date: Optional[datetime.date] = None):
+    query = db.query(Appointment).options(
+        joinedload(Appointment.patient), 
+        joinedload(Appointment.doctor), 
+        joinedload(Appointment.specialty), 
+        joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)
+    )
+    if status:
+        query = query.filter(Appointment.Status == status)
+    if date:
+        query = query.filter(Appointment.AppointmentDatetime >= date, Appointment.AppointmentDatetime < date + datetime.timedelta(days=1))
+    return query.all()
 
 def get_appointment_by_id(db, appointment_id: int):
     return db.query(Appointment).options(joinedload(Appointment.patient), joinedload(Appointment.doctor), joinedload(Appointment.specialty), joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)).filter(Appointment.AppointmentId == appointment_id).first()

@@ -32,10 +32,15 @@ class AdminAppointmentDto(BaseModel):
         from_attributes = True
 
 @router.get("/appointments", response_model=List[AdminAppointmentDto])
-def get_all_appointments(db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
+def get_all_appointments(
+    db: Session = Depends(data_access.get_db), 
+    current_user: dict = Depends(auth.get_current_user),
+    status: Optional[str] = None,
+    appointment_date: Optional[datetime.date] = None
+):
     if current_user.role != "Admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can view all appointments")
-    return business_logic.get_all_appointments_logic(db)
+    return business_logic.get_all_appointments_logic(db, status=status, date=appointment_date)
 
 @router.get("/appointments/{appointment_id}", response_model=AdminAppointmentDto)
 def get_appointment_by_id(appointment_id: int, db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):

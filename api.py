@@ -52,9 +52,13 @@ from routers.admin import patient_management
 
 from routers.admin import appointment_management
 
+from routers.admin import medical_record_management
+
 
 
 from routers.doctor.models import DoctorCreateRequest, DoctorUpdateRequest, DoctorDto
+
+
 
 
 
@@ -632,7 +636,17 @@ app.include_router(dashboard_stats.router)
 
 app.include_router(patient_management.router)
 
+
+
 app.include_router(appointment_management.router)
+
+
+
+app.include_router(medical_record_management.router)
+
+
+
+
 
 
 
@@ -640,7 +654,15 @@ app.include_router(doctor_router.router, prefix="/api")
 
 
 
+
+
+
+
 app.include_router(specialty_router.router)
+
+
+
+
 
 app.include_router(service_router.router)
 

@@ -183,6 +183,29 @@ CREATE TABLE APPOINTMENT_SERVICES (
     CONSTRAINT FK_AppSvc_Services FOREIGN KEY (service_id) REFERENCES SERVICES(service_id)
 );
 GO
+CREATE TABLE MEDICAL_RECORDS (
+    medical_record_id INT IDENTITY(1,1) PRIMARY KEY,
+    
+    -- Liên kết với cuộc hẹn (Quan trọng nhất)
+    appointment_id INT NOT NULL UNIQUE, -- Mỗi lịch hẹn chỉ có một hồ sơ bệnh án
+    doctor_id INT NOT NULL,             -- Bác sĩ lập hồ sơ
+    
+    -- THÔNG TIN CHẨN ĐOÁN
+    diagnosis_in NVARCHAR(500) NULL,      -- Chẩn đoán vào viện (ban đầu)
+    diagnosis_out NVARCHAR(500) NOT NULL, -- Chẩn đoán ra viện (cuối cùng)
+
+    
+    -- TÓM TẮT QUÁ TRÌNH ĐIỀU TRỊ
+    treatment_summary NVARCHAR(MAX) NOT NULL, -- Tóm tắt Quá trình điều trị (thay thế cột 'conclusion' và 'diagnosis' cũ)
+    
+    -- THÔNG TIN KHÁC
+    examination_date DATETIME2 DEFAULT GETDATE(), -- Ngày hồ sơ được tạo/hoàn thành
+
+    -- Ràng buộc Khóa ngoại
+    CONSTRAINT FK_MR_Appointments FOREIGN KEY (appointment_id) REFERENCES APPOINTMENTS(appointment_id),
+    CONSTRAINT FK_MR_Doctors FOREIGN KEY (doctor_id) REFERENCES DOCTORS(doctor_id) 
+);
+GO
 
 -- =================================================================
 --  Step 4: Chèn dữ liệu mẫu (đã cập nhật)
@@ -221,6 +244,7 @@ INSERT INTO DOCTORS (full_name, email, phone, specialty_id, qualifications, pass
 (N'Bác sĩ Trần Thị B', 'bs.b@example.com', '0987654321', 1, N'Tiến sĩ, Bác sĩ Nội trú', N'CHUOI_HASH_CUA_BACSIB');
 GO
 
+
 -- Chèn 1 Lịch hẹn mẫu
 INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms)
 VALUES
@@ -256,6 +280,49 @@ GO
 INSERT INTO APPOINTMENT_SERVICES (appointment_id, service_id, quantity) VALUES
 (1, 1, 1),   -- Xét nghiệm máu
 (1, 3, 1);   -- Siêu âm bụng
+GO
+-- Thêm Bệnh nhân mới (patient_id = 2)
+INSERT INTO PATIENTS (full_name, email, phone, birth_date, address, password_hash) VALUES
+(N'Lê Thị Mai', 'mai.le@example.com', '0901112223', '1995-05-20', N'456 Đường Giải Phóng, Hà Nội', N'CHUOI_HASH_CUA_BENHNHANB');
+GO
+
+-- Thêm Bác sĩ mới (doctor_id = 2) vào Khoa Da liễu (specialty_id = 5)
+INSERT INTO DOCTORS (full_name, email, phone, specialty_id, qualifications, password_hash) VALUES
+(N'Bác sĩ Nguyễn Văn C', 'bs.c@example.com', '0905556667', 5, N'Thạc sĩ Da liễu', N'CHUOI_HASH_CUA_BACSIC');
+GO
+-- Chèn 1 Lịch hẹn mẫu đã hoàn thành (appointment_id = 1)
+INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms, booking_code)
+VALUES
+(9, 3, 5, '2025-11-10T14:00:00', 'completed', N'Nổi mẩn đỏ, ngứa da toàn thân',N'1');
+GO
+-- Gán dịch vụ cho lịch hẹn (appointment_id = 1): Bác sĩ chỉ định Xét nghiệm máu
+INSERT INTO APPOINTMENT_SERVICES (appointment_id, service_id, quantity) VALUES
+(9, 1, 1); -- service_id = 1 là 'Xét nghiệm máu'
+GO
+
+-- Kê Đơn thuốc (appointment_id = 1): Kê thuốc Amoxicillin
+INSERT INTO PRESCRIPTIONS (appointment_id, medicine_id, quantity, instructions)
+VALUES
+(9, 2, 21, N'Uống 1 viên, 3 lần/ngày trong 7 ngày'); -- medicine_id = 2 là 'Amoxicillin 250mg'
+GO
+-- Chèn Hồ sơ Bệnh án (cho appointment_id = 1)
+INSERT INTO MEDICAL_RECORDS (
+    appointment_id, 
+    doctor_id, 
+    diagnosis_in, 
+    diagnosis_out, 
+    treatment_summary,
+    examination_date -- Tự động lấy GETDATE() nếu không chỉ định, nhưng có thể chỉ định rõ
+)
+VALUES
+(
+    9, -- Lịch hẹn số 9
+    3, -- Bác sĩ Nguyễn Văn C
+    N'Viêm da dị ứng cấp tính', 
+    N'Viêm da tiếp xúc dị ứng', 
+    N'Bệnh nhân được chỉ định xét nghiệm máu để loại trừ các nguyên nhân toàn thân. Điều trị bằng kháng histamine (Loratadin 10mg) và kem bôi corticoid tại chỗ. Hướng dẫn tránh tiếp xúc với chất gây dị ứng tiềm tàng.',
+    '2025-11-10T15:00:00' -- Giả định hồ sơ được hoàn thành lúc 15:00
+);
 GO
 
 

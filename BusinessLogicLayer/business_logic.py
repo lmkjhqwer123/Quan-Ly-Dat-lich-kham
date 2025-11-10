@@ -2,7 +2,14 @@ from DataAccessLayer import data_access
 from datetime import datetime, timedelta
 import auth
 import mail
-from typing import Optional
+from typing import Optional, List
+from enum import Enum
+
+class AppointmentStatus(str, Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
 
 # --- Auth Logic ---
 def login_user(db, login_request: dict):
@@ -193,6 +200,121 @@ def get_doctor_dashboard_data_logic(db, doctor_id: int):
         ]
     }
 
+def get_doctor_appointments_logic(
+    db, 
+    doctor_id: int, 
+    search: Optional[str] = None, 
+    sort_by: Optional[str] = None, 
+    sort_direction: Optional[str] = "desc", 
+    appointment_status: Optional[str] = None, 
+    appointment_date: Optional[datetime.date] = None, # Add appointment_date parameter
+    limit: Optional[int] = None
+):
+    appointments = data_access.get_appointments_by_doctor_id(
+        db, 
+        doctor_id=doctor_id, 
+        search=search, 
+        sort_by=sort_by, 
+        sort_direction=sort_direction, 
+        status=appointment_status, 
+        appointment_date=appointment_date, # Pass appointment_date to data_access
+        limit=limit
+    )
+    return [
+        {
+            "AppointmentId": a.AppointmentId,
+            "AppointmentDatetime": a.AppointmentDatetime,
+            "Status": a.Status,
+            "PatientName": a.patient.FullName if a.patient else None,
+            "SpecialtyName": a.specialty.Name if a.specialty else None,
+            "Symptoms": a.Symptoms,
+            "BookingCode": a.BookingCode,
+            "Services": [{"id": aps.service.service_id, "name": aps.service.name, "quantity": aps.quantity} for aps in a.appointment_services]
+        } for a in sorted(appointments, key=lambda x: x.AppointmentDatetime, reverse=False)
+    ]
+
+def get_doctor_appointment_by_id_logic(db, doctor_id: int, appointment_id: int):
+    appointment = data_access.get_appointment_by_id(db, appointment_id, doctor_id=doctor_id) # Pass doctor_id to data_access
+    if appointment: # data_access now handles doctor_id check
+        return {
+            "AppointmentId": appointment.AppointmentId,
+            "AppointmentDatetime": appointment.AppointmentDatetime,
+            "Status": appointment.Status,
+            "PatientName": appointment.patient.FullName if appointment.patient else None,
+            "SpecialtyName": appointment.specialty.Name if appointment.specialty else None,
+            "Symptoms": appointment.Symptoms,
+            "BookingCode": appointment.BookingCode
+        }
+    return None
+
+def get_doctor_examination_queue_logic(
+    db, 
+    doctor_id: int, 
+    statuses: List[AppointmentStatus],
+    appointment_date: Optional[datetime.date] = None
+):
+    examination_queue = data_access.get_examination_queue_by_doctor_id(
+        db, 
+        doctor_id=doctor_id, 
+        statuses=[s.value for s in statuses],
+        appointment_date=appointment_date
+    )
+    return [
+        {
+            "AppointmentId": q.AppointmentId,
+            "PatientName": q.patient.FullName,
+            "AppointmentDatetime": q.AppointmentDatetime, # Keep as datetime object for client-side formatting
+            "Status": q.Status,
+            "SpecialtyName": q.specialty.Name if q.specialty else None,
+            "Symptoms": q.Symptoms
+        } for q in examination_queue
+    ]
+
+def get_doctor_profile_logic(db, doctor_id: int):
+    doctor = data_access.get_doctor_by_id(db, doctor_id)
+    if doctor:
+        return {
+            "DoctorId": doctor.DoctorId,
+            "FullName": doctor.FullName,
+            "Email": doctor.Email,
+            "Phone": doctor.Phone,
+            "SpecialtyId": doctor.SpecialtyId,
+            "SpecialtyName": doctor.specialty.Name if doctor.specialty else None,
+            "Qualifications": doctor.Qualifications
+        }
+    return None
+
+def update_doctor_profile_logic(db, doctor_id: int, update_data: dict):
+    doctor = data_access.get_doctor_by_id(db, doctor_id)
+    if not doctor:
+        return {"error": "Không tìm thấy bác sĩ."}
+
+    # Check for duplicate email/phone if they are being updated
+    if "Email" in update_data and update_data["Email"] != doctor.Email:
+        if data_access.get_doctor_by_email(db, update_data["Email"]) and data_access.get_doctor_by_email(db, update_data["Email"]).DoctorId != doctor_id:
+            return {"error": "Email đã được sử dụng bởi một tài khoản khác."}
+        if data_access.get_patient_by_email(db, update_data["Email"]):
+            return {"error": "Email đã được sử dụng bởi một bệnh nhân."}
+
+    if "Phone" in update_data and update_data["Phone"] != doctor.Phone:
+        if data_access.get_doctor_by_phone(db, update_data["Phone"]) and data_access.get_doctor_by_phone(db, update_data["Phone"]).DoctorId != doctor_id:
+            return {"error": "Số điện thoại đã được sử dụng bởi một tài khoản khác."}
+        if data_access.get_patient_by_phone(db, update_data["Phone"]):
+            return {"error": "Số điện thoại đã được sử dụng bởi một bệnh nhân."}
+
+    updated_doctor = data_access.update_doctor(db, doctor_id, update_data)
+    if updated_doctor:
+        return {
+            "DoctorId": updated_doctor.DoctorId,
+            "FullName": updated_doctor.FullName,
+            "Email": updated_doctor.Email,
+            "Phone": updated_doctor.Phone,
+            "SpecialtyId": updated_doctor.SpecialtyId,
+            "SpecialtyName": updated_doctor.specialty.Name if updated_doctor.specialty else None,
+            "Qualifications": updated_doctor.Qualifications
+        }
+    return {"error": "Cập nhật thông tin bác sĩ thất bại."}
+
 
 # --- Specialty Logic ---
 def get_all_specialties_logic(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
@@ -327,8 +449,8 @@ def get_all_patients_logic(db, sort_by: Optional[str] = None, sort_direction: Op
         } for p in patients
     ]
 
-def get_patients_for_doctor_logic(db, doctor_id: int, query: Optional[str] = None, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
-    patients = data_access.get_patients_for_doctor(db, doctor_id, query, sort_by, sort_direction)
+def get_patients_for_doctor_logic(db, doctor_id: int, search_query: Optional[str] = None, sort_by: Optional[str] = None, sort_direction: Optional[str] = None, limit: Optional[int] = None):
+    patients = data_access.get_patients_for_doctor(db, doctor_id, search_query, sort_by, sort_direction, limit)
     return [
         {
             "PatientId": p.PatientId,
@@ -339,6 +461,19 @@ def get_patients_for_doctor_logic(db, doctor_id: int, query: Optional[str] = Non
             "address": p.address
         } for p in patients
     ]
+
+def get_patient_details_for_doctor_logic(db, doctor_id: int, patient_id: int):
+    patient = data_access.get_patient_details_for_doctor(db, doctor_id, patient_id)
+    if patient:
+        return {
+            "PatientId": patient.PatientId,
+            "FullName": patient.FullName,
+            "Email": patient.Email,
+            "Phone": patient.Phone,
+            "birth_date": patient.birth_date,
+            "address": patient.address
+        }
+    return None
 
 # --- User Profile Logic ---
 def get_patient_profile_logic(db, patient_id: int):

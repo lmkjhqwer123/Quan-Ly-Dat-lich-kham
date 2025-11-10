@@ -35,13 +35,14 @@ class ServiceDto(ServiceBase):
 
 @router.get("/services", response_model=List[ServiceDto])
 def get_all_services(db: Session = Depends(data_access.get_db),
-                       current_user: dict = Depends(auth.get_current_user),
+                       current_user: dict = Depends(auth.get_current_user), # Keep for authentication check
                        query: Optional[str] = None,
                        sort_by: Optional[str] = None,
                        sort_direction: Optional[str] = None):
-    # Only admins can view all services for management purposes
-    if current_user.role != "Admin":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can view all services")
+    # Allow all authenticated users (doctors and patients) to view services
+    # Admins can also view, as they are authenticated.
+    if not current_user: # Ensure user is authenticated
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     
     services = business_logic.get_all_services_logic(db, query, sort_by, sort_direction)
     return services

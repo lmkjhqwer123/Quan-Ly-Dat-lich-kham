@@ -83,7 +83,15 @@ def login(login_request: LoginRequest, db: Session = Depends(data_access.get_db)
         data={"user_id": user['userId'], "role": user['role']}
     )
     
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
+    user_role = user['role'].lower()
+    if user_role == 'admin':
+        redirect_url = "/admin.html"
+    elif user_role == 'doctor':
+        redirect_url = "/doctor.html"
+    else:
+        redirect_url = "/home.html"
+    
+    return {"access_token": access_token, "token_type": "bearer", "user": user, "redirect_url": redirect_url}
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register_user(request: RegisterRequest, db: Session = Depends(data_access.get_db)):

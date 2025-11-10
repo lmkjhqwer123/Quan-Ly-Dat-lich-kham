@@ -281,14 +281,14 @@ INSERT INTO APPOINTMENT_SERVICES (appointment_id, service_id, quantity) VALUES
 (1, 1, 1),   -- Xét nghiệm máu
 (1, 3, 1);   -- Siêu âm bụng
 GO
--- Thêm Bệnh nhân mới (patient_id = 2)
+-- Thêm Bệnh nhân mới (patient_id = 2) mật khẩu (123)
 INSERT INTO PATIENTS (full_name, email, phone, birth_date, address, password_hash) VALUES
 (N'Lê Thị Mai', 'mai.le@example.com', '0901112223', '1995-05-20', N'456 Đường Giải Phóng, Hà Nội', N'CHUOI_HASH_CUA_BENHNHANB');
 GO
 
--- Thêm Bác sĩ mới (doctor_id = 2) vào Khoa Da liễu (specialty_id = 5)
+-- Thêm Bác sĩ mới (doctor_id = 2) vào Khoa Da liễu (specialty_id = 5) mật khẩu (newpass123)
 INSERT INTO DOCTORS (full_name, email, phone, specialty_id, qualifications, password_hash) VALUES
-(N'Bác sĩ Nguyễn Văn C', 'bs.c@example.com', '0905556667', 5, N'Thạc sĩ Da liễu', N'CHUOI_HASH_CUA_BACSIC');
+(N'Bác sĩ Nguyễn Văn C', 'bs.c@example.com', '0905556667', 5, N'Thạc sĩ Da liễu', N'$2a$10$HASH_CUA_NEWPASS123');
 GO
 -- Chèn 1 Lịch hẹn mẫu đã hoàn thành (appointment_id = 1)
 INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms, booking_code)

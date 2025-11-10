@@ -1,6 +1,10 @@
 
 
 
+from dotenv import load_dotenv
+load_dotenv()  # Load environment variables from .env file
+
+
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -23,10 +27,6 @@ from routers import patient_router, doctor_router, specialty_router, service_rou
 
 
 from fastapi.staticfiles import StaticFiles
-
-
-
-from dotenv import load_dotenv
 
 
 
@@ -71,22 +71,6 @@ from routers.doctor.models import DoctorCreateRequest, DoctorUpdateRequest, Doct
 
 
 load_dotenv()  # Load environment variables from .env file
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -650,7 +634,7 @@ app.include_router(medical_record_management.router)
 
 
 
-app.include_router(doctor_router.router, prefix="/api")
+app.include_router(doctor_router.router)
 
 
 

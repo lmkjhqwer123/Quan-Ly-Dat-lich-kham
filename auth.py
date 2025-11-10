@@ -8,7 +8,11 @@ from datetime import datetime, timedelta
 
 from DataAccessLayer import data_access
 
-SECRET_KEY = "your-secret-key"  # Replace with a strong, secret key
+import os
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY environment variable not set. Please set a strong, random key.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30  # Change to 30 days
 PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = 15
@@ -58,8 +62,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = None
     if token_data.role == "Patient":
         user = data_access.get_patient_by_id(db, patient_id=token_data.id)
-    # elif token_data.role == "Doctor":
-    #     user = data_access.get_doctor_by_id(db, doctor_id=token_data.id)
+    elif token_data.role == "Doctor":
+        user = data_access.get_doctor_by_id(db, doctor_id=token_data.id)
     elif token_data.role == "Admin":
         user = data_access.get_admin_by_id(db, admin_id=token_data.id)
 
@@ -68,8 +72,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     
     if token_data.role == "Patient":
         user.id = user.PatientId
-    # elif token_data.role == "Doctor":
-    #     user.id = user.DoctorId
+    elif token_data.role == "Doctor":
+        user.id = user.DoctorId
     elif token_data.role == "Admin":
         user.id = user.AdminId
         

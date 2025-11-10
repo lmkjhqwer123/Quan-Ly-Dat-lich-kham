@@ -6,6 +6,7 @@ import datetime
 from DataAccessLayer.data_access import get_db, Patient, hash_password # Import hash_password
 from pydantic import BaseModel
 import BusinessLogicLayer.business_logic as business_logic
+from auth import get_current_user
 
 router = APIRouter(
     prefix="/api/admin",
@@ -63,10 +64,16 @@ def get_all_patients(
     db: Session = Depends(get_db),
     query: Optional[str] = None,
     sort_by: Optional[str] = None,
-    sort_direction: Optional[str] = None
+    sort_direction: Optional[str] = None,
+    current_user = Depends(get_current_user)
 ):
-    if query:
-        patients = business_logic.search_patients_logic(db, query, sort_by, sort_direction)
+    if current_user.role == "Doctor":
+        # If the user is a doctor, get only their patients
+        patients = business_logic.get_patients_for_doctor_logic(db, current_user.id, query, sort_by, sort_direction)
     else:
-        patients = business_logic.get_all_patients_logic(db, sort_by, sort_direction)
+        # For other roles (like Admin), get all patients
+        if query:
+            patients = business_logic.search_patients_logic(db, query, sort_by, sort_direction)
+        else:
+            patients = business_logic.get_all_patients_logic(db, sort_by, sort_direction)
     return patients

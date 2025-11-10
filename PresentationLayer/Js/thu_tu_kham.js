@@ -33,7 +33,7 @@ if (typeof window.initThuTuKhamPage === 'undefined') {
                 console.log('thu_tu_kham.js: Access token found.');
 
                 const today = getTodayDate();
-                const url = `/api/admin/appointments?status=confirmed&appointment_date=${today}`;
+                const url = `/api/admin/appointments?appointment_statuses=confirmed,pending&appointment_date=${today}`;
                 console.log('thu_tu_kham.js: Fetching URL:', url);
 
                 const response = await fetch(url, {
@@ -76,8 +76,15 @@ if (typeof window.initThuTuKhamPage === 'undefined') {
             appointments.sort((a, b) => new Date(a.AppointmentDatetime) - new Date(b.AppointmentDatetime)); // Sắp xếp theo giờ hẹn
 
             appointments.forEach((appointment, index) => {
+                console.log('Appointment Status:', appointment.Status);
                 const row = tableBody.insertRow();
-                row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                let rowClass = 'border-b border-gray-200 hover:bg-gray-50';
+                let statusClass = 'bg-green-100 text-green-800';
+                if (appointment.Status.toLowerCase() === 'pending') {
+                    rowClass += ' bg-yellow-50'; // Light yellow background for pending
+                    statusClass = 'bg-yellow-100 text-yellow-800';
+                }
+                row.className = rowClass;
 
                 const appointmentTime = new Date(appointment.AppointmentDatetime).toLocaleTimeString('vi-VN', {
                     hour: '2-digit',
@@ -93,7 +100,7 @@ if (typeof window.initThuTuKhamPage === 'undefined') {
                     <td class="py-4 px-6">${appointment.SpecialtyName || 'N/A'}</td>
                     <td class="py-4 px-6">${appointment.DoctorName || 'N/A'}</td>
                     <td class="py-4 px-6">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
                             ${appointment.Status}
                         </span>
                     </td>

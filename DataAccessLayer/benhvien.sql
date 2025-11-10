@@ -326,4 +326,24 @@ VALUES
 GO
 
 
+-- Lấy ID lịch hẹn tự tăng tiếp theo
+DECLARE @NewBookingCode NVARCHAR(20) = 'APPT003';
+-- Bạn nên điều chỉnh mã này để chắc chắn nó là duy nhất nếu APPT003 đã được sử dụng.
+
+INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms, booking_code)
+VALUES
+(
+    1, -- patient_id: Nguyễn Văn An
+    1, -- doctor_id: Bác sĩ Trần Thị B
+    1, -- specialty_id: Khoa Nội tổng hợp
+    '2025-11-10T16:00:00', -- Thời gian: 4:00 PM ngày 10/11/2025
+    'pending', -- Trạng thái ban đầu là đang chờ duyệt
+    N'Khó thở, tức ngực nhẹ',
+    @NewBookingCode
+);
+GO
+
+PRINT 'Đã chèn thành công lịch hẹn mới lúc 16:00 hôm nay (10/11/2025) với trạng thái PENDING.';
+
+
 PRINT 'Database QuanLyKhamBenhDB created and seeded successfully.';

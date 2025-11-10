@@ -3,6 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from DataAccessLayer.data_access import get_raw_db_connection
 import pyodbc
+from auth import get_current_user # Import the dependency
+
 # This is a comment to force recompilation
 router = APIRouter()
 
@@ -27,7 +29,8 @@ async def get_all_medical_records(
     sort_direction: Optional[str] = Query("desc", description="Sort direction: 'asc' or 'desc'"),
     specialty_name: Optional[str] = Query(None, description="Filter by specialty name"),
     limit: Optional[int] = Query(None, description="Limit the number of results"),
-    db: pyodbc.Connection = Depends(get_raw_db_connection)
+    db: pyodbc.Connection = Depends(get_raw_db_connection),
+    current_user = Depends(get_current_user) # Add dependency
 ):
     try:
         cursor = db.cursor()
@@ -56,6 +59,11 @@ async def get_all_medical_records(
 
         params = []
         where_clauses = []
+
+        # Filter by doctor if the user is a doctor
+        if current_user.role == "Doctor":
+            where_clauses.append("mr.doctor_id = ?")
+            params.append(current_user.id)
 
         if search:
             where_clauses.append("(p.full_name LIKE ? OR d.full_name LIKE ? OR a.booking_code LIKE ?)")

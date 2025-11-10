@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date, DECIMAL, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date, DECIMAL, Boolean, func
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base, joinedload
 import bcrypt
 import datetime
@@ -153,8 +153,34 @@ def get_admin_by_id(db, admin_id: int):
     return db.query(Admin).filter(Admin.AdminId == admin_id).first()
 
 # --- Doctors ---
-def get_all_doctors(db):
-    return db.query(Doctor).all()
+def get_all_doctors(db, search: Optional[str] = None, sort_direction: Optional[str] = None, sort_value: Optional[str] = None, sort_status: Optional[str] = None, sort_speciality: Optional[int] = None, sort_room: Optional[str] = None, limit: Optional[int] = None):
+    query = db.query(Doctor)
+
+    if search:
+        query = query.filter(Doctor.FullName.ilike(f"%{search}%"))
+    
+    if sort_speciality:
+        query = query.filter(Doctor.SpecialtyId == sort_speciality)
+
+    # Assuming 'status' is a property on the Doctor model, which it is not.
+    # This will need to be adjusted if status is handled differently.
+    # For now, commenting out status filtering.
+    # if sort_status:
+    #     query = query.filter(Doctor.status == sort_status)
+
+    if sort_value == "name":
+        if sort_direction == "desc":
+            query = query.order_by(Doctor.FullName.desc())
+        else:
+            query = query.order_by(Doctor.FullName.asc())
+    
+    # Sorting by role is not directly possible as role is not a column.
+    # Assuming a default sorting if role is selected.
+    
+    if limit:
+        query = query.limit(limit)
+        
+    return query.all()
 
 def get_doctor_by_id(db, doctor_id: int):
     return db.query(Doctor).filter(Doctor.DoctorId == doctor_id).first()
@@ -301,6 +327,39 @@ def get_all_patients(db, sort_by: Optional[str] = None, sort_direction: Optional
             query = query.order_by(Patient.PatientId.asc())
     return query.all()
 
+def get_patients_for_doctor(db, doctor_id: int, query: Optional[str] = None, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
+    # Subquery to get unique patient IDs associated with the doctor
+    patient_ids_subquery = db.query(Appointment.PatientId).filter(Appointment.DoctorId == doctor_id).distinct()
+
+    # Main query for patients
+    base_query = db.query(Patient).filter(Patient.PatientId.in_(patient_ids_subquery))
+
+    if query:
+        search_pattern = f"%{query}%"
+        base_query = base_query.filter(
+            (Patient.FullName.ilike(search_pattern)) |
+            (Patient.Email.ilike(search_pattern)) |
+            (Patient.Phone.ilike(search_pattern))
+        )
+
+    if sort_by == "name":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Patient.FullName.desc())
+        else:
+            base_query = base_query.order_by(Patient.FullName.asc())
+    elif sort_by == "email":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Patient.Email.desc())
+        else:
+            base_query = base_query.order_by(Patient.Email.asc())
+    elif sort_by == "id":
+        if sort_direction == "desc":
+            base_query = base_query.order_by(Patient.PatientId.desc())
+        else:
+            base_query = base_query.order_by(Patient.PatientId.asc())
+            
+    return base_query.all()
+
 def create_patient(db, patient_data: dict):
     hashed_password = hash_password(patient_data["Password"])
     birth_date = patient_data.get("birth_date") or datetime.date.today()
@@ -405,15 +464,41 @@ def create_appointment(db, appointment_data: dict):
 def get_appointments_by_patient_id(db, patient_id: int):
     return db.query(Appointment).filter(Appointment.PatientId == patient_id).all()
 
-def get_all_appointments(db, status: Optional[str] = None, date: Optional[datetime.date] = None):
+def get_appointments_by_doctor_id(db, doctor_id: int, date: Optional[datetime.date] = None):
+    query = db.query(Appointment).options(
+        joinedload(Appointment.patient)
+    ).filter(Appointment.DoctorId == doctor_id)
+    
+    if date:
+        start_of_day = datetime.datetime.combine(date, datetime.time.min)
+        end_of_day = datetime.datetime.combine(date, datetime.time.max)
+        query = query.filter(Appointment.AppointmentDatetime.between(start_of_day, end_of_day))
+        
+    return query.order_by(Appointment.AppointmentDatetime).all()
+
+def get_examination_queue_by_doctor_id(db, doctor_id: int):
+    today = datetime.date.today()
+    start_of_day = datetime.datetime.combine(today, datetime.time.min)
+    end_of_day = datetime.datetime.combine(today, datetime.time.max)
+
+    return db.query(Appointment).options(
+        joinedload(Appointment.patient)
+    ).filter(
+        Appointment.DoctorId == doctor_id,
+        Appointment.Status == 'confirmed',
+        Appointment.AppointmentDatetime.between(start_of_day, end_of_day)
+    ).order_by(Appointment.AppointmentDatetime).all()
+
+def get_all_appointments(db, statuses: Optional[list[str]] = None, date: Optional[datetime.date] = None):
     query = db.query(Appointment).options(
         joinedload(Appointment.patient), 
         joinedload(Appointment.doctor), 
         joinedload(Appointment.specialty), 
         joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)
     )
-    if status:
-        query = query.filter(Appointment.Status == status)
+    if statuses:
+        # Filter by multiple statuses
+        query = query.filter(func.lower(func.trim(Appointment.Status)).in_([s.lower() for s in statuses]))
     if date:
         query = query.filter(Appointment.AppointmentDatetime >= date, Appointment.AppointmentDatetime < date + datetime.timedelta(days=1))
     return query.all()

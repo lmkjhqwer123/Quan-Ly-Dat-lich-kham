@@ -58,8 +58,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = None
     if token_data.role == "Patient":
         user = data_access.get_patient_by_id(db, patient_id=token_data.id)
-    elif token_data.role == "Doctor":
-        user = data_access.get_doctor_by_id(db, doctor_id=token_data.id)
+    # elif token_data.role == "Doctor":
+    #     user = data_access.get_doctor_by_id(db, doctor_id=token_data.id)
     elif token_data.role == "Admin":
         user = data_access.get_admin_by_id(db, admin_id=token_data.id)
 
@@ -68,10 +68,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     
     if token_data.role == "Patient":
         user.id = user.PatientId
-    elif token_data.role == "Doctor":
-        user.id = user.DoctorId
+    # elif token_data.role == "Doctor":
+    #     user.id = user.DoctorId
     elif token_data.role == "Admin":
         user.id = user.AdminId
         
     user.role = token_data.role
     return user
+
+def get_current_admin_user(current_user: dict = Depends(get_current_user)):
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized, admin role required")
+    return current_user

@@ -60,7 +60,7 @@ def get_service_by_id(service_id: int, db: Session = Depends(data_access.get_db)
     return service
 
 @router.post("/services", response_model=ServiceDto, status_code=status.HTTP_201_CREATED)
-def create_service(service_data: ServiceDto, db: Session = Depends(data_access.get_db),
+def create_service(service_data: ServiceCreateDto, db: Session = Depends(data_access.get_db),
                    current_user: dict = Depends(auth.get_current_user)):
     if current_user.role != "Admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can create services")
@@ -69,12 +69,12 @@ def create_service(service_data: ServiceDto, db: Session = Depends(data_access.g
     return new_service
 
 @router.put("/services/{service_id}", response_model=ServiceDto)
-def update_service(service_id: int, service_data: ServiceDto, db: Session = Depends(data_access.get_db),
+def update_service(service_id: int, service_data: ServiceUpdateDto, db: Session = Depends(data_access.get_db),
                    current_user: dict = Depends(auth.get_current_user)):
     if current_user.role != "Admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update services")
     
-    updated_service = business_logic.update_service_logic(db, service_id, service_data.dict())
+    updated_service = business_logic.update_service_logic(db, service_id, service_data.dict(exclude_unset=True))
     if not updated_service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
     return updated_service
@@ -86,6 +86,6 @@ def delete_service(service_id: int, db: Session = Depends(data_access.get_db),
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can delete services")
     
     result = business_logic.delete_service_logic(db, service_id)
-    if "error" in result:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=result["error"])
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found or could not be deleted")
     return

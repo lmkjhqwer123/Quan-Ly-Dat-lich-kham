@@ -27,19 +27,15 @@ class DoctorPatientDto(BaseModel):
 @router.get("/patients/me", response_model=List[DoctorPatientDto])
 def get_my_patients(
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user),
+    current_user = Depends(auth.get_current_user),
     query: Optional[str] = None,
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = None,
     limit: Optional[int] = None
 ):
-    """
-    Get a list of patients associated with the logged-in doctor.
-    """
+    doctor_id = current_user.id
     if current_user.role != "Doctor":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only doctors can view their patients.")
-    
-    doctor_id = current_user.id
     patients = business_logic.get_patients_for_doctor_logic(
         db, 
         doctor_id=doctor_id,
@@ -54,15 +50,15 @@ def get_my_patients(
 def get_patient_details_for_doctor(
     patient_id: int,
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
+    current_user = Depends(auth.get_current_user)
 ):
     """
     Get details of a specific patient associated with the logged-in doctor.
     """
-    if current_user.role != "Doctor":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only doctors can view patient details.")
     
     doctor_id = current_user.id
+    if current_user.role != "Doctor":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only doctors can view their patients.")
     patient = business_logic.get_patient_details_for_doctor_logic(db, doctor_id, patient_id)
     if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient not found or not associated with this doctor.")
@@ -73,7 +69,7 @@ def get_doctor_examination_queue(
     appointment_statuses: str = Query(..., description="Comma-separated list of appointment statuses (e.g., 'confirmed,pending')"),
     appointment_date: Optional[datetime.date] = Query(None, description="Date for which to retrieve the examination queue (YYYY-MM-DD)"),
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
+    current_user = Depends(auth.get_current_user)
 ):
     """
     Retrieve the examination queue for the logged-in doctor based on appointment statuses and date.

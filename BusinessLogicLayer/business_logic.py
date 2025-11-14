@@ -315,6 +315,24 @@ def update_doctor_profile_logic(db, doctor_id: int, update_data: dict):
         }
     return {"error": "Cập nhật thông tin bác sĩ thất bại."}
 
+def get_doctor_schedule_logic(db, doctor_id: int):
+    """
+    Lấy và xử lý lịch làm việc cho bác sĩ.
+    """
+    schedule_data = data_access.get_doctor_schedule(db, doctor_id)
+    
+    # Chuyển đổi dữ liệu thô từ DB thành định dạng JSON-friendly
+    return [
+        {
+            "appointment_id": item.appointment_id,
+            "patient_name": item.patient_name,
+            "start_time": item.start_time.isoformat(),
+            "end_time": item.end_time.isoformat(),
+            "status": item.status,
+            "symptoms": item.symptoms
+        }
+        for item in schedule_data
+    ]
 
 # --- Specialty Logic ---
 def get_all_specialties_logic(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):

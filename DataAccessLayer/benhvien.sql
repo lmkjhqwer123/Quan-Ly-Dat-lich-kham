@@ -207,6 +207,39 @@ CREATE TABLE MEDICAL_RECORDS (
 );
 GO
 
+
+-- Bảng Lịch làm việc,nghỉ linh hoạt/bổ sung của từng Bác sĩ
+CREATE TABLE DOCTOR_WORKING_HOURS (
+    working_hour_id INT IDENTITY(1,1) PRIMARY KEY,
+    doctor_id INT NOT NULL,
+    -- Luu tru cac ngay lam viec khong co dinh (VD: 'SATURDAY', 'SUNDAY', 'MONDAY' neu co lam them)
+    day_of_week NVARCHAR(10) NOT NULL, 
+    start_time TIME NOT NULL, 
+    end_time TIME NOT NULL,   
+    
+    CONSTRAINT FK_WH_Doctors FOREIGN KEY (doctor_id) REFERENCES DOCTORS(doctor_id),
+    -- Ràng buộc: Đảm bảo không trùng lặp đăng ký
+    CONSTRAINT UQ_WH_DoctorDayTime UNIQUE (doctor_id, day_of_week, start_time, end_time) 
+);
+GO
+CREATE TABLE DOCTOR_LEAVES (
+    leave_id INT IDENTITY(1,1) PRIMARY KEY,
+    doctor_id INT NOT NULL,
+    start_datetime DATETIME2 NOT NULL, 
+    end_datetime DATETIME2 NOT NULL, 
+    reason NVARCHAR(MAX) NULL,
+    status NVARCHAR(20) NOT NULL DEFAULT 'pending', -- 'pending', 'approved', 'rejected'
+    CONSTRAINT FK_Leaves_Doctors FOREIGN KEY (doctor_id) REFERENCES DOCTORS(doctor_id)
+);
+GO
+-- Bảng lưu trữ Ngày lễ (nghỉ chung cho cả bệnh viện)
+CREATE TABLE HOLIDAYS (
+    holiday_id INT IDENTITY(1,1) PRIMARY KEY,
+    holiday_date DATE NOT NULL UNIQUE, 
+    name NVARCHAR(100) NOT NULL
+);
+GO
+
 -- =================================================================
 --  Step 4: Chèn dữ liệu mẫu (đã cập nhật)
 -- =================================================================
@@ -344,6 +377,62 @@ VALUES
 GO
 
 PRINT 'Đã chèn thành công lịch hẹn mới lúc 16:00 hôm nay (10/11/2025) với trạng thái PENDING.';
+
+-- =================================================================
+--  BỔ SUNG 3 LỊCH HẸN MỚI CHO CÙNG BÁC SĨ B (doctor_id = 1)
+-- =================================================================
+GO
+
+-- Lịch hẹn 1: Trạng thái 'pending' (cho Bác sĩ B)
+-- Bệnh nhân 2 (Lê Thị Mai)
+INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms, booking_code)
+VALUES
+(
+    9, -- patient_id: Lê Thị Mai
+    1, -- doctor_id: Bác sĩ Trần Thị B
+    1, -- specialty_id: Khoa Nội tổng hợp
+    '2025-11-10T17:00:00', -- 5:00 PM
+    'pending',
+    N'Mệt mỏi, chán ăn',
+    'APPT004' -- Mã booking mới
+);
+GO
+
+-- Lịch hẹn 2: Trạng thái 'cancelled' (cho Bác sĩ B)
+-- Bệnh nhân 1 (Nguyễn Văn An)
+INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms, notes, booking_code)
+VALUES
+(
+    1, -- patient_id: Nguyễn Văn An
+    1, -- doctor_id: Bác sĩ Trần Thị B
+    1, -- specialty_id: Khoa Nội tổng hợp (Sửa từ khoa Da liễu)
+    '2025-11-10T18:00:00', -- 6:00 PM
+    'cancelled',
+    N'Ho kéo dài (đã hủy)',
+    N'Bệnh nhân gọi điện hủy do bận việc đột xuất.',
+    'APPT005' -- Mã booking mới
+);
+GO
+
+-- Lịch hẹn 3: Trạng thái 'completed' (cho Bác sĩ B)
+-- Bệnh nhân 2 (Lê Thị Mai)
+INSERT INTO APPOINTMENTS (patient_id, doctor_id, specialty_id, appointment_datetime, status, symptoms, booking_code)
+VALUES
+(
+    9, -- patient_id: Lê Thị Mai
+    1, -- doctor_id: Bác sĩ Trần Thị B
+    1, -- specialty_id: Khoa Nội tổng hợp
+    '2025-11-10T09:00:00', -- 9:00 AM (Giả định đã khám xong trong ngày)
+    'completed',
+    N'Đau đầu, chóng mặt',
+    'APPT006' -- Mã booking mới
+);
+GO
+
+PRINT 'Đã chèn thành công 3 lịch hẹn mới cho Bác sĩ B (doctor_id = 1) vào ngày 10/11/2025.';
+
+
+
 
 
 PRINT 'Database QuanLyKhamBenhDB created and seeded successfully.';

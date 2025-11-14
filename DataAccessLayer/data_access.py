@@ -1,6 +1,6 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date, DECIMAL, Boolean, func
-from sqlalchemy.orm import sessionmaker, relationship, declarative_base, joinedload
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Text, Date, DECIMAL, Boolean, func, text
+from sqlalchemy.orm import sessionmaker, relationship, declarative_base, joinedload, Session
 import bcrypt
 import datetime
 from typing import Optional, List
@@ -589,6 +589,32 @@ def get_all_appointments(db, statuses: Optional[List[str]] = None, date: Optiona
         query = query.filter(Appointment.AppointmentDatetime.between(start_of_day, end_of_day))
         
     return query.all()
+
+def get_doctor_schedule(db: Session, doctor_id: int):
+    """
+    Lấy lịch làm việc của bác sĩ từ các cuộc hẹn đã được xác nhận.
+    end_time được tính bằng cách thêm 2 giờ vào thời gian bắt đầu cuộc hẹn.
+    """
+    query = text("""
+        SELECT 
+            a.appointment_id,
+            p.full_name AS patient_name,
+            a.appointment_datetime AS start_time,
+            DATEADD(hour, 2, a.appointment_datetime) AS end_time,
+            a.status,
+            a.symptoms
+        FROM 
+            appointments a
+        JOIN 
+            patients p ON a.patient_id = p.patient_id
+        WHERE 
+            a.doctor_id = :doctor_id
+        ORDER BY 
+            a.appointment_datetime
+    """)
+    
+    result = db.execute(query, {"doctor_id": doctor_id})
+    return result.mappings().all()
 
 # --- Password Reset Tokens ---
 def create_password_reset_token(db, user_id: int, user_role: str, token: str, expires_at: datetime):

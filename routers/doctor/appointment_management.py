@@ -14,7 +14,7 @@ router = APIRouter(
 @router.get("/appointments/me", response_model=List[dict])
 def get_my_appointments(
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user),
+    current_user = Depends(auth.get_current_user),
     query: Optional[str] = None,
     sort_direction: Optional[str] = None,
     sort_by: Optional[str] = None,
@@ -43,7 +43,7 @@ def get_my_appointments(
 def get_my_appointment_details(
     appointment_id: int,
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
+    current_user = Depends(auth.get_current_user)
 ):
     """
     Get details of a specific appointment for the logged-in doctor.

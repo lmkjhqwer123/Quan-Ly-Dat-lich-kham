@@ -30,7 +30,7 @@ router = APIRouter(
 router.include_router(update_patient_profile.router)
 
 @router.get("/me", response_model=PatientProfileDto)
-def get_patient_profile(current_user: dict = Depends(auth.get_current_user), db: Session = Depends(data_access.get_db)):
+def get_patient_profile(current_user = Depends(auth.get_current_user), db: Session = Depends(data_access.get_db)):
     # The logic for checking role and fetching profile remains the same
     if current_user.role != "Patient":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied. Only for patients.")

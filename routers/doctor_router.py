@@ -7,6 +7,7 @@ import datetime
 from routers.patient_router import PatientProfileDto
 from routers.doctor import patient_management
 from routers.doctor import appointment_management # Import the new router
+from routers.doctor import schedule
 
 from BusinessLogicLayer import business_logic
 from DataAccessLayer import data_access
@@ -15,6 +16,7 @@ import auth
 router = APIRouter(prefix="/api/doctor")
 router.include_router(patient_management.router)
 router.include_router(appointment_management.router) # Include the new router
+router.include_router(schedule.router)
 
 class DoctorCreateRequest(BaseModel):
     FullName: str
@@ -137,7 +139,7 @@ def delete_doctor(doctor_id: int, db: Session = Depends(data_access.get_db), adm
 @router.get("/doctor/appointments", response_model=List[DoctorAppointmentOut])
 def get_doctor_appointments(
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user),
+    current_user = Depends(auth.get_current_user),
     search: Optional[str] = None,
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = "desc",
@@ -165,7 +167,7 @@ def get_doctor_appointments(
 def get_doctor_appointment_by_id(
     appointment_id: int,
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
+    current_user = Depends(auth.get_current_user)
 ):
     """
     Get a specific appointment for the logged-in doctor.
@@ -182,7 +184,7 @@ def get_doctor_appointment_by_id(
 @router.get("/doctor/examination-queue", response_model=List[ExaminationQueueItem])
 def get_doctor_examination_queue(
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user),
+    current_user = Depends(auth.get_current_user),
     search: Optional[str] = None,
     sort_by: Optional[str] = None,
     sort_direction: Optional[str] = "asc",
@@ -218,7 +220,7 @@ class DoctorProfileUpdateRequest(BaseModel):
 @router.get("/doctor/profile", response_model=DoctorDto)
 def get_doctor_profile(
     db: Session = Depends(data_access.get_db),
-    current_user: dict = Depends(auth.get_current_user)
+    current_user = Depends(auth.get_current_user)
 ):
     """
     Get the profile of the logged-in doctor.

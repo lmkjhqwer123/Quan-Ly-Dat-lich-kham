@@ -57,17 +57,7 @@ from routers.admin import medical_record_management
 
 
 from routers.doctor.models import DoctorCreateRequest, DoctorUpdateRequest, DoctorDto
-
-
-
-
-
-
-
-
-
-
-
+from routers.doctor import profile_management
 
 
 load_dotenv()  # Load environment variables from .env file
@@ -638,6 +628,10 @@ app.include_router(doctor_router.router)
 
 
 
+app.include_router(profile_management.router, prefix="/api/doctor", tags=["Doctor"])
+
+
+
 
 
 
@@ -750,11 +744,11 @@ def book_appointment_for_patient(patient_id: int, booking_dto: BookAppointmentDt
 
 
 
-def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
+def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db), current_user = Depends(auth.get_current_user)):
 
 
 
-    result = business_logic.book_appointment_logic(db, current_user.PatientId, booking_dto.model_dump())
+    result = business_logic.book_appointment_logic(db, current_user.id, booking_dto.model_dump())
 
 
 
@@ -774,11 +768,11 @@ def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depen
 
 
 
-def get_my_history(db: Session = Depends(data_access.get_db), current_user: dict = Depends(auth.get_current_user)):
+def get_my_history(db: Session = Depends(data_access.get_db), current_user = Depends(auth.get_current_user)):
 
 
 
-    return business_logic.get_my_history_logic(db, current_user.PatientId)
+    return business_logic.get_my_history_logic(db, current_user.id)
 
 
 

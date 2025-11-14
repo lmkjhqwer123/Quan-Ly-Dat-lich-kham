@@ -111,9 +111,29 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
                     return;
                 }
 
+                let highlightedAppointmentId = null;
+                const selectedAppointmentFromSession = sessionStorage.getItem('selectedAppointment');
+                if (selectedAppointmentFromSession) {
+                    const appFromSession = JSON.parse(selectedAppointmentFromSession);
+                    highlightedAppointmentId = parseInt(appFromSession.id); // Ensure ID is an integer for comparison
+
+                    // Find and move the selected appointment to the top
+                    const index = appointments.findIndex(app => app.AppointmentId === highlightedAppointmentId);
+                    if (index > -1) {
+                        const [foundAppointment] = appointments.splice(index, 1);
+                        appointments.unshift(foundAppointment);
+                    }
+                    // Clear session storage after processing for display
+                    sessionStorage.removeItem('selectedAppointment');
+                }
+
                 appointments.forEach(appointment => {
                     const row = appointmentTableBody.insertRow();
-                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                    let rowClass = 'border-b border-gray-200 hover:bg-gray-50';
+                    if (appointment.AppointmentId === highlightedAppointmentId) {
+                        rowClass += ' bg-yellow-200'; // Add yellow background class
+                    }
+                    row.className = rowClass;
 
                     const appointmentDatetime = appointment.AppointmentDatetime ? new Date(appointment.AppointmentDatetime).toLocaleString() : 'N/A';
                     const serviceNames = appointment.Services.map(s => s.name).join(', ');
@@ -200,6 +220,37 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
             sortServiceSelect.value,
             examDateInput.value
         );
+
+        // Check for selected appointment from sessionStorage on page load
+        const selectedAppointment = sessionStorage.getItem('selectedAppointment');
+        if (selectedAppointment) {
+            const app = JSON.parse(selectedAppointment);
+            // Populate the modal with the details from the session storage
+            document.getElementById('detail-appointment-id').textContent = app.id;
+            document.getElementById('detail-patient-name').textContent = app.patient_name;
+            document.getElementById('detail-doctor-name').textContent = app.doctor_name || 'N/A'; // Assuming doctor_name might not always be present
+            document.getElementById('detail-specialty-name').textContent = app.specialty_name || 'N/A'; // Assuming specialty_name might not always be present
+            document.getElementById('detail-appointment-datetime').textContent = new Date(app.start_time).toLocaleString();
+            document.getElementById('detail-status').textContent = app.status;
+            document.getElementById('detail-symptoms').textContent = app.symptoms || 'Không có';
+
+            const detailServicesList = document.getElementById('detail-services');
+            detailServicesList.innerHTML = ''; // Clear previous services
+            if (app.services && app.services.length > 0) {
+                app.services.forEach(service => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${service.name} (Số lượng: ${service.quantity})`;
+                    detailServicesList.appendChild(listItem);
+                });
+            } else {
+                const listItem = document.createElement('li');
+                listItem.textContent = 'Không có dịch vụ nào được đặt.';
+                detailServicesList.appendChild(listItem);
+            }
+
+            appointmentDetailModal.classList.remove('hidden');
+            sessionStorage.removeItem('selectedAppointment'); // Clear it after displaying
+        }
 
         // Event Listeners
         searchButton.addEventListener('click', () => {

@@ -217,8 +217,35 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                         <p class="font-semibold text-gray-800">Thời gian: ${appTime}</p>
                         <p class="text-gray-700">Bệnh nhân: ${app.patient_name}</p>
                         <p class="text-gray-700">Triệu chứng: ${app.symptoms || 'Không có'}</p>
+                        <button class="detail-button mt-2 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50" data-appointment-id="${app.id}">Chi tiết</button>
                     `;
                     modalAppointmentsList.appendChild(appItem);
+
+                    // Add event listener to the newly created detail button
+                    appItem.querySelector('.detail-button').addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent modal from closing if it's also listening for clicks
+                        const appointmentTime = new Date(app.start_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                        const appointmentDate = new Date(app.start_time).toLocaleDateString('vi-VN');
+                        alert(`Cuộc hẹn với bệnh nhân ${app.patient_name} lúc ${appointmentTime} ngày ${appointmentDate} đã được chỉ ra. Xin hãy chuyển sang trang lịch hẹn để tiếp tục.`);
+                        
+                        const doctorName = sessionStorage.getItem('userName') || 'Bác sĩ hiện tại'; // Assuming doctor's name is in sessionStorage
+                        const specialtyName = 'Chuyên khoa chung'; // Placeholder, ideally fetched or part of doctor's profile
+
+                        const appointmentToStore = {
+                            AppointmentId: app.id, // Map app.id to AppointmentId for consistency with doctor_lich_hen.js
+                            id: app.id, // Keep original id for consistency if needed elsewhere
+                            patient_name: app.patient_name,
+                            start_time: app.start_time,
+                            status: app.status,
+                            symptoms: app.symptoms,
+                            doctor_name: doctorName,
+                            specialty_name: specialtyName,
+                            // If 'services' is ever added to the /api/doctor/schedule response,
+                            // it should be included here: services: app.services || []
+                        };
+                        sessionStorage.setItem('selectedAppointment', JSON.stringify(appointmentToStore));
+                       
+                    });
                 });
             }
             appointmentModal.classList.remove('hidden');

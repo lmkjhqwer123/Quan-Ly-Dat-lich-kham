@@ -22,7 +22,7 @@ from typing import List, Optional
 
 import datetime
 
-from routers import patient_router, doctor_router, specialty_router, service_router
+from routers import patient_router, doctor_router, specialty_router, service_router, public_router
 
 
 
@@ -643,6 +643,7 @@ app.include_router(specialty_router.router)
 
 
 app.include_router(service_router.router)
+app.include_router(public_router.router)
 
 
 

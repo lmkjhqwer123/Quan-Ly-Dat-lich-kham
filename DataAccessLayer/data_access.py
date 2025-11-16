@@ -92,6 +92,18 @@ class Service(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     appointment_services = relationship("AppointmentService", back_populates="service")
 
+class DoctorLeave(Base):
+    __tablename__ = "DOCTOR_LEAVES"
+    LeaveId = Column('leave_id', Integer, primary_key=True, index=True)
+    DoctorId = Column('doctor_id', Integer, ForeignKey("doctors.doctor_id"))
+    StartDatetime = Column('start_datetime', DateTime, nullable=False)
+    EndDatetime = Column('end_datetime', DateTime, nullable=False)
+    Reason = Column('reason', Text, nullable=True)
+    LeaveType = Column('leave_type', String(50), nullable=False)
+    Status = Column('status', String(20), nullable=False)
+
+    doctor = relationship("Doctor")
+
 import pyodbc
 
 # Create all tables in the database
@@ -705,3 +717,17 @@ def create_appointment_service(db, appointment_service_data: dict):
     db.commit()
     db.refresh(db_appointment_service)
     return db_appointment_service
+
+def create_doctor_leave_entry(db: Session, doctor_id: int, start_datetime: datetime, end_datetime: datetime, reason: Optional[str], leave_type: str, status: str):
+    db_leave = DoctorLeave(
+        DoctorId=doctor_id,
+        StartDatetime=start_datetime,
+        EndDatetime=end_datetime,
+        Reason=reason,
+        LeaveType=leave_type,
+        Status=status
+    )
+    db.add(db_leave)
+    db.commit()
+    db.refresh(db_leave)
+    return db_leave

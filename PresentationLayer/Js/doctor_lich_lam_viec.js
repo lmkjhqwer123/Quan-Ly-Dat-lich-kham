@@ -66,9 +66,45 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 });
 
                 if (dayAppointments.length > 0) {
-                    const dotEl = document.createElement('div');
-                    dotEl.className = 'event-dot absolute bottom-1 right-1 w-2 h-2 bg-blue-500 rounded-full';
-                    dayCell.appendChild(dotEl);
+                    // Sort appointments: pending first, then by start_time
+                    dayAppointments.sort((a, b) => {
+                        if (a.status === 'pending' && b.status !== 'pending') return -1;
+                        if (a.status !== 'pending' && b.status === 'pending') return 1;
+                        return new Date(a.start_time) - new Date(b.start_time);
+                    });
+
+                    const appointmentsContainer = document.createElement('div');
+                    appointmentsContainer.className = 'appointments-container mt-1 text-xs space-y-0.5';
+                    dayCell.appendChild(appointmentsContainer);
+
+                    const statusColors = {
+                        'pending': 'bg-yellow-500',
+                        'confirmed': 'bg-green-500',
+                        'completed': 'bg-blue-500',
+                        'canceled': 'bg-red-500'
+                    };
+
+                    const displayLimit = 2;
+                    const appointmentsToDisplay = dayAppointments.slice(0, displayLimit);
+
+                    appointmentsToDisplay.forEach(app => {
+                        const appTime = new Date(app.start_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                        const appInfo = document.createElement('div');
+                        const statusColorClass = statusColors[app.status] || 'bg-gray-400'; // Default color if status is unknown
+                        appInfo.className = `flex items-center space-x-1 p-1 rounded-md ${statusColorClass} text-white text-xs font-medium mb-0.5 transform transition-transform duration-200 hover:scale-105`;
+                        appInfo.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-white"></span>
+                            <span>${appTime} - ${app.patient_name}</span>
+                        `;
+                        appointmentsContainer.appendChild(appInfo);
+                    });
+
+                    if (dayAppointments.length > displayLimit) {
+                        const moreIndicator = document.createElement('div');
+                        moreIndicator.className = 'text-center text-gray-500 font-bold text-xs mt-1';
+                        moreIndicator.textContent = '...';
+                        appointmentsContainer.appendChild(moreIndicator);
+                    }
                 } else {
                     const emptyText = document.createElement('div');
                     emptyText.className = 'text-gray-400 text-sm mt-2';
@@ -114,13 +150,32 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
             if (dayAppointments.length === 0) {
                 modalAppointmentsList.innerHTML = '<p class="text-gray-600">Không có lịch hẹn nào.</p>';
             } else {
+                const statusColors = {
+                    'pending': 'bg-yellow-500',
+                    'confirmed': 'bg-green-500',
+                    'completed': 'bg-blue-500',
+                    'canceled': 'bg-red-500'
+                };
+                const statusBgColors = {
+                    'pending': 'bg-yellow-100',
+                    'confirmed': 'bg-green-100',
+                    'completed': 'bg-blue-100',
+                    'canceled': 'bg-red-100'
+                };
+
                 dayAppointments.forEach(app => {
                     const appTime = new Date(app.start_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    const statusColorClass = statusColors[app.status] || 'bg-gray-400'; // Default color if status is unknown
+                    const statusBgColorClass = statusBgColors[app.status] || 'bg-gray-100'; // Lighter background color
                     const appItem = document.createElement('div');
-                    appItem.className = `mb-2 p-3 border rounded-md`;
+                    appItem.className = `mb-2 py-2 px-3 border rounded-md flex items-center space-x-2 ${statusBgColorClass} cursor-pointer transform transition-transform duration-200 hover:scale-105`;
                     appItem.innerHTML = `
-                        <p class="font-semibold text-gray-800">Thời gian: ${appTime}</p>
-                        <p class="text-gray-700">Bệnh nhân: ${app.patient_name}</p>
+                        <span class="w-3 h-3 rounded-full ${statusColorClass}"></span>
+                        <div>
+                            <p class="font-semibold text-gray-800">Thời gian: ${appTime}</p>
+                            <p class="text-gray-700">Bệnh nhân: ${app.patient_name}</p>
+                            <p class="text-gray-600 text-sm">Trạng thái: <span class="font-medium">${app.status}</span></p>
+                        </div>
                     `;
                     modalAppointmentsList.appendChild(appItem);
                 });
@@ -249,6 +304,31 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
         closeLeaveModalBtn.addEventListener('click', closeAndResetModal);
         cancelLeaveSubmissionBtn.addEventListener('click', closeAndResetModal);
 
+        // Helper function to check for appointment overlap
+        function checkAppointmentOverlap(leaveSchedules, existingAppointments) {
+            let overlapFound = false;
+            const overlappingAppointments = [];
+
+            leaveSchedules.forEach(leave => {
+                const leaveStart = new Date(`${leave.date}T${leave.start_time || '00:00'}`);
+                const leaveEnd = new Date(`${leave.date}T${leave.end_time || '23:59'}`);
+
+                existingAppointments.forEach(app => {
+                    const appStart = new Date(app.start_time);
+                    const appEnd = new Date(app.end_time || app.start_time); // Assuming end_time if not present
+
+                    // Check for overlap
+                    if (
+                        (leaveStart < appEnd && leaveEnd > appStart)
+                    ) {
+                        overlapFound = true;
+                        overlappingAppointments.push(app);
+                    }
+                });
+            });
+            return { overlapFound, overlappingAppointments };
+        }
+
         submitLeaveRequestBtn.addEventListener('click', async () => {
             const token = sessionStorage.getItem('accessToken');
             if (!token) {
@@ -256,8 +336,8 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 return;
             }
 
-            const reason = document.getElementById('reason').value;
-            const description = document.getElementById('leave-description').value; // Get description value
+            const leaveType = document.getElementById('leave-type').value;
+            const description = document.getElementById('leave-description').value;
             const schedules = [];
 
             let hasInvalidTime = false;
@@ -287,14 +367,31 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 return;
             }
 
+            // Simulate appointment overlap check
+            const { overlapFound, overlappingAppointments } = checkAppointmentOverlap(schedules, appointments);
+
+            if (overlapFound) {
+                let warningMessage = 'Cảnh báo: Có lịch hẹn trùng với thời gian bạn muốn nghỉ:\n';
+                overlappingAppointments.forEach(app => {
+                    const appDate = new Date(app.start_time).toLocaleDateString('vi-VN');
+                    const appTime = new Date(app.start_time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    warningMessage += `- Lịch hẹn với bệnh nhân ${app.patient_name} vào lúc ${appTime} ngày ${appDate}\n`;
+                });
+                warningMessage += '\nBạn có chắc chắn muốn gửi yêu cầu nghỉ phép này không?';
+
+                if (!confirm(warningMessage)) {
+                    return; // User cancelled the submission
+                }
+            }
+
             try {
-                const response = await fetch('/api/doctor/register-schedule', {
+                const response = await fetch('/api/doctor/leave-request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ reason, description, schedules }) // Add description to payload
+                    body: JSON.stringify({ leave_type: leaveType, description, schedules })
                 });
 
                 if (!response.ok) {
@@ -302,7 +399,9 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                     throw new Error(errorData.message || 'Có lỗi xảy ra');
                 }
 
-                alert('Đăng ký lịch thành công!');
+                const result = await response.json();
+                const leaveDates = result.map(leave => new Date(leave.start_datetime).toLocaleDateString('vi-VN')).join(', ');
+                alert(`Đăng ký nghỉ phép thành công!\nLoại nghỉ: ${result[0].leave_type}\nMô tả: ${result[0].reason || 'Không có'}\nNgày nghỉ: ${leaveDates}`);
                 closeAndResetModal();
                 await fetchAppointments(); // Refresh the main calendar
 

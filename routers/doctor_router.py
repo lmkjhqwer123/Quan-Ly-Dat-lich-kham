@@ -8,6 +8,7 @@ from routers.patient_router import PatientProfileDto
 from routers.doctor import patient_management
 from routers.doctor import appointment_management # Import the new router
 from routers.doctor import schedule
+from routers.doctor import leave_request # Import the new leave_request router
 
 from BusinessLogicLayer import business_logic
 from DataAccessLayer import data_access
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/api/doctor")
 router.include_router(patient_management.router)
 router.include_router(appointment_management.router) # Include the new router
 router.include_router(schedule.router)
+router.include_router(leave_request.router) # Include the new leave_request router
 
 class DoctorCreateRequest(BaseModel):
     FullName: str

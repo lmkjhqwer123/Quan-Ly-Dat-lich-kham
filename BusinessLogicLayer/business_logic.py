@@ -609,3 +609,49 @@ def delete_service_logic(db, service_id: int):
     if data_access.delete_service(db, service_id):
         return {"message": "Dịch vụ đã được xóa thành công."}
     return {"error": "Không tìm thấy dịch vụ."}
+
+def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, description: Optional[str], schedules: List[dict]):
+    created_leaves = []
+    for schedule_item in schedules:
+        date_str = schedule_item.date
+        start_time_str = schedule_item.start_time
+        end_time_str = schedule_item.end_time
+
+        # Combine date and time strings
+        start_datetime_str = f"{date_str}T{start_time_str or '00:00:00'}"
+        end_datetime_str = f"{date_str}T{end_time_str or '23:59:59'}"
+
+        try:
+            start_datetime = datetime.fromisoformat(start_datetime_str)
+            end_datetime = datetime.fromisoformat(end_datetime_str)
+        except ValueError:
+            raise ValueError(f"Invalid date or time format for schedule item: {schedule_item}")
+
+        if start_datetime >= end_datetime:
+            raise ValueError("Start time must be before end time for leave request.")
+
+        # Create leave entry in DB
+        new_leave = data_access.create_doctor_leave_entry(
+            db,
+            doctor_id=doctor_id,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+            reason=description, # Using description as reason for now
+            leave_type=leave_type,
+            status="pending" # Default status
+        )
+        created_leaves.append(new_leave)
+    
+    # Convert SQLAlchemy objects to dicts for response
+    response_leaves = []
+    for leave in created_leaves:
+        response_leaves.append({
+            "leave_id": leave.LeaveId,
+            "doctor_id": leave.DoctorId,
+            "start_datetime": leave.StartDatetime,
+            "end_datetime": leave.EndDatetime,
+            "reason": leave.Reason,
+            "leave_type": leave.LeaveType,
+            "status": leave.Status
+        })
+    return response_leaves

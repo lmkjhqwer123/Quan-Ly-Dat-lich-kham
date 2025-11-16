@@ -224,29 +224,52 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
             // Add day cells
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
-                const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const today = new Date(); // Reintroduce today
+                today.setHours(0, 0, 0, 0); // Normalize today to start of day for comparison
+                const isPastDay = date < today; // Reintroduce isPastDay
+
+                const localYear = date.getFullYear();
+                const localMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+                const localDay = date.getDate().toString().padStart(2, '0');
+                const dateString = `${localYear}-${localMonth}-${localDay}`;
                 const dayCell = document.createElement('div');
                 dayCell.textContent = day;
-                dayCell.className = 'p-1.5 rounded-full cursor-pointer hover:bg-gray-200';
-                dayCell.dataset.date = dateString;
+                dayCell.className = 'p-1.5 rounded-full';
 
-                if (selectedDates.has(dateString)) {
-                    dayCell.classList.add('bg-blue-500', 'text-white');
+                if (isPastDay) {
+                    dayCell.classList.add('text-gray-400', 'cursor-not-allowed');
+                } else {
+                    dayCell.classList.add('cursor-pointer', 'hover:bg-gray-200');
+                    dayCell.dataset.date = dateString;
+                    dayCell.addEventListener('click', () => toggleDateSelection(dateString));
                 }
 
-                dayCell.addEventListener('click', () => toggleDateSelection(dateString));
+                if (selectedDates.has(dateString) && !isPastDay) {
+                    dayCell.classList.add('bg-blue-500', 'text-white');
+                }
                 miniCalBody.appendChild(dayCell);
             }
         }
 
         function toggleDateSelection(dateString) {
+            const [year, month, day] = dateString.split('-').map(Number);
+            const selectedLocalDay = new Date(year, month - 1, day); // Month is 0-indexed
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize today to start of local day
+
+            if (selectedLocalDay < today) {
+                alert('Không thể chọn ngày trong quá khứ.');
+                return;
+            }
+
             const cell = miniCalBody.querySelector(`[data-date="${dateString}"]`);
             if (selectedDates.has(dateString)) {
                 selectedDates.delete(dateString);
-                cell.classList.remove('bg-blue-500', 'text-white');
+                if (cell) cell.classList.remove('bg-blue-500', 'text-white');
             } else {
                 selectedDates.add(dateString);
-                cell.classList.add('bg-blue-500', 'text-white');
+                if (cell) cell.classList.add('bg-blue-500', 'text-white');
             }
             updateSelectedDaysList();
         }
@@ -260,7 +283,8 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
 
             const sortedDates = Array.from(selectedDates).sort();
             sortedDates.forEach(dateString => {
-                const date = new Date(dateString);
+                const [year, month, day] = dateString.split('-').map(Number);
+                const date = new Date(year, month - 1, day); // Month is 0-indexed
                 const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
                 const dayElement = document.createElement('div');
                 dayElement.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md';
@@ -365,6 +389,17 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
             if (schedules.length === 0) {
                 alert('Vui lòng chọn ít nhất một ngày.');
                 return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize today to start of day for comparison
+
+            for (const schedule of schedules) {
+                const leaveDate = new Date(schedule.date);
+                if (leaveDate < today) {
+                    alert('Không thể gửi yêu cầu nghỉ phép cho ngày trong quá khứ.');
+                    return;
+                }
             }
 
             // Simulate appointment overlap check

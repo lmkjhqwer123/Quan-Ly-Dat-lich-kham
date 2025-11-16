@@ -612,10 +612,20 @@ def delete_service_logic(db, service_id: int):
 
 def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, description: Optional[str], schedules: List[dict]):
     created_leaves = []
+    today = datetime.now().date() # Get current date for comparison
+
+    # Define urgent leave types for automatic approval
+    urgent_leave_types = ['sick', 'urgent']
+    
     for schedule_item in schedules:
         date_str = schedule_item.date
         start_time_str = schedule_item.start_time
         end_time_str = schedule_item.end_time
+
+        # Server-side check for past dates
+        schedule_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        if schedule_date < today:
+            raise ValueError(f"Không thể đăng ký nghỉ phép cho ngày trong quá khứ: {date_str}")
 
         # Combine date and time strings
         start_datetime_str = f"{date_str}T{start_time_str or '00:00:00'}"
@@ -630,6 +640,9 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
         if start_datetime >= end_datetime:
             raise ValueError("Start time must be before end time for leave request.")
 
+        # Determine initial status based on leave type
+        initial_status = "approved" if leave_type in urgent_leave_types else "pending"
+
         # Create leave entry in DB
         new_leave = data_access.create_doctor_leave_entry(
             db,
@@ -638,7 +651,7 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
             end_datetime=end_datetime,
             reason=description, # Using description as reason for now
             leave_type=leave_type,
-            status="pending" # Default status
+            status=initial_status # Set status based on logic
         )
         created_leaves.append(new_leave)
     

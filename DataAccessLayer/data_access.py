@@ -104,6 +104,16 @@ class DoctorLeave(Base):
 
     doctor = relationship("Doctor")
 
+class DoctorWorkingHour(Base):
+    __tablename__ = "DOCTOR_WORKING_HOURS"
+    WorkingHourId = Column('working_hour_id', Integer, primary_key=True, index=True)
+    DoctorId = Column('doctor_id', Integer, ForeignKey("doctors.doctor_id"))
+    DayOfWeek = Column('day_of_week', String(10), nullable=False)
+    StartTime = Column('start_time', String, nullable=False) # Store as string 'HH:MM'
+    EndTime = Column('end_time', String, nullable=False) # Store as string 'HH:MM'
+
+    doctor = relationship("Doctor")
+
 import pyodbc
 
 # Create all tables in the database
@@ -198,8 +208,88 @@ def get_all_doctors(db, search: Optional[str] = None, sort_direction: Optional[s
 def get_doctor_by_id(db, doctor_id: int):
     return db.query(Doctor).filter(Doctor.DoctorId == doctor_id).first()
 
+def get_doctor_specialty_id(db: Session, doctor_id: int) -> Optional[int]:
+    doctor = db.query(Doctor).filter(Doctor.DoctorId == doctor_id).first()
+    if doctor:
+        return doctor.SpecialtyId
+    return None
+
+def get_doctors_in_specialty_excluding_one(db: Session, specialty_id: int, excluded_doctor_id: int) -> List[Doctor]:
+    return db.query(Doctor).filter(
+        Doctor.SpecialtyId == specialty_id,
+        Doctor.DoctorId != excluded_doctor_id
+    ).all()
+
+def get_total_doctors_in_specialty(db: Session, specialty_id: int) -> int:
+    """
+    Counts the total number of doctors in a given specialty.
+    """
+    return db.query(Doctor).filter(Doctor.SpecialtyId == specialty_id).count()
+
+def get_doctors_on_leave_in_specialty(db: Session, specialty_id: int, start_datetime: datetime, end_datetime: datetime) -> int:
+    """
+    Counts the number of doctors in a given specialty who have approved leave requests
+    that overlap with the specified time range.
+    """
+    return db.query(Doctor.DoctorId).distinct().join(DoctorLeave).filter(
+        Doctor.SpecialtyId == specialty_id,
+        DoctorLeave.Status == 'approved',
+        DoctorLeave.StartDatetime < end_datetime,
+        DoctorLeave.EndDatetime > start_datetime
+    ).count()
+
+def is_doctor_available(db: Session, doctor_id: int, check_start_datetime: datetime, check_end_datetime: datetime) -> bool:
+    # 1. Check for overlapping leaves
+    overlapping_leaves = db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.Status == 'approved', # Only consider approved leaves
+        DoctorLeave.StartDatetime < check_end_datetime,
+        DoctorLeave.EndDatetime > check_start_datetime
+    ).first()
+    if overlapping_leaves:
+        return False # Doctor is on an approved leave
+
+    # 2. Check for working hours
+    # Convert check_start_datetime and check_end_datetime to day of week and time objects
+    day_of_week = check_start_datetime.strftime('%A').upper() # e.g., 'MONDAY'
+    check_start_time = check_start_datetime.time()
+    check_end_time = check_end_datetime.time()
+
+    # Find working hours for the specific day
+    working_hours_entries = db.query(DoctorWorkingHour).filter(
+        DoctorWorkingHour.DoctorId == doctor_id,
+        DoctorWorkingHour.DayOfWeek == day_of_week
+    ).all()
+
+    if not working_hours_entries:
+        # If no specific working hours are defined for this day, assume default availability.
+        # This means the doctor is available if not on leave.
+        return True
+
+    # If there are specific working hours, check if the requested time range falls within any defined working hours
+    for wh in working_hours_entries:
+        wh_start_time = datetime.datetime.strptime(wh.StartTime, '%H:%M').time()
+        wh_end_time = datetime.datetime.strptime(wh.EndTime, '%H:%M').time()
+
+        # Check for overlap:
+        # (StartA < EndB) and (EndA > StartB)
+        if (check_start_time < wh_end_time) and (check_end_time > wh_start_time):
+            return True # There is an overlap with working hours
+
+    return False # No overlapping working hours found, and specific working hours were defined
+
 def get_doctor_by_email(db, email: str):
     return db.query(Doctor).filter(Doctor.Email == email).first()
+
+def get_overlapping_doctor_leaves(db: Session, doctor_id: int, start_datetime: datetime, end_datetime: datetime) -> List[DoctorLeave]:
+    """
+    Retrieves any existing leave entries for a specific doctor that overlap with the given time range.
+    """
+    return db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.StartDatetime < end_datetime,
+        DoctorLeave.EndDatetime > start_datetime
+    ).all()
 
 def create_doctor(db, doctor_data: dict):
     hashed_password = hash_password(doctor_data["Password"])

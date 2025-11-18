@@ -252,3 +252,76 @@ CHECK (leave_type IN (
     'other' -- Các loại khác
 ));
 GO
+
+
+
+-- Xóa bản ghi nghỉ phép của Bác sĩ D nếu có
+DELETE FROM DOCTOR_LEAVES
+WHERE doctor_id IN (
+    SELECT doctor_id FROM DOCTORS WHERE full_name IN (N'Bác sĩ Lê Thị D')
+);
+
+-- Xóa bản ghi Bác sĩ C và D (nếu chúng đã tồn tại)
+DELETE FROM DOCTORS
+WHERE full_name IN (N'Bác sĩ Lê Thị D');
+GO
+
+-- =================================================================
+-- 2. TẠO BÁC SĨ E VÀ BÁC SĨ D VÀ CHÈN ĐƠN NGHỈ PHÉP
+-- =================================================================
+
+-- Khai báo các hằng số cần dùng
+-- Giả định specialty_id=1 là Khoa Nội tổng hợp (của Bác sĩ B)
+DECLARE @KhoaNoiTongHopID INT = 1; 
+DECLARE @HashedPassword NVARCHAR(255) = 'CHUOI_HASH_CUA_123'; 
+DECLARE @LeaveType NVARCHAR(50) = 'annual'; 
+
+-- -----------------------------------------------------------------
+-- 2.1. TẠO BÁC SĨ E và D
+-- -----------------------------------------------------------------
+
+-- Tạo Bác sĩ E (thay thế cho Bác sĩ C)
+INSERT INTO DOCTORS (full_name, email, phone, specialty_id, qualifications, password_hash)
+VALUES (N'Bác sĩ Phan Văn E', 'bs.pvanE@example.com', '0901112224', @KhoaNoiTongHopID, N'Thạc sĩ Nội khoa', @HashedPassword);
+
+-- Tạo Bác sĩ D
+INSERT INTO DOCTORS (full_name, email, phone, specialty_id, qualifications, password_hash)
+VALUES (N'Bác sĩ Lê Thị D', 'bs.lthid@example.com', '0903334440', @KhoaNoiTongHopID, N'Bác sĩ chuyên khoa I', @HashedPassword);
+GO
+
+-- -----------------------------------------------------------------
+-- 2.2. CHÈN BẢN GHI NGHỈ PHÉP
+-- -----------------------------------------------------------------
+
+-- Lấy ID của Bác sĩ E và D vừa tạo (Đây là cách an toàn nhất)
+DECLARE @DoctorEID INT = (SELECT doctor_id FROM DOCTORS WHERE full_name = N'Bác sĩ Phan Văn E');
+DECLARE @DoctorDID INT = (SELECT doctor_id FROM DOCTORS WHERE full_name = N'Bác sĩ Lê Thị D');
+DECLARE @LeaveType NVARCHAR(50) = 'annual'; 
+-- Đơn nghỉ của Bác sĩ E: 12/12/2025, 07:00 – 15:00
+INSERT INTO DOCTOR_LEAVES (doctor_id, start_datetime, end_datetime, reason, status, leave_type)
+VALUES (
+    @DoctorEID, 
+    '2025-12-12 07:00:00', 
+    '2025-12-12 15:00:00', 
+    N'Nghỉ phép thường niên theo giờ (8 tiếng)', 
+    'pending', 
+    @LeaveType
+);
+
+-- Đơn nghỉ của Bác sĩ D: 13/12/2025, 09:00 – 17:00
+INSERT INTO DOCTOR_LEAVES (doctor_id, start_datetime, end_datetime, reason, status, leave_type)
+VALUES (
+    @DoctorDID, 
+    '2025-12-13 09:00:00', 
+    '2025-12-13 17:00:00', 
+    N'Nghỉ phép thường niên theo giờ (8 tiếng)', 
+    'pending', 
+    @LeaveType
+);
+GO
+
+-- =================================================================
+-- 3. TRUY VẤN XÁC NHẬN DỮ LIỆU
+-- =================================================================
+
+PRINT N'✅ Đã chèn thành công Bác sĩ E, D và đơn nghỉ phép.';

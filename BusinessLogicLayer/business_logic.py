@@ -4,6 +4,7 @@ import auth
 import mail
 from typing import Optional, List
 from enum import Enum
+from routers.doctor.leave_request import LeaveScheduleItem
 
 class AppointmentStatus(str, Enum):
     PENDING = "pending"
@@ -616,6 +617,11 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
 
     # Define urgent leave types for automatic approval
     urgent_leave_types = ['sick', 'urgent']
+
+    # Get the specialty of the doctor requesting leave
+    doctor_specialty_id = data_access.get_doctor_specialty_id(db, doctor_id)
+    if not doctor_specialty_id:
+        raise ValueError("Doctor's specialty not found.")
     
     for schedule_item in schedules:
         date_str = schedule_item.date
@@ -639,6 +645,24 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
 
         if start_datetime >= end_datetime:
             raise ValueError("Start time must be before end time for leave request.")
+
+        # Check for overlapping leave requests for the same doctor (Bug 2)
+        overlapping_leaves = data_access.get_overlapping_doctor_leaves(db, doctor_id, start_datetime, end_datetime)
+        if overlapping_leaves:
+            # You might want to provide more detail about the overlapping leave
+            raise ValueError(f"Bạn đã có đơn đăng ký nghỉ phép trùng lặp hoặc chồng chéo vào ngày {date_str} từ {start_time_str} đến {end_time_str}.")
+
+        # --- Departmental Leave Limit Validation (Bug 1) ---
+        total_doctors_in_specialty = data_access.get_total_doctors_in_specialty(db, doctor_specialty_id)
+        doctors_on_leave_in_specialty = data_access.get_doctors_on_leave_in_specialty(db, doctor_specialty_id, start_datetime, end_datetime)
+
+        # If the current doctor takes leave, how many doctors will be available?
+        # We subtract 1 for the current doctor requesting leave.
+        available_doctors_after_this_leave = total_doctors_in_specialty - doctors_on_leave_in_specialty - 1
+
+        if available_doctors_after_this_leave < 1:
+            raise ValueError(f"Không thể đăng ký nghỉ phép vào ngày {date_str} vì sẽ không có đủ bác sĩ trong chuyên khoa này hoạt động vào thời gian đó.")
+        # --- End Departmental Leave Limit Validation ---
 
         # Determine initial status based on leave type
         initial_status = "approved" if leave_type in urgent_leave_types else "pending"

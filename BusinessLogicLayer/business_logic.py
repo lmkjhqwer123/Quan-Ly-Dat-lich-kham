@@ -243,6 +243,9 @@ def get_doctor_appointment_by_id_logic(db, doctor_id: int, appointment_id: int):
             "AppointmentDatetime": appointment.AppointmentDatetime,
             "Status": appointment.Status,
             "PatientName": appointment.patient.FullName if appointment.patient else None,
+            "PatientBirthDate": appointment.patient.birth_date.isoformat() if appointment.patient and appointment.patient.birth_date else None,
+            "PatientPhone": appointment.patient.Phone if appointment.patient else None,
+            "PatientAddress": appointment.patient.address if appointment.patient else None,
             "SpecialtyName": appointment.specialty.Name if appointment.specialty else None,
             "Symptoms": appointment.Symptoms,
             "BookingCode": appointment.BookingCode

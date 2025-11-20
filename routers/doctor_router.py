@@ -68,6 +68,9 @@ class DoctorAppointmentOut(BaseModel):
     AppointmentDatetime: datetime.datetime
     Status: str
     PatientName: Optional[str] = None
+    PatientBirthDate: Optional[datetime.date] = None
+    PatientPhone: Optional[str] = None
+    PatientAddress: Optional[str] = None
     SpecialtyName: Optional[str] = None
     Symptoms: str
     BookingCode: Optional[str] = None

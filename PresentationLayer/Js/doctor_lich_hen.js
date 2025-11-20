@@ -231,6 +231,7 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
                 if (!response.ok) throw new Error('Failed to fetch appointment details for EMR.');
                 
                 const appointment = await response.json();
+                console.log('Appointment details for EMR:', appointment);
 
                 // Populate EMR form
                 document.getElementById('emr-appointment-id').textContent = `#AP-${appointment.AppointmentId}`;
@@ -238,7 +239,7 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
                 document.getElementById('emr-specialty-name').textContent = appointment.SpecialtyName;
                 document.getElementById('emr-patient-name').value = appointment.PatientName;
                 document.getElementById('emr-patient-dob').value = appointment.PatientBirthDate ? appointment.PatientBirthDate.split('T')[0] : '';
-                document.getElementById('emr-patient-gender').value = appointment.PatientGender;
+                // document.getElementById('emr-patient-gender').value = appointment.PatientGender;
                 document.getElementById('emr-patient-phone').value = appointment.PatientPhone;
                 document.getElementById('emr-patient-address').value = appointment.PatientAddress || 'Chưa cung cấp';
                 document.getElementById('emr-patient-symptoms').value = appointment.Symptoms || 'Không có';

@@ -5,6 +5,7 @@ import mail
 from typing import Optional, List
 from enum import Enum
 from routers.doctor.leave_request import LeaveScheduleItem
+from fastapi import HTTPException, status
 
 class AppointmentStatus(str, Enum):
     PENDING = "pending"
@@ -404,9 +405,68 @@ def delete_specialty_by_id_logic(db, specialty_id: int):
     return {"error": "Không tìm thấy chuyên khoa."}
 
 # --- Patient/Appointment Logic ---
-def book_appointment_logic(db, patient_id: int, booking_dto: dict):
+def book_appointment_logic(db, patient_id: int, booking_dto: dict, booking_code: str):
+    appointment_datetime_str = booking_dto.get("AppointmentDatetime")
+    doctor_id = booking_dto.get("DoctorId")
+
+    if not appointment_datetime_str or not doctor_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="AppointmentDatetime and DoctorId are required."
+        )
+
+    try:
+        # Ensure appointment_datetime is a datetime object
+        if isinstance(appointment_datetime_str, str):
+            appointment_datetime = datetime.fromisoformat(appointment_datetime_str)
+        elif isinstance(appointment_datetime_str, datetime):
+            appointment_datetime = appointment_datetime_str
+        else:
+            raise ValueError
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid AppointmentDatetime format. Use ISO 8601 format."
+        )
+
+    # Assuming a 2-hour appointment slot as per user description
+    appointment_end_time = appointment_datetime + timedelta(hours=2)
+
+    # B. Conflict Check
+    # 1. Check for conflicting appointments
+    conflicting_appointments = data_access.get_conflicting_appointments(
+        db,
+        doctor_id=doctor_id,
+        start_time=appointment_datetime,
+        end_time=appointment_end_time
+    )
+    if conflicting_appointments:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The selected time slot is already booked with another appointment."
+        )
+
+    # 2. Check for conflicting doctor leaves
+    conflicting_leaves = data_access.get_conflicting_doctor_leaves(
+        db,
+        doctor_id=doctor_id,
+        start_time=appointment_datetime,
+        end_time=appointment_end_time
+    )
+    if conflicting_leaves:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The doctor is on leave during the selected time slot."
+        )
+
+    # C. Ghi Dữ liệu (Data Insertion)
+    # If no conflicts, create the appointment
     booking_dto['PatientId'] = patient_id
     booking_dto['Status'] = 'pending'
+    booking_dto['BookingCode'] = booking_code
+    # Ensure the datetime object is used, not the original string
+    booking_dto['AppointmentDatetime'] = appointment_datetime 
+    
     new_appointment = data_access.create_appointment(db, booking_dto)
     return {"message": "Đặt lịch hẹn thành công!", "appointmentId": new_appointment.AppointmentId}
 
@@ -611,14 +671,58 @@ def delete_service_logic(db, service_id: int):
         return {"message": "Dịch vụ đã được xóa thành công."}
     return {"error": "Không tìm thấy dịch vụ."}
 
-def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, description: Optional[str], schedules: List[dict]):
+def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, description: Optional[str], schedules: List[LeaveScheduleItem]):
     created_leaves = []
-    today = datetime.now().date() # Get current date for comparison
+    today = datetime.now().date()
 
-    # Define urgent leave types for automatic approval
+    # --- New Validation Logic ---
+    
+    # 1. Parse and sort requested dates
+    requested_dates = sorted([datetime.strptime(s.date, '%Y-%m-%d').date() for s in schedules])
+
+    # 2. Check for more than 3 consecutive days in the request itself
+    if len(requested_dates) > 3:
+        for i in range(len(requested_dates) - 3):
+            if (requested_dates[i+3] - requested_dates[i]).days == 3:
+                raise ValueError("Không thể đăng ký nghỉ quá 3 ngày liên tục trong một lần đăng ký.")
+
+    # 3. Check monthly leave limit (<= 6 days)
+    monthly_requests = {}
+    for date in requested_dates:
+        month_key = (date.year, date.month)
+        if month_key not in monthly_requests:
+            monthly_requests[month_key] = 0
+        monthly_requests[month_key] += 1
+
+    for (year, month), count in monthly_requests.items():
+        existing_leaves = data_access.get_doctor_leaves_for_month(db, doctor_id, year, month)
+        if len(existing_leaves) + count > 6:
+            raise ValueError(f"Không thể đăng ký nghỉ quá 6 ngày trong tháng {month}/{year}.")
+
+    # 4. Check for consecutive days within a week (including existing leave)
+    for req_date in requested_dates:
+        # Check a 7-day window around the requested date
+        start_check = req_date - timedelta(days=3)
+        end_check = req_date + timedelta(days=3)
+        
+        # Get existing leaves in this window
+        existing_leaves_in_window = data_access.get_doctor_leaves_in_range(db, doctor_id, start_check, end_check)
+        
+        # Combine existing leave dates and the current request's dates within the window
+        all_leave_dates_in_window = set(l.StartDatetime.date() for l in existing_leaves_in_window)
+        all_leave_dates_in_window.update(d for d in requested_dates if start_check <= d <= end_check)
+        
+        sorted_window_dates = sorted(list(all_leave_dates_in_window))
+
+        # Check for more than 3 consecutive days in the combined list
+        if len(sorted_window_dates) > 3:
+            for i in range(len(sorted_window_dates) - 3):
+                if (sorted_window_dates[i+3] - sorted_window_dates[i]).days == 3:
+                    raise ValueError(f"Việc đăng ký ngày {req_date.strftime('%d/%m/%Y')} sẽ tạo thành một chuỗi nghỉ dài hơn 3 ngày liên tục.")
+
+    # --- End of New Validation Logic ---
+
     urgent_leave_types = ['sick', 'urgent']
-
-    # Get the specialty of the doctor requesting leave
     doctor_specialty_id = data_access.get_doctor_specialty_id(db, doctor_id)
     if not doctor_specialty_id:
         raise ValueError("Doctor's specialty not found.")
@@ -628,12 +732,10 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
         start_time_str = schedule_item.start_time
         end_time_str = schedule_item.end_time
 
-        # Server-side check for past dates
         schedule_date = datetime.strptime(date_str, '%Y-%m-%d').date()
         if schedule_date < today:
             raise ValueError(f"Không thể đăng ký nghỉ phép cho ngày trong quá khứ: {date_str}")
 
-        # Combine date and time strings
         start_datetime_str = f"{date_str}T{start_time_str or '00:00:00'}"
         end_datetime_str = f"{date_str}T{end_time_str or '23:59:59'}"
 
@@ -646,40 +748,30 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
         if start_datetime >= end_datetime:
             raise ValueError("Start time must be before end time for leave request.")
 
-        # Check for overlapping leave requests for the same doctor (Bug 2)
         overlapping_leaves = data_access.get_overlapping_doctor_leaves(db, doctor_id, start_datetime, end_datetime)
         if overlapping_leaves:
-            # You might want to provide more detail about the overlapping leave
             raise ValueError(f"Bạn đã có đơn đăng ký nghỉ phép trùng lặp hoặc chồng chéo vào ngày {date_str} từ {start_time_str} đến {end_time_str}.")
 
-        # --- Departmental Leave Limit Validation (Bug 1) ---
         total_doctors_in_specialty = data_access.get_total_doctors_in_specialty(db, doctor_specialty_id)
         doctors_on_leave_in_specialty = data_access.get_doctors_on_leave_in_specialty(db, doctor_specialty_id, start_datetime, end_datetime)
-
-        # If the current doctor takes leave, how many doctors will be available?
-        # We subtract 1 for the current doctor requesting leave.
+        
         available_doctors_after_this_leave = total_doctors_in_specialty - doctors_on_leave_in_specialty - 1
-
         if available_doctors_after_this_leave < 1:
             raise ValueError(f"Không thể đăng ký nghỉ phép vào ngày {date_str} vì sẽ không có đủ bác sĩ trong chuyên khoa này hoạt động vào thời gian đó.")
-        # --- End Departmental Leave Limit Validation ---
 
-        # Determine initial status based on leave type
         initial_status = "approved" if leave_type in urgent_leave_types else "pending"
 
-        # Create leave entry in DB
         new_leave = data_access.create_doctor_leave_entry(
             db,
             doctor_id=doctor_id,
             start_datetime=start_datetime,
             end_datetime=end_datetime,
-            reason=description, # Using description as reason for now
+            reason=description,
             leave_type=leave_type,
-            status=initial_status # Set status based on logic
+            status=initial_status
         )
         created_leaves.append(new_leave)
     
-    # Convert SQLAlchemy objects to dicts for response
     response_leaves = []
     for leave in created_leaves:
         response_leaves.append({
@@ -692,3 +784,36 @@ def submit_doctor_leave_request_logic(db, doctor_id: int, leave_type: str, descr
             "status": leave.Status
         })
     return response_leaves
+
+def get_doctor_monthly_availability_logic(db, doctor_id: int, year: int, month: int):
+    """
+    Business logic to get monthly availability for a doctor.
+    """
+    return data_access.get_doctor_monthly_availability(db, doctor_id, year, month)
+
+def get_doctor_daily_availability_logic(db, doctor_id: int, date: datetime.date):
+    """
+    Business logic to get daily availability for a doctor.
+    """
+    return data_access.get_doctor_daily_availability(db, doctor_id, date)
+
+def update_appointment_status_logic(db, appointment_id: int, new_status: str):
+    """
+    Business logic to update the status of an appointment.
+    """
+    # Optional: Add validation for the new_status here if needed
+    # For example, check if it's a valid status from an Enum
+
+    updated_appointment = data_access.update_appointment_status(db, appointment_id, new_status)
+
+    if not updated_appointment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Appointment with id {appointment_id} not found."
+        )
+
+    return {
+        "message": "Appointment status updated successfully",
+        "appointment_id": updated_appointment.AppointmentId,
+        "new_status": updated_appointment.Status
+    }

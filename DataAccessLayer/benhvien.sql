@@ -253,6 +253,25 @@ CHECK (leave_type IN (
 ));
 GO
 
+ALTER TABLE MEDICAL_RECORDS
+ADD 
+    -- 1. DỮ LIỆU SINH TỒN (Theo yêu cầu: Chỉ điền 1 lần)
+    -- Đây là cách tối ưu nhất thay vì tạo bảng VITAL_SIGNS riêng
+    pulse_rate INT NULL,                        -- Mạch (Lần/phút)
+    temperature DECIMAL(4, 2) NULL,             -- Nhiệt độ (°C)
+    blood_pressure_mmhg NVARCHAR(10) NULL,      -- Huyết áp (VD: 120/80)
+    spo2_percent DECIMAL(4, 1) NULL,            -- SpO2 (%)
+    
+    -- 2. GHI NHẬN BỔ SUNG CỦA BÁC SĨ (HPI - History of Present Illness)
+    -- Thùng chứa các ghi chú lâm sàng của bác sĩ dựa trên Triệu chứng BN
+    doctor_hpi_notes NVARCHAR(MAX) NULL,
+    -- 3. KẾT QUẢ KHÁM THỰC THỂ (Objective Findings)
+    -- Lưu trữ mô tả của bác sĩ về tình trạng bệnh nhân (Nghe tim, phổi, sờ bụng...)
+    physical_examination_notes NVARCHAR(MAX) NULL; 
+    
+GO
+
+PRINT N'✅ Đã thêm các trường Dấu hiệu Sinh tồn và Ghi nhận bổ sung vào bảng MEDICAL_RECORDS.';
 
 
 -- Xóa bản ghi nghỉ phép của Bác sĩ D nếu có

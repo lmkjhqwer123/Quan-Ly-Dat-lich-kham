@@ -16,6 +16,80 @@
             border-color: #2dd4bf !important; /* Màu teal-400 */
             box-shadow: 0 0 0 2px #99f6e4; /* Màu teal-200 */
         }
+        /* CSS cho lịch tháng */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(40px, auto); /* Adjusted for smaller calendar in appointments */
+            max-height: 240px; /* 6 rows * 40px/row = 240px */
+            overflow: hidden;
+        }
+        .calendar-day {
+            min-height: 40px; /* Ensure a minimum height for content */
+            height: auto;
+            padding: 4px;
+            vertical-align: top;
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+            background-color: #ffffff;
+            transition: background-color 0.2s;
+            cursor: pointer; /* Add cursor for clickable days */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .calendar-day:hover {
+            background-color: #f9fafb;
+        }
+        .calendar-day-other-month {
+            background-color: #f9fafb;
+            color: #9ca3af;
+            cursor: not-allowed; /* Indicate non-clickable */
+        }
+        .day-number {
+            font-weight: 500;
+            margin-bottom: 2px;
+            font-size: 0.875rem; /* text-sm */
+        }
+        .calendar-day.selected {
+            background-color: #2dd4bf; /* teal-400 */
+            color: white;
+            font-weight: 700;
+        }
+        .calendar-day.selected .day-number {
+            color: white;
+        }
+        .calendar-day-header {
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+            color: #4b5563; /* text-gray-700 */
+            background-color: #f3f4f6; /* bg-gray-100 */
+            border-right: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .calendar-day-header:last-child {
+            border-right: none;
+        }
+        .calendar-grid .calendar-day:nth-child(7n) {
+            border-right: none;
+        }
+        /* New styles for booked days and time slots */
+        .fully-booked-day {
+            background-color: #fca5a5; /* Red-300 */
+            color: #b91c1c; /* Red-700 */
+            cursor: not-allowed;
+        }
+        .fully-booked-day .day-number {
+            color: #b91c1c;
+        }
+        .booked-time-slot {
+            background-color: #fca5a5; /* Red-300 */
+            color: #b91c1c; /* Red-700 */
+            cursor: not-allowed;
+            border-color: #ef4444; /* Red-500 */
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -62,21 +136,45 @@
                                 <h2 class="text-xl font-semibold text-gray-800 mb-4">Thời gian khám</h2>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label for="appointment-date" class="block text-sm font-medium text-gray-700 mb-1">Chọn ngày <span class="text-red-500">*</span></label>
-                                        <input type="date" id="appointment-date" name="appointment-date" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chọn ngày <span class="text-red-500">*</span></label>
+                                        <!-- Thanh điều khiển tháng -->
+                                        <div class="bg-white p-2 rounded-t-lg flex justify-between items-center border border-gray-300 border-b-0">
+                                            <button type="button" id="prev-month" class="px-3 py-1 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 text-sm">
+                                                &larr;
+                                            </button>
+                                            <h3 id="month-year" class="text-base font-semibold text-gray-800"></h3>
+                                            <button type="button" id="next-month" class="px-3 py-1 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 text-sm">
+                                                &rarr;
+                                            </button>
+                                        </div>
+                                        <!-- Lịch dạng tháng -->
+                                        <div class="bg-white rounded-b-lg shadow-sm overflow-hidden border border-gray-300">
+                                            <!-- Hàng tiêu đề các ngày trong tuần -->
+                                            <div class="grid grid-cols-7 text-center text-sm font-medium text-gray-600 bg-gray-100 border-b border-gray-200">
+                                                <div class="p-2">CN</div>
+                                                <div class="p-2">T2</div>
+                                                <div class="p-2">T3</div>
+                                                <div class="p-2">T4</div>
+                                                <div class="p-2">T5</div>
+                                                <div class="p-2">T6</div>
+                                                <div class="p-2">T7</div>
+                                            </div>
+                                            <!-- Các hàng ngày trong tháng -->
+                                            <div id="calendar-grid" class="calendar-grid">
+                                                <!-- Các ngày sẽ được chèn bằng JS -->
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="appointment-date" name="appointment-date" required>
                                     </div>
                                     <div>
-                                        <label for="appointment-time" class="block text-sm font-medium text-gray-700 mb-1">Chọn giờ <span class="text-red-500">*</span></label>
-                                        <select id="appointment-time" name="appointment-time" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none">
-                                            <option value="" disabled selected>Chọn một khung giờ</option>
-                                            <option value="08:00:00">08:00</option>
-                                            <option value="09:00:00">09:00</option>
-                                            <option value="10:00:00">10:00</option>
-                                            <option value="11:00:00">11:00</option>
-                                            <option value="14:00:00">14:00</option>
-                                            <option value="15:00:00">15:00</option>
-                                            <option value="16:00:00">16:00</option>
-                                        </select>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Chọn giờ <span class="text-red-500">*</span></label>
+                                        <div id="appointment-time-selection" class="grid grid-cols-2 gap-2">
+                                            <button type="button" class="time-slot-button px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400" data-time="07:00-09:00">7:00 - 9:00</button>
+                                            <button type="button" class="time-slot-button px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400" data-time="09:00-11:00">9:00 - 11:00</button>
+                                            <button type="button" class="time-slot-button px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400" data-time="13:00-15:00">13:00 - 15:00</button>
+                                            <button type="button" class="time-slot-button px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400" data-time="15:00-17:00">15:00 - 17:00</button>
+                                        </div>
+                                        <input type="hidden" id="appointment-time" name="appointment-time" required>
                                     </div>
                                 </div>
                             </div>

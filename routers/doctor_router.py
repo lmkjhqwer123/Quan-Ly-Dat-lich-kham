@@ -219,6 +219,50 @@ class DoctorProfileUpdateRequest(BaseModel):
     SpecialtyId: Optional[int] = None
     Qualifications: Optional[str] = None
 
+from pydantic import BaseModel, RootModel
+
+class MonthlyAvailabilityResponse(RootModel[dict[int, List[str]]]):
+    """
+    Monthly availability response model.
+    Key is day of month (int), value is list of unavailable time slots (str).
+    """
+    pass
+
+class DailyAvailabilityResponse(RootModel[dict[str, bool]]):
+    """
+    Daily availability response model.
+    Key is time slot name (str), value is boolean (True for available, False for booked).
+    """
+    pass
+
+@router.get("/{doctor_id}/availability/monthly/{year}/{month}", response_model=MonthlyAvailabilityResponse)
+def get_doctor_monthly_availability(
+    doctor_id: int,
+    year: int,
+    month: int,
+    db: Session = Depends(data_access.get_db)
+):
+    """
+    Get monthly availability for a specific doctor, considering appointments and leaves.
+    """
+    availability = business_logic.get_doctor_monthly_availability_logic(db, doctor_id, year, month)
+    return availability
+
+@router.get("/{doctor_id}/availability/daily/{year}/{month}/{day}", response_model=DailyAvailabilityResponse)
+def get_doctor_daily_availability(
+    doctor_id: int,
+    year: int,
+    month: int,
+    day: int,
+    db: Session = Depends(data_access.get_db)
+):
+    """
+    Get daily availability for a specific doctor on a given date, considering appointments and leaves.
+    """
+    date = datetime.date(year, month, day)
+    availability = business_logic.get_doctor_daily_availability_logic(db, doctor_id, date)
+    return availability
+
 @router.get("/doctor/profile", response_model=DoctorDto)
 def get_doctor_profile(
     db: Session = Depends(data_access.get_db),

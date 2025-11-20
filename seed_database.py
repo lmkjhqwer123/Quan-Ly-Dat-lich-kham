@@ -150,8 +150,6 @@ def seed_database():
             print(f"Đã tạo lịch hẹn {appointment_2.AppointmentId} với dịch vụ.")
         else:
             print(f"Lịch hẹn 2 đã tồn tại: {existing_appointment_2.AppointmentId}")
-        else:
-            print(f"Lịch hẹn 2 đã tồn tại: {existing_appointment_2.AppointmentId}")
     else:
         print("Không thể tạo lịch hẹn mẫu vì thiếu thông tin bệnh nhân, bác sĩ, chuyên khoa hoặc dịch vụ.")
 

@@ -11,18 +11,85 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .btn-action {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .btn-view-detail {
+            border-color: #3B82F6; /* blue-500 */
+            color: #3B82F6;
+        }
+        .btn-view-detail:hover {
+            background-color: #EFF6FF; /* blue-50 */
+        }
+        .btn-create-record {
+            background-color: #10B981; /* green-500 */
+            color: white;
+        }
+        .btn-create-record:hover {
+            background-color: #059669; /* green-600 */
+        }
+
+        /* --- Styles for Medical Record Modal --- */
+        .emr-section-header {
+            background-color: #eff6ff; /* bg-blue-50 */
+            padding: 0.75rem 1rem;
+            border-left: 4px solid #3b82f6; /* border-blue-500 */
+            font-weight: 600;
+            color: #1e40af; /* text-blue-800 */
+            margin-bottom: 1rem;
+            border-top-right-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .emr-readonly-field {
+            background-color: #f9fafb; /* bg-gray-50 */
+            border-color: #e5e7eb; /* border-gray-200 */
+            color: #4b5563; /* text-gray-600 */
+            cursor: not-allowed;
+        }
+        .emr-form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151; /* text-gray-700 */
+            margin-bottom: 0.25rem;
+        }
+        .emr-form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .emr-form-input:focus {
+            border-color: #3b82f6; /* border-blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* ring-blue-500 */
+        }
+        .emr-source-badge {
+            font-size: 0.7rem; background-color: #dbeafe; color: #1e40af;
+            padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: normal;
+        }
     </style>
 </head>
 <body class="p-6">
     <div class="max-w-7xl mx-auto">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">Lịch hẹn của tôi</h1>
 
-        <div class="bg-white p-6 rounded-xl shadow-lg mb-8">
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8" id="filter-section">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">Bộ lọc tìm kiếm</h2>
-            
+
             <div class="flex flex-wrap items-center gap-4 mb-4">
                 <div class="relative flex-grow" style="min-width: 300px;">
-                    <input type="text" id="search-input" placeholder="Tìm theo tên bệnh nhân, mã lịch hẹn..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="search-input" placeholder="Tìm theo tên, mã lịch hẹn..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
@@ -35,43 +102,41 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <label for="sort-direction" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo chiều</label>
-                    <select id="sort-direction" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="" disabled selected>Chọn...</option>
-                        <option value="asc">Từ trên xuống dưới</option>
-                        <option value="desc">Từ dưới lên trên</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="sort-value" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo giá trị</label>
-                    <select id="sort-value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus="ring-blue-500">
-                        <option value="" disabled selected>Chọn...</option>
-                        <option value="time">Giờ hẹn</option>
-                        <option value="patient_name">Tên bệnh nhân</option>
-                    </select>
+                    <label for="exam-date" class="block text-sm font-medium text-gray-700 mb-1">Ngày khám</label>
+                    <input type="date" id="exam-date" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label for="sort-status" class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
                     <select id="sort-status" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="" disabled selected>Chọn...</option>
-                        <option value="pending">Đang xử lý</option>
+                        <option value="">Tất cả</option>
+                        <option value="pending">Đang chờ</option>
                         <option value="confirmed">Đã xác nhận</option>
-                        <option value="completed">Đã hoàn thành</option>
+                        <option value="completed">Hoàn thành</option>
                         <option value="cancelled">Đã hủy</option>
                     </select>
                 </div>
                 <div>
-                    <label for="sort-service" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo dịch vụ</label>
+                    <label for="sort-service" class="block text-sm font-medium text-gray-700 mb-1">Dịch vụ</label>
                     <select id="sort-service" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="" disabled selected>Chọn...</option>
+                        <option value="">Tất cả</option>
                         <!-- Options will be populated dynamically -->
                     </select>
                 </div>
                 <div>
-                     <label for="exam-date" class="block text-sm font-medium text-gray-700 mb-1">Ngày khám</label>
-                     <input type="date" id="exam-date" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="sort-value" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo</label>
+                    <select id="sort-value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="time">Giờ hẹn</option>
+                        <option value="patient_name">Tên bệnh nhân</option>
+                    </select>
+                </div>
+                <div class="hidden">
+                    <label for="sort-direction" class="block text-sm font-medium text-gray-700 mb-1">Chiều</label>
+                    <select id="sort-direction" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="asc" selected>Tăng dần</option>
+                        <option value="desc">Giảm dần</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -95,6 +160,25 @@
                     </thead>
                     <tbody id="appointment-table-body" class="text-gray-700">
                         <!-- Appointment data will be loaded here by JavaScript -->
+                        <!-- 
+                            Gợi ý cấu trúc một hàng trong bảng (sẽ được tạo bởi JS):
+                            - Thêm class cho `td` trạng thái để hiển thị màu sắc.
+                            - Thêm nút "Tạo bệnh án" khi trạng thái là 'confirmed'.
+                        -->
+                        <!-- <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-4 px-6 font-medium">#AP-12345</td>
+                            <td class="py-4 px-6">Nguyễn Văn A</td>
+                            <td class="py-4 px-6">Nội tổng hợp</td>
+                            <td class="py-4 px-6">10:30 25/12/2024</td>
+                            <td class="py-4 px-6 text-sm">Khám tổng quát</td>
+                            <td class="py-4 px-6">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Đã xác nhận</span>
+                            </td>
+                            <td class="py-4 px-6 text-center space-x-2">
+                                <button class="btn-action btn-view-detail">Chi tiết</button>
+                                <button class="btn-action btn-create-record">Tạo bệnh án</button>
+                            </td>
+                        </tr> -->
                     </tbody>
                 </table>
             </div>
@@ -107,27 +191,212 @@
         </div>
     </div>
     <div id="appointment-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center pb-3">
-                <h3 class="text-lg font-bold">Chi tiết lịch hẹn</h3>
+        <div class="relative top-10 mx-auto p-6 border w-full max-w-xl shadow-lg rounded-xl bg-white">
+            <div class="flex justify-between items-start pb-4 border-b">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900">Chi tiết lịch hẹn</h3>
+                    <p class="text-sm text-gray-500">Mã lịch hẹn: <span id="detail-appointment-id" class="font-medium"></span></p>
+                </div>
                 <button id="close-appointment-detail-modal" class="text-gray-400 hover:text-gray-600">&times;</button>
             </div>
-            <div class="mt-2 text-gray-600">
-                <p><strong>Mã lịch hẹn:</strong> <span id="detail-appointment-id"></span></p>
-                <p><strong>Tên bệnh nhân:</strong> <span id="detail-patient-name"></span></p>
-                <p><strong>Tên bác sĩ:</strong> <span id="detail-doctor-name"></span></p>
-                <p><strong>Chuyên khoa:</strong> <span id="detail-specialty-name"></span></p>
-                <p><strong>Thời gian hẹn:</strong> <span id="detail-appointment-datetime"></span></p>
-                <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
-                <p><strong>Triệu chứng:</strong> <span id="detail-symptoms"></span></p>
-                <p><strong>Dịch vụ:</strong></p>
-                <ul id="detail-services" class="list-disc list-inside ml-4"></ul>
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-gray-700">
+                <div><p><strong>Bệnh nhân:</strong> <span id="detail-patient-name"></span></p></div>
+                <div><p><strong>Bác sĩ:</strong> <span id="detail-doctor-name"></span></p></div>
+                <div><p><strong>Chuyên khoa:</strong> <span id="detail-specialty-name"></span></p></div>
+                <div><p><strong>Thời gian hẹn:</strong> <span id="detail-appointment-datetime" class="font-semibold text-blue-600"></span></p></div>
+                <div class="md:col-span-2"><p><strong>Trạng thái:</strong> <span id="detail-status"></span></p></div>
+                <div class="md:col-span-2">
+                    <p><strong>Triệu chứng:</strong></p>
+                    <p id="detail-symptoms" class="mt-1 text-sm p-3 bg-gray-50 rounded-md border"></p>
+                </div>
+                <div class="md:col-span-2">
+                    <p><strong>Dịch vụ đã chọn:</strong></p>
+                    <ul id="detail-services" class="list-disc list-inside ml-4 mt-2 space-y-1 text-sm"></ul>
+                </div>
             </div>
-            <div class="mt-4 flex justify-end">
-                <button id="close-appointment-detail-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700">Đóng</button>
+            <div class="mt-6 pt-4 border-t flex justify-end gap-3">
+                <button id="modal-cancel-appointment-btn" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition-colors">
+                    Hủy lịch hẹn
+                </button>
+                <button id="modal-confirm-appointment-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
+                    Xác nhận
+                </button>
+                <button id="modal-complete-appointment-btn" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
+                    Hoàn thành
+                </button>
+                <button id="close-appointment-detail-btn" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300">
+                    Đóng
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- ================================================================= -->
+    <!--             MODAL TẠO BỆNH ÁN (CREATE MEDICAL RECORD)             -->
+    <!-- ================================================================= -->
+    <div id="create-medical-record-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-5 mx-auto my-10 p-2 border w-full max-w-5xl shadow-lg rounded-xl bg-white">
+            <!-- Header Bệnh án -->
+            <div class="bg-blue-600 px-6 py-4 flex justify-between items-center text-white rounded-t-lg">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="text-2xl font-bold">BỆNH ÁN ĐIỆN TỬ</h1>
+                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded border border-blue-400">Ngoại trú</span>
+                    </div>
+                    <p class="text-sm opacity-90">Mã hồ sơ: [Tự động tạo] | Mã đặt lịch: <span id="emr-appointment-id" class="font-mono font-bold">#AP-98765</span></p>
+                </div>
+                <div class="text-right">
+                    <p id="emr-doctor-name" class="font-semibold text-lg">BS. Nguyễn Thị Thu Trang</p>
+                    <p id="emr-specialty-name" class="text-sm opacity-90">Khoa Nội tổng hợp</p>
+                </div>
+                 <button id="close-emr-modal" class="absolute top-2 right-2 text-gray-300 hover:text-white text-2xl font-bold">&times;</button>
+            </div>
+
+            <form id="emr-form" class="p-6 space-y-8 max-h-[80vh] overflow-y-auto">
+
+                <!-- PHẦN 1: DỮ LIỆU TỪ PHIẾU ĐẶT LỊCH (Tự động điền) -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <h3 class="text-yellow-800 font-semibold">Thông tin từ Phiếu Đặt Lịch</h3>
+                            <p class="text-yellow-700 text-sm mt-1">
+                                Các thông tin dưới đây được lấy tự động từ phiếu đăng ký của bệnh nhân. Vui lòng kiểm tra và xác nhận lại với người bệnh.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- I. HÀNH CHÍNH (Read-only) -->
+                <section>
+                    <h2 class="emr-section-header">
+                        I. HÀNH CHÍNH
+                        <span class="emr-source-badge">Từ Đặt Lịch</span>
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="emr-form-label">Họ và tên</label>
+                            <input id="emr-patient-name" type="text" class="emr-form-input emr-readonly-field" readonly>
+                        </div>
+                        <div>
+                            <label class="emr-form-label">Ngày sinh</label>
+                            <input id="emr-patient-dob" type="date" class="emr-form-input emr-readonly-field" readonly>
+                        </div>
+                        <div>
+                            <label class="emr-form-label">Giới tính</label>
+                            <input id="emr-patient-gender" type="text" class="emr-form-input emr-readonly-field" readonly>
+                        </div>
+                        <div>
+                            <label class="emr-form-label">Số điện thoại</label>
+                            <input id="emr-patient-phone" type="tel" class="emr-form-input emr-readonly-field" readonly>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="emr-form-label">Địa chỉ</label>
+                            <input id="emr-patient-address" type="text" class="emr-form-input emr-readonly-field" readonly>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- II. LÝ DO VÀO VIỆN (Read-only & Editable) -->
+                <section>
+                    <h2 class="emr-section-header">II. LÝ DO VÀO VIỆN</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="emr-form-label flex justify-between">
+                                <span>Khai báo của bệnh nhân (Triệu chứng chính):</span>
+                                <span class="emr-source-badge">Từ Đặt Lịch</span>
+                            </label>
+                            <textarea id="emr-patient-symptoms" class="emr-form-input emr-readonly-field" rows="2" readonly></textarea>
+                        </div>
+                        
+                        <!-- Phần bác sĩ ghi chú thêm -->
+                        <div class="pt-4 border-t border-dashed border-gray-300">
+                            <label class="emr-form-label text-blue-800 font-semibold">Ghi nhận bổ sung của Bác sĩ (Lý do thực tế):</label>
+                            <textarea id="emr-doctor-notes" name="doctor_notes" class="emr-form-input bg-white" rows="2" placeholder="Nhập lý do vào viện chính xác sau khi hỏi bệnh..."></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PHẦN 2: BÁC SĨ NHẬP LIỆU (Chuyên môn) -->
+                
+                <!-- III. KHÁM BỆNH -->
+                <section>
+                    <h2 class="emr-section-header">III. KHÁM BỆNH & CHẨN ĐOÁN</h2>
+                    <div class="space-y-6">
+                        <!-- Chỉ số sinh tồn -->
+                        <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                            <h3 class="font-semibold text-gray-700 mb-3">Dấu hiệu sinh tồn</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="emr-form-label text-xs uppercase">Mạch (lần/phút)</label>
+                                    <input id="emr-vitals-pulse" name="vitals_pulse" type="number" class="emr-form-input bg-white">
+                                </div>
+                                <div>
+                                    <label class="emr-form-label text-xs uppercase">Nhiệt độ (°C)</label>
+                                    <input id="emr-vitals-temperature" name="vitals_temperature" type="number" step="0.1" class="emr-form-input bg-white">
+                                </div>
+                                <div>
+                                    <label class="emr-form-label text-xs uppercase">Huyết áp (mmHg)</label>
+                                    <input id="emr-vitals-bp" name="vitals_bp" type="text" class="emr-form-input bg-white" placeholder="120/80">
+                                </div>
+                                <div>
+                                    <label class="emr-form-label text-xs uppercase">SpO2 (%)</label>
+                                    <input id="emr-vitals-spo2" name="vitals_spo2" type="number" class="emr-form-input bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kết quả khám -->
+                        <div>
+                            <label class="emr-form-label">Tóm tắt kết quả khám lâm sàng</label>
+                            <textarea id="emr-clinical-summary" name="clinical_summary" class="emr-form-input" rows="4" placeholder="Mô tả các triệu chứng cơ năng, thực thể phát hiện được..."></textarea>
+                        </div>
+
+                        <!-- Chẩn đoán -->
+                        <div>
+                            <label class="emr-form-label text-red-600 font-bold">Chẩn đoán sơ bộ</label>
+                            <input id="emr-preliminary-diagnosis" name="preliminary_diagnosis" type="text" class="emr-form-input border-red-300 bg-red-50" placeholder="Nhập chẩn đoán...">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- IV. HƯỚNG XỬ TRÍ -->
+                <section>
+                    <h2 class="emr-section-header">IV. HƯỚNG XỬ TRÍ</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Lời dặn -->
+                        <div>
+                            <label class="emr-form-label">Lời dặn của bác sĩ & Lịch tái khám</label>
+                        <textarea id="emr-doctor-advice" name="doctor_advice" class="emr-form-input" rows="3" placeholder="Nghỉ ngơi, ăn uống... Tái khám sau 3 ngày nếu không đỡ."></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer Action Buttons -->
+                <div class="border-t pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <button type="button" class="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors w-full md:w-auto">
+                        <span class="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                            In Bệnh án
+                        </span>
+                    </button>
+                    <div class="flex gap-4 w-full md:w-auto">
+                        <button type="button" class="px-6 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors flex-1 md:flex-none">
+                            Lưu nháp
+                        </button>
+                        <button type="submit" class="px-8 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors flex-1 md:flex-none shadow-lg shadow-blue-200">
+                            Hoàn tất khám
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
     <script src="/Js/doctor_lich_hen.js"></script>
 </body>
 </html>

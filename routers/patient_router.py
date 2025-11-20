@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from DataAccessLayer import data_access
 from BusinessLogicLayer import business_logic
 import auth
-from routers.patient import update_patient_profile
+from routers.patient import update_patient_profile, book_appointment_for_me
 
 # Define a Pydantic model for the patient profile DTO
 class PatientProfileDto(BaseModel):
@@ -28,6 +28,7 @@ router = APIRouter(
 )
 
 router.include_router(update_patient_profile.router)
+router.include_router(book_appointment_for_me.router)
 
 @router.get("/me", response_model=PatientProfileDto)
 def get_patient_profile(current_user = Depends(auth.get_current_user), db: Session = Depends(data_access.get_db)):

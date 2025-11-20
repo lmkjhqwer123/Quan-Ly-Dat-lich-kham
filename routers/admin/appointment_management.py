@@ -56,3 +56,22 @@ def get_appointment_by_id(appointment_id: int, db: Session = Depends(data_access
     if not appointment:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found")
     return appointment
+
+class AppointmentStatusUpdate(BaseModel):
+    status: str
+
+@router.patch("/appointments/{appointment_id}/status")
+def update_appointment_status(
+    appointment_id: int,
+    status_update: AppointmentStatusUpdate,
+    db: Session = Depends(data_access.get_db),
+    current_user: dict = Depends(auth.get_current_user)
+):
+    if current_user.role != "Admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can update appointment status")
+    
+    updated_appointment = business_logic.update_appointment_status_logic(db, appointment_id, status_update.status)
+    if not updated_appointment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Appointment not found")
+    
+    return updated_appointment

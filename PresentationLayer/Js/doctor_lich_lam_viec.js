@@ -202,7 +202,8 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
         const selectedDaysList = document.getElementById('selected-days-list');
 
         let miniCalDate = new Date();
-        let selectedDates = new Set();
+        // Use a Map to store the state of each selected date
+        let selectedDates = new Map();
 
         function renderMiniCalendar() {
             miniCalBody.innerHTML = '';
@@ -213,25 +214,19 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
-            // Adjust to make Monday the first day (0 = Mon, 6 = Sun)
             const startDayOfWeek = (firstDay.getDay() + 6) % 7;
 
-            // Add empty cells for days before the 1st of the month
             for (let i = 0; i < startDayOfWeek; i++) {
                 miniCalBody.insertAdjacentHTML('beforeend', '<div></div>');
             }
 
-            // Add day cells
             for (let day = 1; day <= daysInMonth; day++) {
                 const date = new Date(year, month, day);
-                const today = new Date(); // Reintroduce today
-                today.setHours(0, 0, 0, 0); // Normalize today to start of day for comparison
-                const isPastDay = date < today; // Reintroduce isPastDay
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const isPastDay = date < today;
 
-                const localYear = date.getFullYear();
-                const localMonth = (date.getMonth() + 1).toString().padStart(2, '0');
-                const localDay = date.getDate().toString().padStart(2, '0');
-                const dateString = `${localYear}-${localMonth}-${localDay}`;
+                const dateString = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
                 const dayCell = document.createElement('div');
                 dayCell.textContent = day;
                 dayCell.className = 'p-1.5 rounded-full';
@@ -252,23 +247,16 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
         }
 
         function toggleDateSelection(dateString) {
-            const [year, month, day] = dateString.split('-').map(Number);
-            const selectedLocalDay = new Date(year, month - 1, day); // Month is 0-indexed
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Normalize today to start of local day
-
-            if (selectedLocalDay < today) {
-                alert('Không thể chọn ngày trong quá khứ.');
-                return;
-            }
-
             const cell = miniCalBody.querySelector(`[data-date="${dateString}"]`);
             if (selectedDates.has(dateString)) {
                 selectedDates.delete(dateString);
                 if (cell) cell.classList.remove('bg-blue-500', 'text-white');
             } else {
-                selectedDates.add(dateString);
+                // Add new date with a default state
+                selectedDates.set(dateString, {
+                    leaveType: 'all-day',
+                    sessions: []
+                });
                 if (cell) cell.classList.add('bg-blue-500', 'text-white');
             }
             updateSelectedDaysList();
@@ -281,23 +269,90 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 return;
             }
 
-            const sortedDates = Array.from(selectedDates).sort();
-            sortedDates.forEach(dateString => {
+            const sortedDates = Array.from(selectedDates.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+            sortedDates.forEach(([dateString, dateState]) => {
                 const [year, month, day] = dateString.split('-').map(Number);
-                const date = new Date(year, month - 1, day); // Month is 0-indexed
+                const date = new Date(year, month - 1, day);
                 const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
                 const dayElement = document.createElement('div');
-                dayElement.className = 'flex items-center justify-between bg-gray-50 p-2 rounded-md';
+                dayElement.className = 'bg-gray-50 p-3 rounded-lg border border-gray-200';
                 dayElement.dataset.date = dateString;
+
+                const isAllDay = dateState.leaveType === 'all-day';
+                const isBySession = dateState.leaveType === 'by-session';
+
                 dayElement.innerHTML = `
-                    <span class="font-medium text-gray-800">${formattedDate}</span>
-                    <div class="flex items-center gap-2">
-                        <input type="time" class="start-time border-gray-300 rounded-md shadow-sm text-sm" style="width: 100px;">
-                        <span>-</span>
-                        <input type="time" class="end-time border-gray-300 rounded-md shadow-sm text-sm" style="width: 100px;">
+                    <div class="text-center">
+                        <span class="font-semibold text-gray-800">${formattedDate}</span>
+                    </div>
+                    <hr class="border-gray-200 my-2">
+                    <div class="flex justify-center items-center gap-6 mb-3">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="leave-type-${dateString}" value="all-day" class="form-radio h-4 w-4 text-blue-600" ${isAllDay ? 'checked' : ''}>
+                            <span class="ml-2 text-sm text-gray-700">Nghỉ Cả Ngày</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="leave-type-${dateString}" value="by-session" class="form-radio h-4 w-4 text-blue-600" ${isBySession ? 'checked' : ''}>
+                            <span class="ml-2 text-sm text-gray-700">Nghỉ Theo Ca</span>
+                        </label>
+                    </div>
+                    <div class="session-checkboxes grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2 ${isBySession ? '' : 'hidden'} pl-4">
+                        <label class="flex items-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 cursor-pointer">
+                            <input type="checkbox" value="07:00-09:00" class="form-checkbox h-4 w-4 text-blue-600 rounded" ${dateState.sessions.includes('07:00-09:00') ? 'checked' : ''}>
+                            <span class="ml-2 text-sm font-medium text-gray-800">7h-9h</span>
+                        </label>
+                        <label class="flex items-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 cursor-pointer">
+                            <input type="checkbox" value="09:00-11:00" class="form-checkbox h-4 w-4 text-blue-600 rounded" ${dateState.sessions.includes('09:00-11:00') ? 'checked' : ''}>
+                            <span class="ml-2 text-sm font-medium text-gray-800">9h-11h</span>
+                        </label>
+                        <label class="flex items-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 cursor-pointer">
+                            <input type="checkbox" value="13:00-15:00" class="form-checkbox h-4 w-4 text-blue-600 rounded" ${dateState.sessions.includes('13:00-15:00') ? 'checked' : ''}>
+                            <span class="ml-2 text-sm font-medium text-gray-800">13h-15h</span>
+                        </label>
+                        <label class="flex items-center p-2 rounded-md bg-gray-100 hover:bg-gray-200 cursor-pointer">
+                            <input type="checkbox" value="15:00-17:00" class="form-checkbox h-4 w-4 text-blue-600 rounded" ${dateState.sessions.includes('15:00-17:00') ? 'checked' : ''}>
+                            <span class="ml-2 text-sm font-medium text-gray-800">15h-17h</span>
+                        </label>
                     </div>
                 `;
                 selectedDaysList.appendChild(dayElement);
+
+                // Add event listeners to update the state in the map
+                const radios = dayElement.querySelectorAll(`input[name="leave-type-${dateString}"]`);
+                const checkboxesContainer = dayElement.querySelector('.session-checkboxes');
+                const checkboxes = dayElement.querySelectorAll('.session-checkboxes input[type="checkbox"]');
+
+                radios.forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        const currentState = selectedDates.get(dateString);
+                        currentState.leaveType = e.target.value;
+                        if (e.target.value === 'by-session') {
+                            checkboxesContainer.classList.remove('hidden');
+                        } else {
+                            checkboxesContainer.classList.add('hidden');
+                            currentState.sessions = []; // Clear sessions when switching to all-day
+                            checkboxes.forEach(cb => cb.checked = false); // Uncheck UI
+                        }
+                    });
+                });
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', (e) => {
+                        const currentState = selectedDates.get(dateString);
+                        const sessionValue = e.target.value;
+                        if (e.target.checked) {
+                            if (!currentState.sessions.includes(sessionValue)) {
+                                currentState.sessions.push(sessionValue);
+                            }
+                        } else {
+                            const index = currentState.sessions.indexOf(sessionValue);
+                            if (index > -1) {
+                                currentState.sessions.splice(index, 1);
+                            }
+                        }
+                    });
+                });
             });
         }
 
@@ -364,35 +419,63 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
             const description = document.getElementById('leave-description').value;
             const schedules = [];
 
-            let hasInvalidTime = false;
-            selectedDaysList.querySelectorAll('.flex.items-center.justify-between').forEach(dayElement => {
+            let hasError = false;
+            selectedDaysList.querySelectorAll('[data-date]').forEach(dayElement => {
+                if (hasError) return;
+
                 const date = dayElement.dataset.date;
-                const startTime = dayElement.querySelector('.start-time').value;
-                const endTime = dayElement.querySelector('.end-time').value;
+                const leaveType = dayElement.querySelector('input[type="radio"]:checked').value;
 
-                if (startTime && endTime && startTime >= endTime) {
-                    hasInvalidTime = true;
+                if (leaveType === 'all-day') {
+                    schedules.push({
+                        date: date,
+                        start_time: null, // Represents the whole day
+                        end_time: null
+                    });
+                } else { // by-session
+                    const checkedSessions = Array.from(dayElement.querySelectorAll('.session-checkboxes input:checked'));
+                    if (checkedSessions.length === 0) {
+                        alert(`Vui lòng chọn ít nhất một ca nghỉ cho ngày ${date}.`);
+                        hasError = true;
+                        return;
+                    }
+                    
+                    // Logic to merge consecutive time slots
+                    const timeSlots = checkedSessions.map(cb => cb.value.split('-'));
+                    timeSlots.sort((a, b) => a[0].localeCompare(b[0])); // Sort by start time
+
+                    if (timeSlots.length > 0) {
+                        let currentSchedule = { date: date, start_time: timeSlots[0][0], end_time: timeSlots[0][1] };
+
+                        for (let i = 1; i < timeSlots.length; i++) {
+                            const prevEndTime = currentSchedule.end_time;
+                            const currentStartTime = timeSlots[i][0];
+                            
+                            if (prevEndTime === currentStartTime) {
+                                // Merge consecutive slots
+                                currentSchedule.end_time = timeSlots[i][1];
+                            } else {
+                                // It's not consecutive, push the previous schedule and start a new one
+                                schedules.push(currentSchedule);
+                                currentSchedule = { date: date, start_time: timeSlots[i][0], end_time: timeSlots[i][1] };
+                            }
+                        }
+                        schedules.push(currentSchedule); // Push the last schedule
+                    }
                 }
-
-                schedules.push({
-                    date: date,
-                    start_time: startTime || null,
-                    end_time: endTime || null
-                });
             });
 
-            if (hasInvalidTime) {
-                alert('Thời gian kết thúc phải sau thời gian bắt đầu.');
-                return;
+            if (hasError) {
+                return; // Stop submission if there was an error
             }
 
             if (schedules.length === 0) {
-                alert('Vui lòng chọn ít nhất một ngày.');
+                alert('Vui lòng chọn ít nhất một ngày và cấu hình nghỉ.');
                 return;
             }
-
+            
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Normalize today to start of day for comparison
+            today.setHours(0, 0, 0, 0);
 
             for (const schedule of schedules) {
                 const leaveDate = new Date(schedule.date);
@@ -402,7 +485,6 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 }
             }
 
-            // Simulate appointment overlap check
             const { overlapFound, overlappingAppointments } = checkAppointmentOverlap(schedules, appointments);
 
             if (overlapFound) {
@@ -415,7 +497,7 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 warningMessage += '\nBạn có chắc chắn muốn gửi yêu cầu nghỉ phép này không?';
 
                 if (!confirm(warningMessage)) {
-                    return; // User cancelled the submission
+                    return;
                 }
             }
 
@@ -431,14 +513,14 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'Có lỗi xảy ra');
+                    // The backend sends the error message in the 'detail' field
+                    throw new Error(errorData.detail || 'Có lỗi xảy ra khi gửi yêu cầu.');
                 }
 
                 const result = await response.json();
-                const leaveDates = result.map(leave => new Date(leave.start_datetime).toLocaleDateString('vi-VN')).join(', ');
-                alert(`Đăng ký nghỉ phép thành công!\nLoại nghỉ: ${result[0].leave_type}\nMô tả: ${result[0].reason || 'Không có'}\nNgày nghỉ: ${leaveDates}`);
+                alert('Đăng ký nghỉ phép thành công!');
                 closeAndResetModal();
-                await fetchAppointments(); // Refresh the main calendar
+                await fetchAppointments();
 
             } catch (error) {
                 console.error('Error submitting leave request:', error);

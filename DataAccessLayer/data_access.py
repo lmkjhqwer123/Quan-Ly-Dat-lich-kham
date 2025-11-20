@@ -575,6 +575,30 @@ def create_appointment(db, appointment_data: dict):
     db.refresh(db_appointment) # Refresh again to load the newly added appointment_services
     return db_appointment
 
+def get_conflicting_appointments(db: Session, doctor_id: int, start_time: datetime.datetime, end_time: datetime.datetime):
+    """
+    Checks for existing appointments for a doctor that conflict with the given time slot.
+    It considers appointments that are 'pending' or 'confirmed'.
+    An appointment conflicts if its 2-hour slot overlaps with the proposed time slot.
+    """
+    return db.query(Appointment).filter(
+        Appointment.DoctorId == doctor_id,
+        Appointment.Status.in_(['pending', 'confirmed']),
+        Appointment.AppointmentDatetime < end_time,
+        func.DATEADD(text("hour"), 2, Appointment.AppointmentDatetime) > start_time
+    ).all()
+
+def get_conflicting_doctor_leaves(db: Session, doctor_id: int, start_time: datetime.datetime, end_time: datetime.datetime):
+    """
+    Checks for approved doctor leaves that conflict with the given time slot.
+    """
+    return db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.Status == 'approved',
+        DoctorLeave.StartDatetime < end_time,
+        DoctorLeave.EndDatetime > start_time
+    ).all()
+
 def get_appointments_by_doctor_id(
     db, 
     doctor_id: int, 
@@ -718,6 +742,17 @@ def get_doctor_schedule(db: Session, doctor_id: int):
     result = db.execute(query, {"doctor_id": doctor_id})
     return result.mappings().all()
 
+def update_appointment_status(db: Session, appointment_id: int, new_status: str):
+    """
+    Updates the status of a specific appointment.
+    """
+    appointment = db.query(Appointment).filter(Appointment.AppointmentId == appointment_id).first()
+    if appointment:
+        appointment.Status = new_status
+        db.commit()
+        db.refresh(appointment)
+    return appointment
+
 # --- Password Reset Tokens ---
 def create_password_reset_token(db, user_id: int, user_role: str, token: str, expires_at: datetime):
     db_token = PasswordResetToken(
@@ -807,6 +842,170 @@ def create_appointment_service(db, appointment_service_data: dict):
     db.commit()
     db.refresh(db_appointment_service)
     return db_appointment_service
+
+def get_doctor_monthly_availability(db: Session, doctor_id: int, year: int, month: int) -> dict:
+    """
+    Retrieves the availability of a doctor for each day of a given month,
+    considering approved leaves and pending/confirmed appointments.
+    Returns a dictionary where keys are days of the month (int) and values are
+    lists of unavailable time slots (e.g., ['07:00-09:00', '09:00-11:00']).
+    """
+    start_date = datetime.datetime(year, month, 1)
+    # Calculate the last day of the month
+    if month == 12:
+        end_date = datetime.datetime(year + 1, 1, 1) - datetime.timedelta(microseconds=1)
+    else:
+        end_date = datetime.datetime(year, month + 1, 1) - datetime.timedelta(microseconds=1)
+
+    # Define the fixed time slots
+    time_slots = {
+        "07:00-09:00": (datetime.time(7, 0, 0), datetime.time(9, 0, 0)),
+        "09:00-11:00": (datetime.time(9, 0, 0), datetime.time(11, 0, 0)),
+        "13:00-15:00": (datetime.time(13, 0, 0), datetime.time(15, 0, 0)),
+        "15:00-17:00": (datetime.time(15, 0, 0), datetime.time(17, 0, 0)),
+    }
+
+    monthly_availability = {}
+    for day in range(1, (end_date.day + 1)):
+        monthly_availability[day] = []
+
+    # Fetch appointments for the month
+    appointments = db.query(Appointment).filter(
+        Appointment.DoctorId == doctor_id,
+        Appointment.AppointmentDatetime >= start_date,
+        Appointment.AppointmentDatetime <= end_date,
+        Appointment.Status.in_(['pending', 'confirmed'])
+    ).all()
+
+    for appt in appointments:
+        appt_date = appt.AppointmentDatetime.date()
+        appt_time = appt.AppointmentDatetime.time()
+        day_of_month = appt_date.day
+
+        for slot_name, (slot_start, slot_end) in time_slots.items():
+            # Check if appointment time falls within a slot
+            if slot_start <= appt_time < slot_end:
+                if slot_name not in monthly_availability[day_of_month]:
+                    monthly_availability[day_of_month].append(slot_name)
+                break # Assuming one appointment per slot for simplicity
+
+    # Fetch approved doctor leaves for the month
+    leaves = db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.StartDatetime <= end_date,
+        DoctorLeave.EndDatetime >= start_date,
+        DoctorLeave.Status == 'approved'
+    ).all()
+
+    for leave in leaves:
+        leave_start_date = leave.StartDatetime.date()
+        leave_end_date = leave.EndDatetime.date()
+
+        current_date = max(start_date.date(), leave_start_date)
+        while current_date <= min(end_date.date(), leave_end_date):
+            day_of_month = current_date.day
+            
+            for slot_name, (slot_start, slot_end) in time_slots.items():
+                # Check if the leave period overlaps with the time slot on the current_date
+                leave_start_time_on_day = leave.StartDatetime.time() if leave_start_date == current_date else datetime.time.min
+                leave_end_time_on_day = leave.EndDatetime.time() if leave_end_date == current_date else datetime.time.max
+
+                # Convert slot times to datetime objects for comparison with leave datetimes
+                slot_start_dt = datetime.datetime.combine(current_date, slot_start)
+                slot_end_dt = datetime.datetime.combine(current_date, slot_end)
+                
+                leave_start_dt_on_day = datetime.datetime.combine(current_date, leave_start_time_on_day)
+                leave_end_dt_on_day = datetime.datetime.combine(current_date, leave_end_time_on_day)
+
+                # Check for overlap between leave and time slot
+                if (slot_start_dt < leave_end_dt_on_day) and (slot_end_dt > leave_start_dt_on_day):
+                    if slot_name not in monthly_availability[day_of_month]:
+                        monthly_availability[day_of_month].append(slot_name)
+            current_date += datetime.timedelta(days=1)
+            
+    return monthly_availability
+
+def get_doctor_daily_availability(db: Session, doctor_id: int, date: datetime.date) -> dict:
+    """
+    Retrieves the availability of each time slot for a specific doctor on a given date,
+    considering approved leaves and pending/confirmed appointments.
+    Returns a dictionary where keys are time slot names (e.g., '07:00-09:00') and values are booleans (True for available, False for booked).
+    """
+    start_datetime = datetime.datetime.combine(date, datetime.time.min)
+    end_datetime = datetime.datetime.combine(date, datetime.time.max)
+
+    # Define the fixed time slots and initialize availability
+    time_slots = {
+        "07:00-09:00": (datetime.time(7, 0), datetime.time(9, 0)),
+        "09:00-11:00": (datetime.time(9, 0), datetime.time(11, 0)),
+        "13:00-15:00": (datetime.time(13, 0), datetime.time(15, 0)),
+        "15:00-17:00": (datetime.time(15, 0), datetime.time(17, 0)),
+    }
+    daily_availability = {slot: True for slot in time_slots}
+
+    # Check for appointments
+    appointments = db.query(Appointment).filter(
+        Appointment.DoctorId == doctor_id,
+        Appointment.AppointmentDatetime >= start_datetime,
+        Appointment.AppointmentDatetime <= end_datetime,
+        Appointment.Status.in_(['pending', 'confirmed'])
+    ).all()
+
+    for appt in appointments:
+        appt_time = appt.AppointmentDatetime.time()
+        for slot_name, (slot_start, slot_end) in time_slots.items():
+            if slot_start <= appt_time < slot_end:
+                daily_availability[slot_name] = False
+                break
+
+    # Check for approved leaves
+    leaves = db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.StartDatetime <= end_datetime,
+        DoctorLeave.EndDatetime >= start_datetime,
+        DoctorLeave.Status == 'approved'
+    ).all()
+
+    for leave in leaves:
+        for slot_name, (slot_start, slot_end) in time_slots.items():
+            # Create datetime objects for the slot on the given date
+            slot_start_dt = datetime.datetime.combine(date, slot_start)
+            slot_end_dt = datetime.datetime.combine(date, slot_end)
+
+            # Check for overlap between the leave period and the time slot
+            # Overlap exists if (LeaveStart < SlotEnd) and (LeaveEnd > SlotStart)
+            if leave.StartDatetime < slot_end_dt and leave.EndDatetime > slot_start_dt:
+                daily_availability[slot_name] = False
+    
+    return daily_availability
+def get_doctor_leaves_for_month(db: Session, doctor_id: int, year: int, month: int) -> List[DoctorLeave]:
+    """
+    Retrieves all leave entries for a specific doctor for a given month and year.
+    Considers leaves that are either 'approved' or 'pending'.
+    """
+    start_date = datetime.datetime(year, month, 1)
+    end_date = (start_date + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
+    
+    return db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.StartDatetime >= start_date,
+        DoctorLeave.EndDatetime <= end_date,
+        DoctorLeave.Status.in_(['approved', 'pending'])
+    ).all()
+
+def get_doctor_leaves_in_range(db: Session, doctor_id: int, start_date: datetime.date, end_date: datetime.date) -> List[DoctorLeave]:
+    """
+    Retrieves all approved or pending leave entries for a doctor within a given date range.
+    """
+    start_datetime = datetime.datetime.combine(start_date, datetime.time.min)
+    end_datetime = datetime.datetime.combine(end_date, datetime.time.max)
+
+    return db.query(DoctorLeave).filter(
+        DoctorLeave.DoctorId == doctor_id,
+        DoctorLeave.StartDatetime < end_datetime,
+        DoctorLeave.EndDatetime > start_datetime,
+        DoctorLeave.Status.in_(['approved', 'pending'])
+    ).all()
 
 def create_doctor_leave_entry(db: Session, doctor_id: int, start_datetime: datetime, end_datetime: datetime, reason: Optional[str], leave_type: str, status: str):
     db_leave = DoctorLeave(

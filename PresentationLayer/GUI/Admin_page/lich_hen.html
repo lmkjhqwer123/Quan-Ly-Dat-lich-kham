@@ -30,11 +30,14 @@
                         <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                     </svg>
                 </div>
-                <button id="search-button" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
+                <button id="search-button" class="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 transition-colors">
                     Tìm kiếm
                 </button>
-                <button id="refresh-button" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors">
+                <button id="refresh-button" class="px-6 py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition-colors">
                     Làm mới
+                </button>
+                <button id="create-new-button" class="px-6 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors">
+                    Tạo mới
                 </button>
             </div>
 
@@ -50,7 +53,7 @@
                 </div>
                 <div>
                     <label for="sort-value" class="block text-sm font-medium text-gray-700 mb-1">Sắp xếp theo giá trị</label>
-                    <select id="sort-value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus="ring-blue-500">
+                    <select id="sort-value" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="" disabled selected>Chọn...</option>
                         <option value="time">Giờ hẹn</option>
                         <option value="patient_name">Tên bệnh nhân</option>
@@ -113,29 +116,95 @@
             </div>
         </div>
     </div>
+
     <!-- Appointment Detail Modal -->
-    <div id="appointment-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="flex justify-between items-center pb-3">
-                <h3 class="text-lg font-bold">Chi tiết lịch hẹn</h3>
-                <button id="close-appointment-detail-modal" class="text-gray-400 hover:text-gray-600">&times;</button>
+    <div id="appointment-detail-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-40">
+        <div class="relative top-10 mx-auto p-6 border w-full max-w-3xl shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-2xl font-bold text-gray-800">Chi Tiết Lịch Hẹn (<span id="detail-appointment-id"></span>)</h3>
+                <button id="close-appointment-detail-modal" class="text-gray-400 hover:text-gray-600 text-3xl font-light">&times;</button>
             </div>
-            <div class="mt-2 text-gray-600">
-                <p><strong>Mã lịch hẹn:</strong> <span id="detail-appointment-id"></span></p>
-                <p><strong>Tên bệnh nhân:</strong> <span id="detail-patient-name"></span></p>
-                <p><strong>Tên bác sĩ:</strong> <span id="detail-doctor-name"></span></p>
-                <p><strong>Chuyên khoa:</strong> <span id="detail-specialty-name"></span></p>
-                <p><strong>Thời gian hẹn:</strong> <span id="detail-appointment-datetime"></span></p>
-                <p><strong>Trạng thái:</strong> <span id="detail-status"></span></p>
-                <p><strong>Triệu chứng:</strong> <span id="detail-symptoms"></span></p>
-                <p><strong>Dịch vụ:</strong></p>
-                <ul id="detail-services" class="list-disc list-inside ml-4"></ul>
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cột thông tin chính -->
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Bệnh nhân</h4>
+                        <p id="detail-patient-name" class="text-lg font-semibold text-gray-800"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Bác sĩ & Chuyên khoa</h4>
+                        <p id="detail-doctor-specialty" class="text-lg font-semibold text-gray-800"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Thời gian hẹn</h4>
+                        <p id="detail-appointment-datetime" class="text-lg font-semibold text-gray-800"></p>
+                    </div>
+                     <div>
+                        <h4 class="text-sm font-medium text-gray-500">Triệu chứng</h4>
+                        <p id="detail-symptoms" class="text-gray-700 p-3 bg-gray-50 rounded-md border h-24 overflow-y-auto"></p>
+                    </div>
+                </div>
+                <!-- Cột trạng thái và hành động -->
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Trạng thái hiện tại</h4>
+                        <div id="detail-status-tag" class="mt-1"></div>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500">Dịch vụ đã chọn</h4>
+                        <ul id="detail-services" class="list-disc list-inside ml-4 text-gray-700"></ul>
+                    </div>
+                    <div id="appointment-actions" class="pt-4 border-t space-y-3">
+                        <h4 class="text-lg font-medium text-gray-800">Hành động</h4>
+                        <!-- Các nút hành động sẽ được thêm bằng JS -->
+                    </div>
+                </div>
             </div>
-            <div class="mt-4 flex justify-end">
-                <button id="close-appointment-detail-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700">Đóng</button>
+            <div class="mt-6 flex justify-end">
+                <button id="close-appointment-detail-btn" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Đóng</button>
             </div>
         </div>
     </div>
+
+    <!-- Add/Edit Appointment Modal -->
+    <div id="appointment-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800">Tạo Lịch Hẹn Mới</h3>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 text-3xl font-light">&times;</button>
+            </div>
+            <form id="appointment-form" class="mt-4 space-y-4">
+                <input type="hidden" id="appointment-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="modal-patient" class="block text-sm font-medium text-gray-700">Bệnh nhân</label>
+                        <select id="modal-patient" name="patient" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required></select>
+                    </div>
+                    <div>
+                        <label for="modal-doctor" class="block text-sm font-medium text-gray-700">Bác sĩ</label>
+                        <select id="modal-doctor" name="doctor" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required></select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="modal-appointment-datetime" class="block text-sm font-medium text-gray-700">Ngày giờ hẹn</label>
+                    <input type="datetime-local" id="modal-appointment-datetime" name="appointment_datetime" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" required>
+                </div>
+
+                <div>
+                    <label for="modal-symptoms" class="block text-sm font-medium text-gray-700">Triệu chứng</label>
+                    <textarea id="modal-symptoms" name="symptoms" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+
+                <div class="flex justify-end pt-4 border-t mt-4">
+                    <button type="button" id="cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md mr-2 hover:bg-gray-300">Hủy</button>
+                    <button type="submit" id="save-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="/Js/lich_hen.js"></script>
 </body>
 </html>

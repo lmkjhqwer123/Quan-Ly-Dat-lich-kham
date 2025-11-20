@@ -5,6 +5,7 @@ if (typeof window.initLichHenPage === 'undefined') {
         const searchInput = document.getElementById('search-input');
         const searchButton = document.getElementById('search-button');
         const refreshButton = document.getElementById('refresh-button');
+        const createNewButton = document.getElementById('create-new-button');
         const sortDirectionSelect = document.getElementById('sort-direction');
         const sortValueSelect = document.getElementById('sort-value');
         const sortStatusSelect = document.getElementById('sort-status');
@@ -15,6 +16,88 @@ if (typeof window.initLichHenPage === 'undefined') {
         const appointmentDetailModal = document.getElementById('appointment-detail-modal');
         const closeAppointmentDetailModalBtn = document.getElementById('close-appointment-detail-modal');
         const closeAppointmentDetailBtn = document.getElementById('close-appointment-detail-btn');
+        const detailAppointmentId = document.getElementById('detail-appointment-id');
+        const detailPatientName = document.getElementById('detail-patient-name');
+        const detailDoctorSpecialty = document.getElementById('detail-doctor-specialty');
+        const detailAppointmentDatetime = document.getElementById('detail-appointment-datetime');
+        const detailSymptoms = document.getElementById('detail-symptoms');
+
+        // Add/Edit Modal Elements
+        const appointmentModal = document.getElementById('appointment-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        // --- Helper Functions ---
+
+        const updateAppointmentStatus = async (appointmentId, newStatus) => {
+            console.log(`Attempting to update appointment ${appointmentId} to status: ${newStatus}`);
+            try {
+                const token = sessionStorage.getItem('accessToken');
+                const response = await fetch(`/api/admin/appointments/${appointmentId}/status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                alert(`Lịch hẹn đã được cập nhật thành công sang trạng thái: ${newStatus}`);
+                appointmentDetailModal.classList.add('hidden');
+                handleFilterChange(); // Refresh the table
+
+            } catch (error) {
+                console.error('Error updating appointment status:', error);
+                alert(`Lỗi khi cập nhật trạng thái: ${error.message}`);
+            }
+        };
+
+        const createStatusTag = (statusText) => {
+            const status = statusText ? statusText.toLowerCase() : '';
+            switch (status) {
+                case 'pending':
+                    return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">${statusText}</span>`;
+                case 'completed':
+                    return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${statusText}</span>`;
+                case 'confirmed':
+                    return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">${statusText}</span>`;
+                case 'cancelled':
+                    return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">${statusText}</span>`;
+                default:
+                    return `<span>${statusText}</span>`;
+            }
+        };
+
+        const renderAppointmentActions = (appointment) => {
+            const actionsContainer = document.getElementById('appointment-actions');
+            actionsContainer.innerHTML = '<h4 class="text-lg font-medium text-gray-800">Hành động</h4>'; // Reset
+            const status = appointment.Status ? appointment.Status.toLowerCase() : '';
+
+            if (status === 'pending') {
+                actionsContainer.innerHTML += `<button id="confirm-appointment-btn" class="w-full px-4 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors">Xác nhận Lịch hẹn</button>`;
+                actionsContainer.innerHTML += `<button id="cancel-appointment-btn" class="w-full px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors mt-2">Hủy Lịch hẹn</button>`;
+            } else if (status === 'confirmed') {
+                actionsContainer.innerHTML += `<button id="cancel-appointment-btn" class="w-full px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors">Hủy Lịch hẹn</button>`;
+            }
+        };
+
+        const handleFilterChange = () => {
+            fetchAppointments(
+                searchInput.value.trim(),
+                sortDirectionSelect.value,
+                sortValueSelect.value,
+                sortStatusSelect.value,
+                sortServiceSelect.value,
+                examDateInput.value
+            );
+        };
+
+        // --- Main Functions ---
 
         const fetchServicesAndPopulateDropdown = async () => {
             try {
@@ -104,16 +187,75 @@ if (typeof window.initLichHenPage === 'undefined') {
                 const appointments = await response.json();
                 console.log('Fetched appointments:', appointments);
                 appointmentTableBody.innerHTML = ''; // Clear existing rows
-
+ 
                 if (appointments.length === 0) {
                     appointmentTableBody.innerHTML = `<tr><td colspan="6" class="py-4 px-6 text-center text-gray-500">Không tìm thấy lịch hẹn nào.</td></tr>`;
                     return;
                 }
-
+ 
+                // --- Sắp xếp ưu tiên hiển thị ---
+                const getPriority = (appointment) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+ 
+                    const appointmentDate = new Date(appointment.AppointmentDatetime);
+                    appointmentDate.setHours(0, 0, 0, 0);
+ 
+                    // Ưu tiên 1: Lịch hẹn của ngày hôm nay
+                    if (appointmentDate.getTime() === today.getTime()) {
+                        return 1;
+                    }
+                    // Ưu tiên 2: Lịch hẹn đang chờ xử lý (pending)
+                    if (appointment.Status && appointment.Status.toLowerCase() === 'pending') {
+                        return 2;
+                    }
+                    // Ưu tiên 3: Các lịch hẹn khác
+                    return 3;
+                };
+ 
+                appointments.sort((a, b) => {
+                    const priorityA = getPriority(a);
+                    const priorityB = getPriority(b);
+ 
+                    if (priorityA !== priorityB) {
+                        return priorityA - priorityB; // Sắp xếp theo mức độ ưu tiên
+                    }
+ 
+                    // Nếu cùng mức ưu tiên, sắp xếp theo thời gian hẹn (gần nhất lên trước)
+                    return new Date(a.AppointmentDatetime) - new Date(b.AppointmentDatetime);
+                });
+ 
                 appointments.forEach(appointment => {
                     const row = appointmentTableBody.insertRow();
-                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
+                    
+                    // --- Thêm màu sắc cho hàng và trạng thái ---
+                    const status = appointment.Status ? appointment.Status.toLowerCase() : '';
+                    let rowClass = 'border-b border-gray-200';
+                    let statusTag = '';
 
+                    switch (status) {
+                        case 'pending':
+                            rowClass += ' bg-yellow-50 hover:bg-yellow-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">${appointment.Status}</span>`;
+                            break;
+                        case 'completed':
+                            rowClass += ' bg-blue-50 hover:bg-blue-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${appointment.Status}</span>`;
+                            break;
+                        case 'confirmed':
+                            rowClass += ' bg-green-50 hover:bg-green-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${appointment.Status}</span>`;
+                            break;
+                        case 'cancelled':
+                            rowClass += ' bg-red-50 hover:bg-red-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">${appointment.Status}</span>`;
+                            break;
+                        default:
+                            rowClass += ' hover:bg-gray-50';
+                            statusTag = `<span>${appointment.Status}</span>`;
+                    }
+                    row.className = rowClass;
+ 
                     const appointmentDatetime = appointment.AppointmentDatetime ? new Date(appointment.AppointmentDatetime).toLocaleString() : 'N/A';
                     const serviceNames = appointment.Services.map(s => s.name).join(', ');
 
@@ -123,13 +265,13 @@ if (typeof window.initLichHenPage === 'undefined') {
                         <td class="py-4 px-6">${appointment.SpecialtyName}</td>
                         <td class="py-4 px-6">${appointmentDatetime}</td>
                         <td class="py-4 px-6">${serviceNames}</td>
-                        <td class="py-4 px-6">${appointment.Status}</td>
+                        <td class="py-4 px-6">${statusTag}</td>
                         <td class="py-4 px-6 text-center space-x-3">
                             <button class="btn-action btn-detail action-link-detail" data-id="${appointment.AppointmentId}">Chi tiết</button>
                         </td>
                     `;
                 });
-
+ 
             } catch (error) {
                 console.error('Error fetching appointments:', error);
                 appointmentTableBody.innerHTML = `<tr><td colspan="6" class="py-4 px-6 text-center text-red-500">Lỗi khi tải dữ liệu lịch hẹn. Vui lòng kiểm tra console để biết chi tiết.</td></tr>`;
@@ -159,26 +301,51 @@ if (typeof window.initLichHenPage === 'undefined') {
 
                 const appointment = await response.json();
 
-                document.getElementById('detail-appointment-id').textContent = appointment.AppointmentId;
-                document.getElementById('detail-patient-name').textContent = appointment.PatientName;
-                document.getElementById('detail-doctor-name').textContent = appointment.DoctorName;
-                document.getElementById('detail-specialty-name').textContent = appointment.SpecialtyName;
-                document.getElementById('detail-appointment-datetime').textContent = new Date(appointment.AppointmentDatetime).toLocaleString();
-                document.getElementById('detail-status').textContent = appointment.Status;
-                document.getElementById('detail-symptoms').textContent = appointment.Symptoms;
+                // Sửa lỗi: Sử dụng đúng các ID của modal chi tiết đã được thiết kế lại
+                detailAppointmentId.textContent = `#${appointment.AppointmentId}`;
+                detailPatientName.textContent = appointment.PatientName;
+                detailDoctorSpecialty.textContent = `${appointment.DoctorName} - ${appointment.SpecialtyName}`;
+                detailAppointmentDatetime.textContent = new Date(appointment.AppointmentDatetime).toLocaleString('vi-VN', { dateStyle: 'full', timeStyle: 'short' });
+                detailSymptoms.textContent = appointment.Symptoms || 'Không có';
+                // Cập nhật tag trạng thái
+                document.getElementById('detail-status-tag').innerHTML = createStatusTag(appointment.Status);
 
                 const detailServicesList = document.getElementById('detail-services');
                 detailServicesList.innerHTML = ''; // Clear previous services
                 if (appointment.Services && appointment.Services.length > 0) {
                     appointment.Services.forEach(service => {
                         const listItem = document.createElement('li');
-                        listItem.textContent = `${service.name} (Số lượng: ${service.quantity})`;
+                        listItem.textContent = service.name + (service.quantity > 1 ? ` (Số lượng: ${service.quantity})` : '');
                         detailServicesList.appendChild(listItem);
                     });
                 } else {
                     const listItem = document.createElement('li');
                     listItem.textContent = 'Không có dịch vụ nào được đặt.';
                     detailServicesList.appendChild(listItem);
+                }
+ 
+                // 1. Hiển thị các nút hành động phù hợp với trạng thái
+                renderAppointmentActions(appointment);
+ 
+                // 2. Gán sự kiện cho các nút hành động vừa được tạo
+                const confirmBtn = document.getElementById('confirm-appointment-btn');
+                if (confirmBtn) {
+                    // Xóa listener cũ để tránh gọi nhiều lần
+                    confirmBtn.replaceWith(confirmBtn.cloneNode(true));
+                    document.getElementById('confirm-appointment-btn').addEventListener('click', () => {
+                        updateAppointmentStatus(appointment.AppointmentId, 'Confirmed');
+                    });
+                }
+
+                const cancelBtn = document.getElementById('cancel-appointment-btn');
+                if (cancelBtn) {
+                    // Xóa listener cũ để tránh gọi nhiều lần
+                    cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                    document.getElementById('cancel-appointment-btn').addEventListener('click', () => {
+                        if (confirm('Bạn có chắc chắn muốn hủy lịch hẹn này không?')) {
+                            updateAppointmentStatus(appointment.AppointmentId, 'Cancelled');
+                        }
+                    });
                 }
 
                 appointmentDetailModal.classList.remove('hidden');
@@ -202,18 +369,35 @@ if (typeof window.initLichHenPage === 'undefined') {
 
         // Event Listeners
         searchButton.addEventListener('click', () => {
-            fetchAppointments(searchInput.value.trim());
+            handleFilterChange();
         });
 
         searchInput.addEventListener('keyup', (event) => {
             if (event.key === 'Enter') {
-                fetchAppointments(searchInput.value.trim());
+                handleFilterChange();
             }
         });
 
         refreshButton.addEventListener('click', () => {
             searchInput.value = '';
+            sortDirectionSelect.value = '';
+            sortValueSelect.value = '';
+            sortStatusSelect.value = '';
+            sortServiceSelect.value = '';
+            examDateInput.value = '';
             fetchAppointments();
+        });
+
+        // --- Add/Edit Modal Logic ---
+        createNewButton.addEventListener('click', () => {
+            appointmentModal.classList.remove('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            appointmentModal.classList.add('hidden');
+        });
+        cancelBtn.addEventListener('click', () => {
+            appointmentModal.classList.add('hidden');
         });
 
         appointmentTableBody.addEventListener('click', async (event) => {
@@ -235,58 +419,23 @@ if (typeof window.initLichHenPage === 'undefined') {
 
         // Add event listeners for sort and filter changes
         sortDirectionSelect.addEventListener('change', () => {
-            fetchAppointments(
-                searchInput.value.trim(),
-                sortDirectionSelect.value,
-                sortValueSelect.value,
-                sortStatusSelect.value,
-                sortServiceSelect.value,
-                examDateInput.value
-            );
+            handleFilterChange();
         });
 
         sortValueSelect.addEventListener('change', () => {
-            fetchAppointments(
-                searchInput.value.trim(),
-                sortDirectionSelect.value,
-                sortValueSelect.value,
-                sortStatusSelect.value,
-                sortServiceSelect.value,
-                examDateInput.value
-            );
+            handleFilterChange();
         });
 
         sortStatusSelect.addEventListener('change', () => {
-            fetchAppointments(
-                searchInput.value.trim(),
-                sortDirectionSelect.value,
-                sortValueSelect.value,
-                sortStatusSelect.value,
-                sortServiceSelect.value,
-                examDateInput.value
-            );
+            handleFilterChange();
         });
 
         sortServiceSelect.addEventListener('change', () => {
-            fetchAppointments(
-                searchInput.value.trim(),
-                sortDirectionSelect.value,
-                sortValueSelect.value,
-                sortStatusSelect.value,
-                sortServiceSelect.value,
-                examDateInput.value
-            );
+            handleFilterChange();
         });
 
         examDateInput.addEventListener('change', () => {
-            fetchAppointments(
-                searchInput.value.trim(),
-                sortDirectionSelect.value,
-                sortValueSelect.value,
-                sortStatusSelect.value,
-                sortServiceSelect.value,
-                examDateInput.value
-            );
+            handleFilterChange();
         });
     };
 }

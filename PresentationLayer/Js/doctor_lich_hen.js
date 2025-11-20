@@ -523,7 +523,13 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
                 const result = await response.json();
                 alert(`Bệnh án đã được tạo thành công! Mã bệnh án: ${result.medical_record_id}`);
                 
-emrModal.classList.add('hidden'); // Close modal
+                // Ask doctor to update appointment status to completed
+                const confirmCompletion = confirm('Bạn có muốn thay đổi trạng thái cuộc hẹn thành "Đã hoàn thành" không?');
+                if (confirmCompletion && appointmentId) {
+                    await updateAppointmentStatus(appointmentId, 'completed');
+                }
+
+                emrModal.classList.add('hidden'); // Close modal
                 emrForm.reset(); // Reset form
                 // Refresh appointment list to reflect status change
                 fetchAppointments(

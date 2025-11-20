@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Sử - Hệ Thống Quản Lý</title>
+    <title>Lịch Sử Khám Bệnh - Hệ Thống Quản Lý</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        .details-content {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -19,11 +25,79 @@
 
     <!-- Main Content -->
     <main class="p-4 sm:p-6 lg:p-8">
-        <div class="max-w-6xl mx-auto">
+        <div class="max-w-5xl mx-auto">
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <h1 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-3">Lịch Sử</h1>
-                <div class="space-y-4">
-                    <p class="text-gray-600">Nội dung lịch sử sẽ được hiển thị tại đây.</p>
+                <h1 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Lịch sử khám bệnh</h1>
+                
+                <!-- Filter Section -->
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                    <div class="relative w-full md:w-1/3">
+                        <input type="text" placeholder="Tìm kiếm theo bác sĩ, chuyên khoa..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <label for="date-filter" class="text-sm font-medium text-gray-700">Lọc theo ngày:</label>
+                        <input type="date" id="date-filter" class="border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- History List -->
+                <div class="space-y-6">
+                    <!-- History Item 1 -->
+                    <div class="border rounded-lg overflow-hidden">
+                        <div class="bg-gray-50 p-4 flex justify-between items-center cursor-pointer" onclick="toggleDetails(this)">
+                            <div>
+                                <p class="font-semibold text-gray-800">Khám Tim mạch - <span class="font-normal">BS. Nguyễn Văn A</span></p>
+                                <p class="text-sm text-gray-500">Ngày 15/06/2024</p>
+                            </div>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </div>
+                        <div class="details-content p-4 border-t">
+                            <h3 class="font-semibold text-lg mb-2">Chi tiết lần khám</h3>
+                            <p><strong>Chẩn đoán:</strong> Rối loạn nhịp tim</p>
+                            <p><strong>Kết quả:</strong> Cần theo dõi thêm, tái khám sau 1 tháng.</p>
+                            <p><strong>Đơn thuốc:</strong> Concor 2.5mg (1 viên/ngày)</p>
+                            <div class="mt-4">
+                                <a href="#" class="text-blue-600 hover:underline">Xem chi tiết bệnh án &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Item 2 -->
+                    <div class="border rounded-lg overflow-hidden">
+                        <div class="bg-gray-50 p-4 flex justify-between items-center cursor-pointer" onclick="toggleDetails(this)">
+                            <div>
+                                <p class="font-semibold text-gray-800">Khám Tổng quát - <span class="font-normal">BS. Trần Thị B</span></p>
+                                <p class="text-sm text-gray-500">Ngày 20/01/2024</p>
+                            </div>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </div>
+                        <div class="details-content p-4 border-t">
+                            <h3 class="font-semibold text-lg mb-2">Chi tiết lần khám</h3>
+                            <p><strong>Chẩn đoán:</strong> Sức khỏe ổn định</p>
+                            <p><strong>Kết quả:</strong> Các chỉ số trong giới hạn bình thường.</p>
+                            <p><strong>Lời dặn:</strong> Duy trì chế độ ăn uống và tập luyện.</p>
+                            <div class="mt-4">
+                                <a href="#" class="text-blue-600 hover:underline">Xem chi tiết bệnh án &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Item 3 -->
+                    <div class="border rounded-lg overflow-hidden">
+                        <div class="bg-gray-50 p-4 flex justify-between items-center cursor-pointer" onclick="toggleDetails(this)">
+                            <div>
+                                <p class="font-semibold text-gray-800">Khám Da liễu - <span class="font-normal">BS. Lê Văn C</span></p>
+                                <p class="text-sm text-gray-500">Ngày 05/09/2023</p>
+                            </div>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </div>
+                        <div class="details-content p-4 border-t">
+                            <h3 class="font-semibold text-lg mb-2">Chi tiết lần khám</h3>
+                            <p><strong>Chẩn đoán:</strong> Viêm da cơ địa</p>
+                            <p><strong>Đơn thuốc:</strong> Eumovate cream</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -35,6 +109,19 @@
     </div>
 
     <script src="/Js/main.js"></script>
+    <script>
+        function toggleDetails(element) {
+            const content = element.nextElementSibling;
+            const icon = element.querySelector('i');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                icon.classList.remove('rotate-180');
+            } else {
+                content.style.display = 'block';
+                icon.classList.add('rotate-180');
+            }
+        }
+    </script>
 
 </body>
 </html>

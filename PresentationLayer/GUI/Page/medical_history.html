@@ -3,11 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Sử Khám Bệnh - Hệ Thống Quản Lý</title>
+    <title>Lịch Sử Bệnh Án - Hệ Thống Quản Lý</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        /* Style cho tiêu đề phần trong modal */
+        .section-header {
+            background-color: #eff6ff; /* bg-blue-50 */
+            padding: 0.75rem 1rem;
+            border-left: 4px solid #3b82f6; /* border-blue-500 */
+            font-weight: 600;
+            color: #1e40af; /* text-blue-800 */
+            margin-bottom: 1rem;
+            border-top-right-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .readonly-field {
+            background-color: #f9fafb; /* bg-gray-50 */
+            border-color: #e5e7eb; /* border-gray-200 */
+            color: #4b5563; /* text-gray-600 */
+            cursor: not-allowed;
+        }
+        /* Style cho label trong modal */
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151; /* text-gray-700 */
+            margin-bottom: 0.25rem;
+        }
+        /* Style cho input/select/textarea trong modal */
+        .form-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            border-color: #3b82f6; /* border-blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* ring-blue-500 */
+        }
+        .source-badge {
+            font-size: 0.7rem;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -27,7 +81,7 @@
                     <h2 class="text-lg font-semibold mb-4 border-b pb-2">Cá nhân</h2>
                     <nav class="space-y-1">
                         <a href="profile.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Thông tin cá nhân</a>
-                        <a href="medical_history.html" class="block px-3 py-2 text-sm font-medium text-blue-600 rounded-md bg-gray-100">Lịch sử khám bệnh</a>
+                        <a href="medical_history.html" class="block px-3 py-2 text-sm font-medium text-blue-600 rounded-md bg-gray-100">Lịch sử bệnh án</a>
                         <a href="reminders.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Nhắc nhở</a>
                         <a href="interface_settings.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Giao diện</a>
                         <a href="feedback.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Phản hồi</a>
@@ -40,12 +94,42 @@
             <!-- Nội dung bên phải -->
             <div class="md:col-span-3">
                 <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-3">Lịch sử khám bệnh</h1>
+                    <h1 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-3">Lịch sử bệnh án</h1>
                     
-                    <!-- Nội dung ví dụ -->
-                    <div class="space-y-4">
-                        <p class="text-gray-600">Dưới đây là danh sách các lần khám bệnh của bạn.</p>
-                        <!-- Thêm nội dung lịch sử khám bệnh ở đây -->
+                    <!-- Filter Section -->
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
+                        <div class="relative w-full md:w-2/3">
+                            <input type="text" placeholder="Tìm kiếm theo bác sĩ, chuyên khoa, chẩn đoán..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <label for="date-filter" class="text-sm font-medium text-gray-700">Lọc theo ngày:</label>
+                            <input type="date" id="date-filter" class="border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- History List -->
+                    <div id="history-list" class="space-y-6">
+                        <!-- History Item 1 -->
+                        <div class="border rounded-lg bg-white p-4 flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-800">Khám Tim mạch - <span class="font-normal">BS. Nguyễn Văn A</span></p>
+                                    <p class="text-sm text-gray-500">Ngày 15/06/2024</p>
+                                </div>
+                                <a href="#" class="view-record-btn text-sm font-medium text-blue-600 hover:underline" data-record-id="123">Xem chi tiết bệnh án &rarr;</a>
+                        </div>
+
+                        <!-- History Item 2 -->
+                        <div class="border rounded-lg bg-white p-4 flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-800">Khám Tổng quát - <span class="font-normal">BS. Trần Thị B</span></p>
+                                    <p class="text-sm text-gray-500">Ngày 20/01/2024</p>
+                                </div>
+                                <a href="#" class="view-record-btn text-sm font-medium text-blue-600 hover:underline" data-record-id="456">Xem chi tiết bệnh án &rarr;</a>
+                        </div>
+
+                        <!-- Thêm các mục lịch sử khác tại đây -->
+
                     </div>
 
                 </div>
@@ -57,9 +141,139 @@
     <!-- Footer Placeholder -->
     <div id="footer-placeholder"></div>
 
+    <!-- Medical Record Detail Modal -->
+    <div id="medical-record-detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-800 bg-opacity-75 p-4">
+        <div class="max-w-5xl w-full mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="relative max-h-[90vh] overflow-y-auto">
+                <!-- Header Bệnh án -->
+                <div class="bg-blue-600 px-6 py-4 flex justify-between items-center text-white sticky top-0 z-10">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <h1 class="text-2xl font-bold">BỆNH ÁN ĐIỆN TỬ</h1>
+                        </div>
+                        <p class="text-sm opacity-90">Mã hồ sơ: <span id="modal-record-id" class="font-mono font-bold"></span> | Mã đặt lịch: <span id="modal-booking-code" class="font-mono font-bold"></span></p>
+                    </div>
+                    <div class="text-right">
+                        <p id="modal-doctor-name" class="font-semibold text-lg"></p>
+                        <p id="modal-specialty-name" class="text-sm opacity-90"></p>
+                    </div>
+                    <button class="close-modal-btn absolute top-2 right-2 text-white text-2xl font-bold hover:text-gray-300">&times;</button>
+                </div>
+
+                <div class="p-6 space-y-8">
+                    <!-- I. HÀNH CHÍNH -->
+                    <section>
+                        <h2 class="section-header">I. HÀNH CHÍNH</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label">Họ và tên</label>
+                                <input id="modal-patient-name" type="text" class="form-input readonly-field" readonly>
+                            </div>
+                            <div>
+                                <label class="form-label">Ngày sinh</label>
+                                <input id="modal-patient-dob" type="date" class="form-input readonly-field" readonly>
+                            </div>
+                            <div>
+                                <label class="form-label">Số điện thoại</label>
+                                <input id="modal-patient-phone" type="tel" class="form-input readonly-field" readonly>
+                            </div>
+                            <div>
+                                <label class="form-label">Địa chỉ</label>
+                                <input id="modal-patient-address" type="text" class="form-input readonly-field" readonly>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- II. LÝ DO VÀO VIỆN -->
+                    <section>
+                        <h2 class="section-header">II. LÝ DO VÀO VIỆN</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label flex justify-between">
+                                    <span>Khai báo của bệnh nhân (Triệu chứng chính):</span>
+                                    <span class="source-badge">Từ Đặt Lịch</span>
+                                </label>
+                                <textarea id="modal-patient-symptoms" class="form-input readonly-field" rows="2" readonly></textarea>
+                            </div>
+                            <div class="pt-4 border-t border-dashed border-gray-300">
+                                <label class="form-label text-blue-800 font-semibold">Ghi nhận của Bác sĩ (Hỏi bệnh):</label>
+                                <textarea id="modal-doctor-hpi-notes" class="form-input readonly-field" rows="2" readonly></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- III. KHÁM BỆNH & CHẨN ĐOÁN -->
+                    <section>
+                        <h2 class="section-header">III. KHÁM BỆNH & CHẨN ĐOÁN</h2>
+                        <div class="space-y-6">
+                            <!-- Chỉ số sinh tồn -->
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h3 class="font-semibold text-gray-700 mb-3">Dấu hiệu sinh tồn</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label class="form-label text-xs uppercase">Mạch (lần/phút)</label>
+                                        <input id="modal-vitals-pulse" type="number" class="form-input readonly-field" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="form-label text-xs uppercase">Nhiệt độ (°C)</label>
+                                        <input id="modal-vitals-temperature" type="number" step="0.1" class="form-input readonly-field" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="form-label text-xs uppercase">Huyết áp (mmHg)</label>
+                                        <input id="modal-vitals-bp" type="text" class="form-input readonly-field" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="form-label text-xs uppercase">SpO2 (%)</label>
+                                        <input id="modal-vitals-spo2" type="number" class="form-input readonly-field" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kết quả khám -->
+                            <div>
+                                <label class="form-label">Tóm tắt kết quả khám lâm sàng</label>
+                                <textarea id="modal-physical-exam-notes" class="form-input readonly-field" rows="4" readonly></textarea>
+                            </div>
+
+                            <!-- Chẩn đoán -->
+                            <div>
+                                <label class="form-label text-red-600 font-bold">Chẩn đoán</label>
+                                <input id="modal-diagnosis-out" type="text" class="form-input readonly-field border-red-300 bg-red-50" readonly>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- IV. HƯỚNG XỬ TRÍ -->
+                    <section>
+                        <h2 class="section-header">IV. HƯỚNG XỬ TRÍ</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="form-label">Lời dặn của bác sĩ & Lịch tái khám</label>
+                                <textarea id="modal-treatment-summary" class="form-input readonly-field" rows="3" readonly></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Footer Action Buttons -->
+                    <div class="border-t pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <button type="button" class="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors w-full md:w-auto">
+                            <span class="flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                In Bệnh án
+                            </span>
+                        </button>
+                        <button type="button" class="close-modal-btn px-8 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors w-full md:w-auto">
+                            Đóng
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </div>
 
     <script src="/Js/main.js"></script>
-
+    <script src="/Js/medical_history.js"></script>
 </body>
 </html>

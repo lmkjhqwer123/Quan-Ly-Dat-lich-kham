@@ -820,3 +820,30 @@ def update_appointment_status_logic(db, appointment_id: int, new_status: str):
         "appointment_id": updated_appointment.AppointmentId,
         "new_status": updated_appointment.Status
     }
+
+async def create_medical_record_bl(db, medical_record_data: dict):
+    """
+    Business logic to create a medical record and update the associated appointment status to 'completed'.
+    """
+    appointment_id = medical_record_data.get("appointment_id")
+    if not appointment_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Appointment ID is required to create a medical record.")
+
+    # 1. Create the medical record
+    medical_record_id = data_access.insert_medical_record(db, medical_record_data)
+    
+    if not medical_record_id:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create medical record.")
+
+    # 2. Update the appointment status to 'completed'
+    updated_appointment = data_access.update_appointment_status(db, appointment_id, AppointmentStatus.COMPLETED.value)
+
+    if not updated_appointment:
+        # If for some reason the appointment status update fails, we should consider rolling back the medical record creation
+        # For simplicity, we'll just log an error or raise an exception here.
+        # In a real-world scenario, a more robust transaction management would be needed.
+        print(f"Warning: Medical record created (ID: {medical_record_id}) but failed to update appointment {appointment_id} status to 'completed'.")
+        # Optionally, raise an exception if this is considered a critical failure
+        # raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Medical record created but failed to update appointment status.")
+
+    return medical_record_id

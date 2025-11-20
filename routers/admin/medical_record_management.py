@@ -22,7 +22,7 @@ class MedicalRecordOut(BaseModel):
     ExaminationDate: datetime
     DiagnosisOut: str
 
-@router.get("/api/admin/medical-records", response_model=List[MedicalRecordOut])
+@router.get("/medical-records", response_model=List[MedicalRecordOut])
 async def get_all_medical_records(
     search: Optional[str] = Query(None, description="Search by patient name, doctor name, or booking code"),
     sort_by: Optional[str] = Query(None, description="Sort by 'patient_name', 'doctor_name', 'examination_date'"),
@@ -120,10 +120,11 @@ async def get_all_medical_records(
         if 'cursor' in locals():
             cursor.close()
 
-@router.get("/api/admin/medical-records/{record_id}", response_model=MedicalRecordOut)
+@router.get("/medical-records/{record_id}", response_model=MedicalRecordOut)
 async def get_medical_record_by_id(
     record_id: int,
-    db: pyodbc.Connection = Depends(get_raw_db_connection)
+    db: pyodbc.Connection = Depends(get_raw_db_connection),
+    current_user = Depends(get_current_user) # Add dependency
 ):
     try:
         cursor = db.cursor()
@@ -150,8 +151,13 @@ async def get_medical_record_by_id(
                 SPECIALTIES s ON a.specialty_id = s.specialty_id
             WHERE mr.medical_record_id = ?
         """
+        params = [record_id]
 
-        cursor.execute(query, record_id)
+        if current_user.role == "Doctor":
+            query += " AND mr.doctor_id = ?"
+            params.append(current_user.id)
+
+        cursor.execute(query, *params)
         
         row = cursor.fetchone()
         if not row:

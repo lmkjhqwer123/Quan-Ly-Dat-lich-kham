@@ -87,8 +87,22 @@
                 <h2 class="text-xl font-semibold">Chi tiết Bệnh án</h2>
                 <button id="close-medical-record-detail-modal" class="text-gray-500 hover:text-gray-800">&times;</button>
             </div>
-            <div id="medical-record-detail-content" class="mt-4">
-                <!-- Details will be populated by JavaScript -->
+            <div id="medical-record-detail-content" class="mt-4 text-gray-700">
+                <p class="mb-2"><strong class="font-semibold">Mã bệnh án:</strong> <span id="detail-medical-record-id"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Mã lượt khám:</strong> <span id="detail-booking-code"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Tên bệnh nhân:</strong> <span id="detail-patient-name"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Tên bác sĩ:</strong> <span id="detail-doctor-name"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Chuyên khoa:</strong> <span id="detail-specialty-name"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Ngày khám:</strong> <span id="detail-examination-date"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Chẩn đoán ban đầu:</strong> <span id="detail-diagnosis-out"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Chẩn đoán chi tiết:</strong> <span id="detail-diagnosis-in"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Ghi chú HPI của bác sĩ:</strong> <span id="detail-doctor-hpi-notes"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Ghi chú khám thực thể:</strong> <span id="detail-physical-examination-notes"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Tóm tắt điều trị:</strong> <span id="detail-treatment-summary"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Nhịp tim:</strong> <span id="detail-pulse-rate"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Nhiệt độ:</strong> <span id="detail-temperature"></span></p>
+                <p class="mb-2"><strong class="font-semibold">Huyết áp:</strong> <span id="detail-blood-pressure-mmhg"></span></p>
+                <p class="mb-2"><strong class="font-semibold">SPO2 (%):</strong> <span id="detail-spo2-percent"></span></p>
             </div>
             <div class="mt-6 flex justify-end">
                 <button id="close-medical-record-detail-btn" class="rounded-md bg-gray-300 px-4 py-2 text-gray-800 hover:bg-gray-400">

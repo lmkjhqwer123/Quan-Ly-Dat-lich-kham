@@ -467,51 +467,74 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
         // EMR Modal close button
         closeEmrModalBtn.addEventListener('click', () => {
             emrModal.classList.add('hidden');
+            emrForm.reset(); // Reset form fields when closing
         });
 
         // --- Xử lý sự kiện "Hoàn tất khám" ---
-        emrForm.addEventListener('submit', (event) => {
+        emrForm.addEventListener('submit', async (event) => {
             event.preventDefault(); // Ngăn form gửi đi theo cách truyền thống
 
-            // Thu thập dữ liệu từ form
+            const token = sessionStorage.getItem('accessToken');
+            if (!token) {
+                alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                window.location.href = '/login.html'; // Redirect to login
+                return;
+            }
+
             const appointmentIdText = document.getElementById('emr-appointment-id').textContent;
-            const appointmentId = appointmentIdText.replace('#AP-', '');
+            const appointmentId = parseInt(appointmentIdText.replace('#AP-', ''));
 
             const medicalRecordData = {
-                appointmentId: parseInt(appointmentId),
-                doctorNotes: document.getElementById('emr-doctor-notes').value,
+                appointment_id: appointmentId,
+                patient_symptoms: document.getElementById('emr-patient-symptoms')?.value || null,
+                doctor_notes: document.getElementById('emr-doctor-notes')?.value || null,
+                clinical_summary: document.getElementById('emr-clinical-summary')?.value || null,
+                preliminary_diagnosis: document.getElementById('emr-preliminary-diagnosis')?.value,
+                doctor_advice: document.getElementById('emr-doctor-advice')?.value || null,
                 vitals: {
-                    pulse: document.getElementById('emr-vitals-pulse').value,
-                    temperature: document.getElementById('emr-vitals-temperature').value,
-                    bloodPressure: document.getElementById('emr-vitals-bp').value,
-                    spo2: document.getElementById('emr-vitals-spo2').value,
-                },
-                clinicalSummary: document.getElementById('emr-clinical-summary').value,
-                preliminaryDiagnosis: document.getElementById('emr-preliminary-diagnosis').value,
-                icd10Code: document.getElementById('emr-icd10-code').value,
-                treatment: {
-                    // Lấy tab đang được chọn
-                    selectedTab: document.querySelector('#emr-treatment-tabs button.border-blue-600').dataset.tab,
-                    // Lấy danh sách thuốc (ví dụ đơn giản)
-                    prescriptions: Array.from(document.querySelectorAll('#emr-prescription-list tr')).map(row => ({
-                        name: row.cells[0].textContent,
-                        quantity: row.cells[1].textContent,
-                        usage: row.cells[2].textContent,
-                    })),
-                    // (Bạn có thể thêm logic để lấy dữ liệu từ các tab khác ở đây)
-                },
-                doctorAdvice: document.getElementById('emr-doctor-advice').value,
+                    pulse: parseInt(document.getElementById('emr-vitals-pulse')?.value) || null,
+                    temperature: parseFloat(document.getElementById('emr-vitals-temperature')?.value) || null,
+                    blood_pressure: document.getElementById('emr-vitals-bp')?.value || null,
+                    spo2: parseFloat(document.getElementById('emr-vitals-spo2')?.value) || null,
+                }
             };
 
-            // Hiển thị dữ liệu đã thu thập (dưới dạng nháp)
-            console.log("--- Dữ liệu Bệnh án (Nháp) ---");
-            console.log(medicalRecordData);
+            // Basic validation for required fields
+            if (!medicalRecordData.preliminary_diagnosis) {
+                alert('Vui lòng nhập chẩn đoán sơ bộ.');
+                return;
+            }
 
-            alert("Đã thu thập dữ liệu bệnh án! Kiểm tra Console (F12) để xem chi tiết.");
+            try {
+                const response = await fetch('/api/doctor/medical-records', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(medicalRecordData)
+                });
 
-            // Sau khi hoàn tất, có thể đóng modal và reset form
-            // emrModal.classList.add('hidden');
-            // emrForm.reset();
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Lỗi khi tạo bệnh án.');
+                }
+
+                const result = await response.json();
+                alert(`Bệnh án đã được tạo thành công! Mã bệnh án: ${result.medical_record_id}`);
+                
+emrModal.classList.add('hidden'); // Close modal
+                emrForm.reset(); // Reset form
+                // Refresh appointment list to reflect status change
+                fetchAppointments(
+                    searchInput.value.trim(), sortDirectionSelect.value, sortValueSelect.value,
+                    sortStatusSelect.value, sortServiceSelect.value, examDateInput.value
+                );
+
+            } catch (error) {
+                console.error('Error creating medical record:', error);
+                alert(`Lỗi: ${error.message}`);
+            }
         });
 
     };

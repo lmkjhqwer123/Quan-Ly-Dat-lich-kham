@@ -114,6 +114,25 @@ class DoctorWorkingHour(Base):
 
     doctor = relationship("Doctor")
 
+class MedicalRecord(Base):
+    __tablename__ = "MEDICAL_RECORDS"
+    MedicalRecordId = Column('medical_record_id', Integer, primary_key=True, index=True)
+    AppointmentId = Column('appointment_id', Integer, ForeignKey("appointments.appointment_id"), unique=True, nullable=False)
+    DoctorId = Column('doctor_id', Integer, ForeignKey("doctors.doctor_id"), nullable=False)
+    DiagnosisIn = Column('diagnosis_in', String(500), nullable=True)
+    DiagnosisOut = Column('diagnosis_out', String(500), nullable=False)
+    TreatmentSummary = Column('treatment_summary', Text, nullable=False)
+    ExaminationDate = Column('examination_date', DateTime, default=datetime.datetime.now)
+    PulseRate = Column('pulse_rate', Integer, nullable=True)
+    Temperature = Column('temperature', DECIMAL(4, 2), nullable=True)
+    BloodPressureMMHG = Column('blood_pressure_mmhg', String(10), nullable=True)
+    Spo2Percent = Column('spo2_percent', DECIMAL(4, 1), nullable=True)
+    DoctorHpiNotes = Column('doctor_hpi_notes', Text, nullable=True)
+    PhysicalExaminationNotes = Column('physical_examination_notes', Text, nullable=True)
+
+    appointment = relationship("Appointment")
+    doctor = relationship("Doctor")
+
 import pyodbc
 
 # Create all tables in the database
@@ -1020,3 +1039,105 @@ def create_doctor_leave_entry(db: Session, doctor_id: int, start_datetime: datet
     db.commit()
     db.refresh(db_leave)
     return db_leave
+
+def insert_medical_record(db: Session, medical_record_data: dict):
+    """
+    Inserts a new medical record into the database.
+    """
+    db_medical_record = MedicalRecord(
+        AppointmentId=medical_record_data["appointment_id"],
+        DoctorId=medical_record_data["doctor_id"],
+        DiagnosisIn=medical_record_data.get("diagnosis_in"),
+        DiagnosisOut=medical_record_data["diagnosis_out"],
+        TreatmentSummary=medical_record_data["treatment_summary"],
+        PulseRate=medical_record_data.get("pulse_rate"),
+        Temperature=medical_record_data.get("temperature"),
+        BloodPressureMMHG=medical_record_data.get("blood_pressure_mmhg"),
+        Spo2Percent=medical_record_data.get("spo2_percent"),
+        DoctorHpiNotes=medical_record_data.get("doctor_hpi_notes"),
+        PhysicalExaminationNotes=medical_record_data.get("physical_examination_notes")
+    )
+    db.add(db_medical_record)
+    db.commit()
+    db.refresh(db_medical_record)
+    return db_medical_record.MedicalRecordId
+
+def get_medical_records_by_doctor_id(
+    db: Session,
+    doctor_id: int,
+    search_query: Optional[str] = None,
+    sort_by: Optional[str] = None,
+    sort_direction: Optional[str] = "asc",
+    limit: Optional[int] = None
+):
+    query = db.query(
+        MedicalRecord.MedicalRecordId,
+        Appointment.BookingCode,
+        Patient.FullName.label("PatientName"),
+        Doctor.FullName.label("DoctorName"),
+        Specialty.Name.label("SpecialtyName"),
+        MedicalRecord.ExaminationDate,
+        MedicalRecord.DiagnosisOut,
+        MedicalRecord.DiagnosisIn,
+        MedicalRecord.DoctorHpiNotes,
+        MedicalRecord.PhysicalExaminationNotes,
+        MedicalRecord.TreatmentSummary,
+        MedicalRecord.PulseRate,
+        MedicalRecord.Temperature,
+        MedicalRecord.BloodPressureMMHG,
+        MedicalRecord.Spo2Percent
+    ).join(Appointment, MedicalRecord.AppointmentId == Appointment.AppointmentId
+    ).join(Patient, Appointment.PatientId == Patient.PatientId
+    ).join(Doctor, MedicalRecord.DoctorId == Doctor.DoctorId
+    ).join(Specialty, Appointment.SpecialtyId == Specialty.SpecialtyId
+    ).filter(MedicalRecord.DoctorId == doctor_id)
+
+    if search_query:
+        search_pattern = f"%{search_query}%"
+        query = query.filter(
+            (Patient.FullName.ilike(search_pattern)) |
+            (MedicalRecord.DiagnosisOut.ilike(search_pattern))
+        )
+
+    if sort_by:
+        if sort_by == "ExaminationDate":
+            if sort_direction == "desc":
+                query = query.order_by(MedicalRecord.ExaminationDate.desc())
+            else:
+                query = query.order_by(MedicalRecord.ExaminationDate.asc())
+        elif sort_by == "PatientName":
+            if sort_direction == "desc":
+                query = query.order_by(Patient.FullName.desc())
+            else:
+                query = query.order_by(Patient.FullName.asc())
+        # Add more sorting options as needed
+    else:
+        query = query.order_by(MedicalRecord.ExaminationDate.desc()) # Default sort
+
+    if limit:
+        query = query.limit(limit)
+
+    return query.all()
+
+def get_medical_record_by_id_and_doctor_id(db: Session, medical_record_id: int, doctor_id: int):
+    return db.query(
+        MedicalRecord.MedicalRecordId,
+        Appointment.BookingCode,
+        Patient.FullName.label("PatientName"),
+        Doctor.FullName.label("DoctorName"),
+        Specialty.Name.label("SpecialtyName"),
+        MedicalRecord.ExaminationDate,
+        MedicalRecord.DiagnosisOut,
+        MedicalRecord.DiagnosisIn,
+        MedicalRecord.DoctorHpiNotes,
+        MedicalRecord.PhysicalExaminationNotes,
+        MedicalRecord.TreatmentSummary,
+        MedicalRecord.PulseRate,
+        MedicalRecord.Temperature,
+        MedicalRecord.BloodPressureMMHG,
+        MedicalRecord.Spo2Percent
+    ).join(Appointment, MedicalRecord.AppointmentId == Appointment.AppointmentId
+    ).join(Patient, Appointment.PatientId == Patient.PatientId
+    ).join(Doctor, MedicalRecord.DoctorId == Doctor.DoctorId
+    ).join(Specialty, Appointment.SpecialtyId == Specialty.SpecialtyId
+    ).filter(MedicalRecord.MedicalRecordId == medical_record_id, MedicalRecord.DoctorId == doctor_id).first()

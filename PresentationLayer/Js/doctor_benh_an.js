@@ -21,7 +21,7 @@ if (typeof window.initDoctorBenhAnPage === 'undefined') {
                     return;
                 }
 
-                let url = '/api/admin/medical-records'; // This endpoint handles doctor-specific filtering based on role
+                let url = '/api/doctor/medical-records'; // This endpoint handles doctor-specific filtering based on role
                 const params = new URLSearchParams();
 
                 if (searchQuery) {
@@ -130,14 +130,14 @@ if (typeof window.initDoctorBenhAnPage === 'undefined') {
         const detailModal = document.getElementById('medical-record-detail-modal');
         const closeDetailModalBtn = document.getElementById('close-medical-record-detail-modal');
         const closeDetailBtn = document.getElementById('close-medical-record-detail-btn');
-        const detailContent = document.getElementById('medical-record-detail-content');
+
 
         tableBody.addEventListener('click', async (event) => {
             if (event.target.classList.contains('btn-detail')) {
                 const recordId = event.target.dataset.id;
                 try {
                     const token = sessionStorage.getItem('accessToken');
-                    const response = await fetch(`/api/admin/medical-records/${recordId}`, { // Still using admin endpoint, backend filters
+                    const response = await fetch(`/api/doctor/medical-records/${recordId}`, { // Still using admin endpoint, backend filters
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (!response.ok) {
@@ -145,15 +145,25 @@ if (typeof window.initDoctorBenhAnPage === 'undefined') {
                     }
                     const record = await response.json();
                     
-                    detailContent.innerHTML = `
-                        <p><strong>Mã bệnh án:</strong> ${record.MedicalRecordId}</p>
-                        <p><strong>Mã lượt khám:</strong> ${record.BookingCode}</p>
-                        <p><strong>Bệnh nhân:</strong> ${record.PatientName}</p>
-                        <p><strong>Bác sĩ:</strong> ${record.DoctorName}</p>
-                        <p><strong>Chuyên khoa:</strong> ${record.SpecialtyName}</p>
-                        <p><strong>Ngày khám:</strong> ${new Date(record.ExaminationDate).toLocaleDateString('vi-VN')}</p>
-                        <p><strong>Chẩn đoán:</strong> ${record.DiagnosisOut}</p>
-                    `;
+                    document.getElementById('detail-medical-record-id').textContent = record.MedicalRecordId;
+                    document.getElementById('detail-booking-code').textContent = record.BookingCode || 'N/A';
+                    document.getElementById('detail-patient-name').textContent = record.PatientName;
+                    document.getElementById('detail-doctor-name').textContent = record.DoctorName;
+
+                    const examDate = new Date(record.ExaminationDate).toLocaleDateString('vi-VN', {
+                        day: '2-digit', month: '2-digit', year: 'numeric'
+                    });
+                    document.getElementById('detail-specialty-name').textContent = record.SpecialtyName;
+                    document.getElementById('detail-examination-date').textContent = examDate;
+                    document.getElementById('detail-diagnosis-out').textContent = record.DiagnosisOut || 'Chưa có chẩn đoán';
+                    document.getElementById('detail-diagnosis-in').textContent = record.DiagnosisIn || 'N/A';
+                    document.getElementById('detail-doctor-hpi-notes').textContent = record.DoctorHPINotes || 'N/A';
+                    document.getElementById('detail-physical-examination-notes').textContent = record.PhysicalExaminationNotes || 'N/A';
+                    document.getElementById('detail-treatment-summary').textContent = record.TreatmentSummary || 'N/A';
+                    document.getElementById('detail-pulse-rate').textContent = record.PulseRate || 'N/A';
+                    document.getElementById('detail-temperature').textContent = record.Temperature || 'N/A';
+                    document.getElementById('detail-blood-pressure-mmhg').textContent = record.BloodPressureMMHG || 'N/A';
+                    document.getElementById('detail-spo2-percent').textContent = record.SPO2Percent || 'N/A';
 
                     detailModal.classList.remove('hidden');
                 } catch (error) {

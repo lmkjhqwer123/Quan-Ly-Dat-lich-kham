@@ -11,6 +11,7 @@ if (typeof window.initBenhAnPage === 'undefined') {
         const resultCountSelect = document.getElementById('result-count');
         const sortSpecialitySelect = document.getElementById('sort-speciality');
 
+
         const fetchMedicalRecords = async (searchQuery = '', sortDir = '', sortBy = '', specialty = '', limit = '') => {
             try {
                 const token = sessionStorage.getItem('accessToken');
@@ -151,15 +152,17 @@ if (typeof window.initBenhAnPage === 'undefined') {
                     }
                     const record = await response.json();
                     
-                    detailContent.innerHTML = `
-                        <p><strong>Mã bệnh án:</strong> ${record.MedicalRecordId}</p>
-                        <p><strong>Mã lượt khám:</strong> ${record.BookingCode}</p>
-                        <p><strong>Bệnh nhân:</strong> ${record.PatientName}</p>
-                        <p><strong>Bác sĩ:</strong> ${record.DoctorName}</p>
-                        <p><strong>Chuyên khoa:</strong> ${record.SpecialtyName}</p>
-                        <p><strong>Ngày khám:</strong> ${new Date(record.ExaminationDate).toLocaleDateString('vi-VN')}</p>
-                        <p><strong>Chẩn đoán:</strong> ${record.DiagnosisOut}</p>
-                    `;
+                    document.getElementById('detail-medical-record-id').textContent = record.MedicalRecordId;
+                    document.getElementById('detail-booking-code').textContent = record.BookingCode || '#N/A';
+                    document.getElementById('detail-doctor-name').textContent = record.DoctorName;
+                    document.getElementById('detail-specialty-name').textContent = record.SpecialtyName;
+
+                    // Use .value for input and textarea elements
+                    document.getElementById('detail-patient-name').value = record.PatientName;
+                    const examDate = new Date(record.ExaminationDate);
+                    document.getElementById('detail-examination-date').value = examDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    document.getElementById('detail-examination-time').value = examDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                    document.getElementById('detail-diagnosis-out').value = record.DiagnosisOut;
 
                     detailModal.classList.remove('hidden');
                 } catch (error) {

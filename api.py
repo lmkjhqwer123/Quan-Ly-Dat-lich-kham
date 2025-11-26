@@ -1,110 +1,52 @@
-
-
-
 from dotenv import load_dotenv
 load_dotenv()  # Load environment variables from .env file
 
-
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-
-
-
 from sqlalchemy.orm import Session
-
-
-
 from typing import List, Optional
-
-
-
 import datetime
 
 from routers import patient_router, doctor_router, specialty_router, service_router, public_router
-
-
-
 from fastapi.staticfiles import StaticFiles
 
-
-
-
-
 from BusinessLogicLayer import business_logic
-
-
-
 from DataAccessLayer import data_access
 
-
-
 import auth
-
 from routers.auth import auth_router
-
 from routers.auth import update_password
-
 from routers.admin import dashboard_stats
-
 from routers.admin import patient_management
-
 from routers.admin import appointment_management
-
 from routers.doctor import medical_record_management
-
 from routers.doctor.models import DoctorCreateRequest, DoctorUpdateRequest, DoctorDto
 from routers.admin import medical_record_management as admin_medical_record_management
 from routers.doctor import profile_management
-
+from routers.patient import appointment_history
 
 load_dotenv()  # Load environment variables from .env file
 
-
-
 app = FastAPI(
-
-
-
-
-
-
-
     title="QuanLyKhamBenh API",
-
-
-
-
-
-
-
     description="API for managing appointments in a hospital.",
-
-
-
-
-
-
-
     version="1.0.0",
-
-
-
     docs_url="/api/docs",
-
-
-
     redoc_url="/api/redoc"
-
-
-
-
-
-
-
 )
 
+# Add CORS middleware to allow cross-origin requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
+# --- Pydantic Models (DTOs) ---
 
 
 
@@ -119,9 +61,14 @@ app = FastAPI(
 
 
 
-
-
-
+# Add CORS middleware to allow cross-origin requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 # --- Pydantic Models (DTOs) ---
 
@@ -624,6 +571,8 @@ app.include_router(profile_management.router, prefix="/api/doctor", tags=["Docto
 app.include_router(medical_record_management.router, prefix="/api/doctor", tags=["Doctor"])
 app.include_router(admin_medical_record_management.router, prefix="/api/admin", tags=["Admin"])
 
+app.include_router(appointment_history.router)
+
 
 
 
@@ -768,7 +717,6 @@ def get_my_history(db: Session = Depends(data_access.get_db), current_user = Dep
 
 
     return business_logic.get_my_history_logic(db, current_user.id)
-
 
 
 

@@ -717,6 +717,19 @@ def get_appointment_by_id(db, appointment_id: int, doctor_id: Optional[int] = No
         
     return query.first()
 
+def get_appointments_by_patient_id(db, patient_id: int):
+    """
+    Lấy tất cả lịch hẹn của bệnh nhân, sắp xếp theo thời gian mới nhất trước
+    """
+    query = db.query(Appointment).options(
+        joinedload(Appointment.patient),
+        joinedload(Appointment.doctor),
+        joinedload(Appointment.specialty),
+        joinedload(Appointment.appointment_services).joinedload(AppointmentService.service)
+    ).filter(Appointment.PatientId == patient_id)
+    
+    return query.order_by(Appointment.AppointmentDatetime.desc()).all()
+
 def get_all_appointments(db, statuses: Optional[List[str]] = None, date: Optional[datetime.date] = None):
     query = db.query(Appointment).options(
         joinedload(Appointment.patient),
@@ -1061,6 +1074,15 @@ def insert_medical_record(db: Session, medical_record_data: dict):
     db.commit()
     db.refresh(db_medical_record)
     return db_medical_record.MedicalRecordId
+
+def get_medical_record_by_appointment_id(db: Session, appointment_id: int):
+    """
+    Lấy chi tiết bệnh án theo appointment_id
+    """
+    return db.query(MedicalRecord).options(
+        joinedload(MedicalRecord.appointment),
+        joinedload(MedicalRecord.doctor)
+    ).filter(MedicalRecord.AppointmentId == appointment_id).first()
 
 def get_medical_records_by_doctor_id(
     db: Session,

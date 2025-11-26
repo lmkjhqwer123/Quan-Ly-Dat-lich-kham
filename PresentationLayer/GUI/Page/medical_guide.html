@@ -3,63 +3,214 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hướng Dẫn Khám - Hệ Thống Quản Lý</title>
+    <title>Hướng Dẫn & Trợ Giúp - Hệ Thống Quản Lý</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .step-arrow::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent transparent transparent #e5e7eb;
+        }
+        @media (max-width: 768px) {
+            .step-arrow::after { display: none; }
+        }
+        /* Hiệu ứng bong bóng chat */
+        .chat-bubble {
+            position: relative;
+            background: #EFF6FF;
+            border-radius: 15px;
+            padding: 15px;
+        }
+        .chat-bubble::before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            top: 20px;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent #EFF6FF transparent transparent;
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 text-gray-800">
 
     <div id="profile-page">
 
-    <!-- Header Placeholder -->
     <div id="header-placeholder"></div>
 
-    <!-- Main Content -->
-    <main class="p-4 sm:p-6 lg:p-8">
-        <div class="max-w-6xl mx-auto md:grid md:grid-cols-4 md:gap-8">
+    <main class="p-4 sm:p-6 lg:p-8 min-h-screen">
+        <div class="max-w-7xl mx-auto md:grid md:grid-cols-4 md:gap-8">
             
-            <!-- Menu bên trái -->
             <aside class="md:col-span-1 mb-8 md:mb-0">
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Cá nhân</h2>
-                    <nav class="space-y-1">
-                        <a href="profile.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Thông tin cá nhân</a>
-                        <a href="medical_history.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Lịch sử khám bệnh</a>
-                        <a href="reminders.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Nhắc nhở</a>
-                        <a href="interface_settings.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Giao diện</a>
-                        <a href="feedback.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Phản hồi</a>
-                        <a href="medical_guide.html" class="block px-3 py-2 text-sm font-medium text-blue-600 rounded-md bg-gray-100">Hướng dẫn khám</a>
-                        <a href="about_us.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Về chúng tôi</a>
+                <div class="bg-white p-4 rounded-xl shadow-sm sticky top-4 border border-gray-100">
+                    <div class="flex items-center space-x-3 mb-6 px-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-user font-bold"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Xin chào,</p>
+                            <h2 class="text-sm font-bold text-gray-800">Nguyễn Văn A</h2>
+                        </div>
+                    </div>
+                    
+                    <nav class="space-y-1" id="sidebar-nav">
+                        <a href="profile.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-user-circle w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="medical_history.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-file-medical w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Lịch sử bệnh án</span>
+                        </a>
+                        <a href="reminders.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-bell w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Nhắc nhở</span>
+                        </a>
+                        <a href="medical_guide.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg transition-all">
+                            <i class="fas fa-book-medical w-6 text-lg"></i>
+                            <span>Hướng dẫn khám</span>
+                        </a>
+                        <a href="about_us.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-info-circle w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Về chúng tôi</span>
+                        </a>
                     </nav>
                 </div>
             </aside>
 
-            <!-- Nội dung bên phải -->
-            <div class="md:col-span-3">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h1 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-3">Hướng dẫn khám</h1>
-                    
-                    <!-- Nội dung ví dụ -->
-                    <div class="space-y-4">
-                        <p class="text-gray-600">Các bước để thực hiện khám bệnh.</p>
-                        <!-- Thêm nội dung hướng dẫn khám ở đây -->
+            <div class="md:col-span-3 space-y-8">
+                
+              
+
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-calendar-check text-blue-600 mr-2"></i> Quy trình Đặt Lịch Khám
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="relative bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition step-arrow">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold mb-3">1</div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Truy cập Trang chủ</h3>
+                            <p class="text-xs text-gray-500">Nhấn vào nút <span class="text-blue-600 font-bold">"Đặt Lịch Ngay"</span> màu xanh nổi bật trên thanh menu.</p>
+                        </div>
+                        <div class="relative bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition step-arrow">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold mb-3">2</div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Chọn Thông tin</h3>
+                            <p class="text-xs text-gray-500">Chọn Chuyên khoa, Bác sĩ và Khung giờ phù hợp với lịch trình của bạn.</p>
+                        </div>
+                        <div class="relative bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition step-arrow">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold mb-3">3</div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Xác nhận</h3>
+                            <p class="text-xs text-gray-500">Kiểm tra lại thông tin và nhấn "Xác nhận đặt khám". Hệ thống sẽ gửi email.</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl border-2 border-green-100 shadow-sm hover:shadow-md transition">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold mb-3"><i class="fas fa-check"></i></div>
+                            <h3 class="font-semibold text-gray-800 mb-2">Hoàn tất</h3>
+                            <p class="text-xs text-gray-500">Đến đúng giờ hẹn. Bạn có thể xem lại lịch tại mục <a href="profile.html" class="underline text-blue-600">Cá nhân</a>.</p>
+                        </div>
                     </div>
-
                 </div>
-            </div>
 
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-user-cog text-blue-600 mr-2"></i> Quản lý Hồ sơ Cá nhân
+                    </h2>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                            <div class="p-6 hover:bg-gray-50 transition">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-file-medical text-2xl text-red-500"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="text-lg font-medium text-gray-900">Lịch sử bệnh án</h3>
+                                        <p class="mt-2 text-sm text-gray-500">
+                                            Nơi lưu trữ tất cả kết quả khám, đơn thuốc và chẩn đoán của bác sĩ từ các lần khám trước. Bạn không cần mang sổ khám bệnh giấy.
+                                        </p>
+                                        <a href="medical_history.html" class="mt-3 inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-500">
+                                            Xem ngay <i class="fas fa-arrow-right ml-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-6 hover:bg-gray-50 transition">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-bell text-2xl text-yellow-500"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <h3 class="text-lg font-medium text-gray-900">Nhắc nhở & Thông báo</h3>
+                                        <p class="mt-2 text-sm text-gray-500">
+                                            Hệ thống sẽ thông báo lịch tái khám sắp tới để bạn không bỏ lỡ.
+                                        </p>
+                                        <a href="reminders.html" class="mt-3 inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-500">
+                                            Cài đặt <i class="fas fa-arrow-right ml-1"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                            <div class="flex items-center">
+                                <i class="fas fa-lightbulb text-yellow-400 mr-2"></i>
+                                <span class="text-sm text-gray-600 font-medium">Mẹo: Cập nhật thông tin cá nhân đầy đủ để bác sĩ nắm bắt tình trạng tốt hơn.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-8 text-white text-center shadow-lg">
+                    <h3 class="text-2xl font-bold mb-2">Bạn đã sẵn sàng đặt lịch?</h3>
+                    <p class="text-blue-100 mb-6">Đội ngũ bác sĩ chuyên khoa hàng đầu đang chờ đón bạn.</p>
+                    <button class="bg-white text-blue-600 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-100 hover:scale-105 transition transform duration-200">
+                        <i class="fas fa-calendar-plus mr-2"></i> Đặt Lịch Khám Ngay
+                    </button>
+                </div>
+
+            </div>
         </div>
     </main>
 
-    <!-- Footer Placeholder -->
     <div id="footer-placeholder"></div>
 
     </div>
 
     <script src="/Js/main.js"></script>
-
+    <script>
+        // Tự động đánh dấu link active (Giữ nguyên logic của bạn)
+        function setActiveNav() {
+            const currentPage = window.location.pathname.split('/').pop() || 'profile.html';
+            const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                
+                // Reset style
+                link.classList.remove('bg-blue-50', 'text-blue-700');
+                link.classList.add('text-gray-600');
+                
+                // Active style
+                if (href === currentPage) {
+                    link.classList.remove('text-gray-600');
+                    link.classList.add('bg-blue-50', 'text-blue-700');
+                }
+            });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setActiveNav);
+        } else {
+            setActiveNav();
+        }
+    </script>
 </body>
 </html>

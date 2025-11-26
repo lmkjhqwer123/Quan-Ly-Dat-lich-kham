@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sau khi tải xong header, chạy các script liên quan đến header
         initializeHeaderScripts();
         highlightActiveNav();
+        applyGlobalLanguage();
     };
 
     const initializeHeaderScripts = () => {
@@ -69,11 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const user = JSON.parse(loggedInUser);
                 // Use the 'name' property from the parsed user object
-                welcomeUser.textContent = `Chào, ${user.name}!`;
+                const userName = user.name || user.FullName || user.Username || 'Người dùng';
+                welcomeUser.textContent = `Chào, ${userName}!`;
             } catch (error) {
                 console.error("Failed to parse user data:", error);
-                // Fallback for safety, though it might still show the full string on error
-                welcomeUser.textContent = `Chào, ${loggedInUser}!`;
+                // Fallback for safety
+                welcomeUser.textContent = `Chào!`;
             }
         }
 
@@ -122,6 +124,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.classList.remove('text-gray-700');
             }
         });
+    };
+
+    const applyGlobalLanguage = () => {
+        // Đợi cho đến khi languages.js được tải
+        if (typeof applyLanguageGlobally === 'function') {
+            // Áp dụng ngôn ngữ được lưu từ localStorage
+            const savedLanguage = localStorage.getItem('selectedLanguage') || 'vi';
+            applyLanguageGlobally(savedLanguage);
+        } else {
+            // Nếu languages.js chưa tải, thử lại sau 100ms
+            setTimeout(applyGlobalLanguage, 100);
+        }
     };
 
     // Bắt đầu quá trình

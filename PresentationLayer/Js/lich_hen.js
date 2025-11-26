@@ -63,9 +63,9 @@ if (typeof window.initLichHenPage === 'undefined') {
                 case 'pending':
                     return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">${statusText}</span>`;
                 case 'completed':
-                    return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${statusText}</span>`;
-                case 'confirmed':
                     return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">${statusText}</span>`;
+                case 'confirmed':
+                    return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${statusText}</span>`;
                 case 'cancelled':
                     return `<span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-red-100 text-red-800">${statusText}</span>`;
                 default:
@@ -239,12 +239,12 @@ if (typeof window.initLichHenPage === 'undefined') {
                             statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">${appointment.Status}</span>`;
                             break;
                         case 'completed':
-                            rowClass += ' bg-blue-50 hover:bg-blue-100';
-                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${appointment.Status}</span>`;
-                            break;
-                        case 'confirmed':
                             rowClass += ' bg-green-50 hover:bg-green-100';
                             statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${appointment.Status}</span>`;
+                            break;
+                        case 'confirmed':
+                            rowClass += ' bg-blue-50 hover:bg-blue-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${appointment.Status}</span>`;
                             break;
                         case 'cancelled':
                             rowClass += ' bg-red-50 hover:bg-red-100';

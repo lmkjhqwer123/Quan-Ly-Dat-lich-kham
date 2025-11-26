@@ -3,173 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Chủ - Hệ Thống Quản Lý</title>
-    <!-- Tích hợp Tailwind CSS -->
+    <title>Trang Chủ - Umbrella Medical</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Ẩn thanh cuộn */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Hiệu ứng hover card */
+        .hover-card { transition: all 0.3s ease; }
+        .hover-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="bg-gray-50">
-    
-    <div id="home-page">
-        <!-- Header Placeholder -->
-        <div id="header-placeholder"></div>
+<body class="bg-gray-50 text-slate-800">
 
-        <!-- Main Content -->
-        <main class="p-4 sm:p-6 lg:p-8">
-            <div class="max-w-7xl mx-auto">
-                <!-- Search Bar -->
-                <div class="relative mb-8">
-                    <input type="text" placeholder="Bạn muốn tìm gì hôm nay?" class="w-full pl-10 pr-4 py-3 border rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                </div>
+    <div id="home-page" class="min-h-screen flex flex-col">
 
-                <!-- Quick Links -->
-                <div class="bg-white p-4 rounded-lg shadow-md mb-8">
-                    <div class="flex justify-around items-center text-sm font-medium text-gray-700">
-                        <a href="#" class="hover:text-blue-600">Chuyên khoa</a>
-                        <a href="/GUI/Page/other_guides.html" class="hover:text-blue-600">Hướng dẫn khác</a>
-                        <a href="/GUI/Page/sustainable_development.html" class="hover:text-blue-600">Phát triển bền vững</a>
-                        <a href="/GUI/Page/about_us.html" class="hover:text-blue-600">Về chúng tôi</a>
-                        <a href="/GUI/Page/health_articles.html" class="hover:text-blue-600">Chuyên trang sức khỏe</a>
-                    </div>
-                </div>
+    <div id="header-placeholder"></div>
 
-                <!-- Main Actions -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    <!-- Đặt lịch khám -->
-                    <a href="/GUI/Page/appointments.html" class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
-                        <div class="bg-blue-100 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>
-                        <div><p class="font-semibold text-lg text-gray-800">Đặt lịch khám</p><p class="text-sm text-gray-500">Đặt lịch hẹn với bác sĩ</p></div>
-                    </a>
-                    <!-- Tìm bác sĩ -->
-                    <a href="/GUI/Page/find_doctor.html" class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center space-x-4">
-                        <div class="bg-green-100 p-3 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg></div>
-                        <div><p class="font-semibold text-lg text-gray-800">Tìm bác sĩ</p><p class="text-sm text-gray-500">Tìm kiếm bác sĩ theo chuyên khoa</p></div>
-                    </a>
-                </div>
+    <main class="flex-grow">
+        <div class="bg-gradient-to-br from-blue-700 to-indigo-800 text-white pb-20 pt-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-white opacity-5 blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-blue-400 opacity-10 blur-3xl"></div>
 
-                <!-- Why Choose Us Section -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden mb-12">
-                    <div class="grid grid-cols-1 md:grid-cols-2">
-                        <!-- Image -->
-                        <div class="md:shrink-0">
-                            <img class="h-64 w-full object-cover md:h-full" src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=2070&auto=format&fit=crop" alt="Đội ngũ y tế chuyên nghiệp">
-                        </div>
-                        <!-- Content -->
-                        <div class="p-8">
-                            <div class="uppercase tracking-wide text-sm text-blue-600 font-semibold">Tại sao chọn chúng tôi?</div>
-                            <h2 class="mt-2 text-2xl font-bold text-gray-900">Chăm sóc sức khỏe toàn diện và hiện đại</h2>
-                            <p class="mt-4 text-gray-600">Chúng tôi tự hào cung cấp dịch vụ y tế chất lượng cao với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị tiên tiến và quy trình đặt lịch thông minh, giúp bạn tiết kiệm thời gian và an tâm chăm sóc sức khỏe.</p>
-                            <ul class="mt-4 space-y-2 text-gray-600">
-                                <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">✔</span><span>Đội ngũ bác sĩ chuyên môn cao, tận tâm.</span></li>
-                                <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">✔</span><span>Hệ thống đặt lịch trực tuyến nhanh chóng, tiện lợi.</span></li>
-                                <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">✔</span><span>Cơ sở vật chất và trang thiết bị hiện đại.</span></li>
-                            </ul>
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div class="md:w-2/3">
+                        <span class="inline-block py-1 px-3 rounded-full bg-blue-500/30 border border-blue-400/30 text-blue-100 text-sm font-semibold mb-4">👋 Xin chào, Nguyễn Văn A</span>
+                        <h1 class="text-3xl md:text-5xl font-extrabold leading-tight mb-4">Chăm sóc sức khỏe toàn diện<br>cho gia đình bạn.</h1>
+                        <p class="text-blue-100 text-lg mb-8 max-w-2xl">Đặt lịch khám nhanh chóng, tư vấn trực tuyến với bác sĩ chuyên khoa và quản lý hồ sơ sức khỏe trọn đời.</p>
+                        
+                        <div class="bg-white p-2 rounded-2xl shadow-xl max-w-2xl flex items-center">
+                            <i class="fas fa-search text-gray-400 ml-4 text-xl"></i>
+                            <input type="text" placeholder="Tìm kiếm bác sĩ, chuyên khoa, triệu chứng..." class="w-full px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none text-base md:text-lg">
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition">Tìm kiếm</button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Chuyên khoa phổ biến -->
-                <div class="mb-12">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-gray-800">Chuyên khoa phổ biến</h2>
-                        <a href="#" class="text-sm font-medium text-blue-600 hover:underline">Xem thêm</a>
-                    </div>
-                    <!-- Carousel -->
-                    <div class="relative group">
-                        <div id="specialty-carousel" class="overflow-hidden">
-                            <div id="specialty-track" class="flex transition-transform duration-500 ease-in-out -ml-4">
-                                <!-- Các slide sẽ được nhân bản bằng JS để tạo hiệu ứng lặp vô tận -->
+                    
+                    <div class="md:w-1/3 w-full">
+                        <div class="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl shadow-lg text-white">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-lg">Lịch khám sắp tới</h3>
+                                <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">Đã xác nhận</span>
                             </div>
-                        </div>
-                        <!-- Nút Previous -->
-                        <button id="prev-btn" class="absolute top-1/2 left-0 transform -translate-y-1/2 bg-white/60 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <!-- Nút Next -->
-                        <button id="next-btn" class="absolute top-1/2 right-0 transform -translate-y-1/2 bg-white/60 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Bác sĩ nổi bật -->
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-gray-800">Bác sĩ nổi bật</h2>
-                        <a href="#" class="text-sm font-medium text-blue-600 hover:underline">Xem thêm</a>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                         <!-- Đây là khối rỗng để bạn điền dữ liệu từ SQL -->
-                    </div>
-                </div>
-
-                <!-- Vị trí trên bản đồ -->
-                <div class="mt-12">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-2xl font-bold text-gray-800">Vị trí trên bản đồ</h2>
-                        <a href="#" class="text-sm font-medium text-blue-600 hover:underline">Xem thêm</a>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                         <!-- Đây là khối rỗng để bạn điền dữ liệu từ SQL -->
-                    </div>
-                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                        <div class="aspect-w-16 aspect-h-9">
-                            <iframe 
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.111949927579!2d105.8014104751456!3d21.02828238776054!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab424c3a6d43%3A0x818f3a683a409f6e!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBHaWFvIHRow7RuZyBW4bqtbiB04bqjaQ!5e0!3m2!1svi!2s" 
-                                width="100%" 
-                                height="450" 
-                                style="border:0;" 
-                                allowfullscreen="" 
-                                loading="lazy" 
-                                referrerpolicy="no-referrer-when-downgrade"></iframe>
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-white p-1">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-full h-full rounded-full object-cover">
+                                </div>
+                                <div>
+                                    <p class="font-bold text-lg">BS. Trần Minh Tâm</p>
+                                    <p class="text-blue-100 text-sm">Chuyên khoa Tim mạch</p>
+                                </div>
+                            </div>
+                            <div class="bg-blue-800/50 rounded-lg p-3 flex justify-between items-center text-sm">
+                                <span><i class="far fa-clock mr-2"></i> 09:00 - Mai</span>
+                                <button class="text-blue-200 hover:text-white font-medium">Chi tiết ></button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
-        <!-- ... code phần đầu và thân của home.html giữ nguyên ... -->
-        <!-- Footer Placeholder -->
-        <div id="footer-placeholder"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20 pb-12">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <a href="/GUI/Page/appointments.html" class="bg-white p-8 rounded-2xl shadow-lg hover-card border border-gray-100 flex flex-col items-center text-center cursor-pointer group">
+                    <div class="w-20 h-20 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-3xl mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Đặt Lịch Khám</h3>
+                    <p class="text-gray-500">Đặt hẹn trước, không chờ đợi</p>
+                </a>
+                
+                <a href="/GUI/Page/find_doctor.html" class="bg-white p-8 rounded-2xl shadow-lg hover-card border border-gray-100 flex flex-col items-center text-center cursor-pointer group">
+                    <div class="w-20 h-20 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-3xl mb-4 group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Tìm Bác Sĩ</h3>
+                    <p class="text-gray-500">Đội ngũ chuyên gia hàng đầu</p>
+                </a>
+
+                <a href="/GUI/Page/medical_history.html" class="bg-white p-8 rounded-2xl shadow-lg hover-card border border-gray-100 flex flex-col items-center text-center cursor-pointer group">
+                    <div class="w-20 h-20 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-3xl mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Hồ Sơ Sức Khỏe</h3>
+                    <p class="text-gray-500">Lịch sử khám</p>
+                </a>
+            </div>
+
+            <div class="mb-16">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Chuyên khoa phổ biến</h2>
+                        <p class="text-gray-500 mt-1">Khám và điều trị với các chuyên khoa mũi nhọn</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="prev-btn" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 text-gray-600 transition"><i class="fas fa-chevron-left"></i></button>
+                        <button id="next-btn" class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 shadow-md transition"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+                
+                <div class="overflow-hidden">
+                    <div id="specialty-track" class="flex transition-transform duration-500 ease-in-out gap-6">
+                        </div>
+                </div>
+            </div>
+
+
+            <div class="mb-16">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Bác sĩ nổi bật</h2>
+                    <a href="/GUI/Page/find_doctor.html" class="text-blue-600 font-semibold hover:underline">Xem tất cả</a>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover-card group">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-yellow-600 flex items-center">
+                                <i class="fas fa-star mr-1"></i> 4.9
+                            </div>
+                        </div>
+                        <div class="p-5 text-center relative">
+                            <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full shadow-md">
+                                Tim mạch
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-900 mt-2">BS. Trần Minh Tâm</h3>
+                            <p class="text-gray-500 text-sm mb-4">15 năm kinh nghiệm</p>
+                            <button class="w-full py-2.5 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition">Đặt lịch</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover-card group">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=1974&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-yellow-600 flex items-center">
+                                <i class="fas fa-star mr-1"></i> 5.0
+                            </div>
+                        </div>
+                        <div class="p-5 text-center relative">
+                            <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-600 text-white text-xs px-3 py-1 rounded-full shadow-md">
+                                Nhi khoa
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-900 mt-2">BS. Lê Thị Mai</h3>
+                            <p class="text-gray-500 text-sm mb-4">10 năm kinh nghiệm</p>
+                            <button class="w-full py-2.5 rounded-xl border-2 border-green-600 text-green-600 font-bold hover:bg-green-600 hover:text-white transition">Đặt lịch</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover-card group">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=1964&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-yellow-600 flex items-center">
+                                <i class="fas fa-star mr-1"></i> 4.8
+                            </div>
+                        </div>
+                        <div class="p-5 text-center relative">
+                            <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-xs px-3 py-1 rounded-full shadow-md">
+                                Thần kinh
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-900 mt-2">BS. Phạm Văn Hùng</h3>
+                            <p class="text-gray-500 text-sm mb-4">20 năm kinh nghiệm</p>
+                            <button class="w-full py-2.5 rounded-xl border-2 border-purple-600 text-purple-600 font-bold hover:bg-purple-600 hover:text-white transition">Đặt lịch</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover-card group">
+                        <div class="h-64 overflow-hidden relative">
+                            <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-yellow-600 flex items-center">
+                                <i class="fas fa-star mr-1"></i> 4.7
+                            </div>
+                        </div>
+                        <div class="p-5 text-center relative">
+                            <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-pink-600 text-white text-xs px-3 py-1 rounded-full shadow-md">
+                                Da liễu
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-900 mt-2">BS. Ngô Lan Anh</h3>
+                            <p class="text-gray-500 text-sm mb-4">8 năm kinh nghiệm</p>
+                            <button class="w-full py-2.5 rounded-xl border-2 border-pink-600 text-pink-600 font-bold hover:bg-pink-600 hover:text-white transition">Đặt lịch</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900">Sống khỏe mỗi ngày</h2>
+                    <a href="#" class="text-blue-600 font-semibold hover:underline">Xem thêm</a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="group cursor-pointer">
+                        <div class="rounded-2xl overflow-hidden mb-4 h-48">
+                            <img src="https://images.unsplash.com/photo-1505751172876-fa1923c5c528?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        </div>
+                        <span class="text-blue-600 text-xs font-bold uppercase tracking-wide">Y học thường thức</span>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2 mb-2 group-hover:text-blue-600 transition">10 thói quen giúp trái tim khỏe mạnh</h3>
+                        <p class="text-gray-500 text-sm line-clamp-2">Bệnh tim mạch đang ngày càng trẻ hóa. Hãy cùng tìm hiểu những thói quen đơn giản để bảo vệ trái tim của bạn ngay từ hôm nay...</p>
+                    </div>
+
+                    <div class="group cursor-pointer">
+                        <div class="rounded-2xl overflow-hidden mb-4 h-48">
+                            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2053&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        </div>
+                        <span class="text-green-600 text-xs font-bold uppercase tracking-wide">Dinh dưỡng</span>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2 mb-2 group-hover:text-green-600 transition">Chế độ ăn Eat Clean cho người bận rộn</h3>
+                        <p class="text-gray-500 text-sm line-clamp-2">Làm thế nào để ăn uống lành mạnh khi bạn không có nhiều thời gian nấu nướng? Đây là thực đơn gợi ý...</p>
+                    </div>
+
+                    <div class="group cursor-pointer">
+                        <div class="rounded-2xl overflow-hidden mb-4 h-48">
+                            <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        </div>
+                        <span class="text-purple-600 text-xs font-bold uppercase tracking-wide">Vận động</span>
+                        <h3 class="text-lg font-bold text-gray-900 mt-2 mb-2 group-hover:text-purple-600 transition">Bài tập 15 phút giảm đau vai gáy</h3>
+                        <p class="text-gray-500 text-sm line-clamp-2">Dân văn phòng thường xuyên gặp phải tình trạng đau mỏi vai gáy. Thử ngay các động tác yoga đơn giản này.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="footer-placeholder"></div>
     </div>
-    
-    <!-- SỬA LẠI ĐƯỜNG DẪN TẠI ĐÂY -->
+
     <script src="/Js/main.js"></script>
 
-    <!-- Script cho Carousel( băng chuyển chuyên khoa) -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const specialties = [
-                { name: 'Tim mạch', img: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=2070&auto=format&fit=crop' },
-                { name: 'Tiêu hóa', img: 'https://images.unsplash.com/photo-1605102503054-e5648a23f3e3?q=80&w=1974&auto=format&fit=crop' },
-                { name: 'Da liễu', img: 'https://images.unsplash.com/photo-1551076805-e1869033e561?q=80&w=1932&auto=format&fit=crop' },
-                { name: 'Tai - Mũi - Họng', img: 'https://images.unsplash.com/photo-1629904853716-f0bc54eea481?q=80&w=2070&auto=format&fit=crop' }
+                { name: 'Tim mạch', color: 'text-red-600', bg: 'bg-red-50', icon: 'fa-heartbeat', desc: 'Chăm sóc trái tim' },
+                { name: 'Thần kinh', color: 'text-purple-600', bg: 'bg-purple-50', icon: 'fa-brain', desc: 'Điều trị đau đầu' },
+                { name: 'Nha khoa', color: 'text-blue-600', bg: 'bg-blue-50', icon: 'fa-tooth', desc: 'Nụ cười tỏa sáng' },
+                { name: 'Xương khớp', color: 'text-orange-600', bg: 'bg-orange-50', icon: 'fa-bone', desc: 'Vận động linh hoạt' },
+                { name: 'Mắt', color: 'text-cyan-600', bg: 'bg-cyan-50', icon: 'fa-eye', desc: 'Thị lực sáng rõ' },
+                { name: 'Nhi khoa', color: 'text-green-600', bg: 'bg-green-50', icon: 'fa-baby', desc: 'Chăm sóc bé yêu' },
+                { name: 'Da liễu', color: 'text-pink-600', bg: 'bg-pink-50', icon: 'fa-spa', desc: 'Làn da khỏe đẹp' },
+                { name: 'Tai Mũi Họng', color: 'text-yellow-600', bg: 'bg-yellow-50', icon: 'fa-head-side-cough', desc: 'Hô hấp khỏe mạnh' }
             ];
 
             const track = document.getElementById('specialty-track');
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
 
-            // Nhân đôi danh sách để tạo hiệu ứng lặp vô tận
+            // Render Specialties (Loop)
             const allSpecialties = [...specialties, ...specialties];
 
             allSpecialties.forEach(specialty => {
                 const slide = document.createElement('div');
-                slide.className = 'flex-shrink-0 w-full sm:w-1/2 lg:w-1/4 p-4';
+                slide.className = 'flex-shrink-0 w-64 md:w-72';
                 slide.innerHTML = `
-                    <a href="#" class="block bg-white rounded-lg shadow-md overflow-hidden group-hover:shadow-lg transition-shadow duration-300 h-full">
-                        <img class="h-40 w-full object-cover" src="${specialty.img}" alt="${specialty.name}">
-                        <div class="p-4">
-                            <h3 class="font-semibold text-lg text-gray-800">${specialty.name}</h3>
+                    <a href="#" class="block bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-lg hover:-translate-y-2 transition-all h-full group">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-14 h-14 rounded-full ${specialty.bg} ${specialty.color} flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                <i class="fas ${specialty.icon}"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-lg">${specialty.name}</h3>
+                                <p class="text-xs text-gray-500 font-medium">15+ Bác sĩ</p>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 line-clamp-2">${specialty.desc} với trang thiết bị hiện đại và phác đồ điều trị chuẩn quốc tế.</p>
+                        <div class="mt-4 flex items-center text-sm font-semibold ${specialty.color} opacity-0 group-hover:opacity-100 transition-opacity">
+                            Xem chi tiết <i class="fas fa-arrow-right ml-2"></i>
                         </div>
                     </a>
                 `;
@@ -177,44 +279,30 @@
             });
 
             let currentIndex = 0;
-            const totalSlides = specialties.length;
-            const slideWidth = track.querySelector('div').offsetWidth;
-
+            // Width of slide + gap
+            const itemWidth = 288 + 24; // w-72 (18rem = 288px) + gap-6 (24px)
+            
             function updateCarousel() {
-                track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-                if (currentIndex === totalSlides) {
-                    // Khi đến bản sao đầu tiên, nhảy về bản gốc mà không có hiệu ứng
-                    setTimeout(() => {
-                        track.style.transition = 'none';
-                        currentIndex = 0;
-                        track.style.transform = `translateX(0px)`;
-                        setTimeout(() => {
-                            track.style.transition = 'transform 0.5s ease-in-out';
-                        }, 50);
-                    }, 500);
+                const percent = -(currentIndex * itemWidth);
+                track.style.transform = `translateX(${percent}px)`;
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentIndex < allSpecialties.length - 3) {
+                    currentIndex++;
+                    updateCarousel();
+                } else {
+                    currentIndex = 0;
+                    updateCarousel();
                 }
-            }
+            });
 
-            function showNext() {
-                currentIndex++;
-                updateCarousel();
-            }
-
-            function showPrev() {
-                if (currentIndex === 0) {
-                    currentIndex = totalSlides;
-                    track.style.transition = 'none';
-                    track.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
-                    setTimeout(() => { track.style.transition = 'transform 0.5s ease-in-out'; }, 50);
+            prevBtn.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
                 }
-                setTimeout(() => { currentIndex--; updateCarousel(); }, 50);
-            }
-
-            nextBtn.addEventListener('click', showNext);
-            prevBtn.addEventListener('click', showPrev);
-
-            // Tự động chạy
-            setInterval(showNext, 3000); // Chuyển slide mỗi 3 giây
+            });
         });
     </script>
 </body>

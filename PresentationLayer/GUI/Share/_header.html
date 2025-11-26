@@ -1,41 +1,163 @@
-<!-- Header -->
-<header class="bg-white shadow-sm sticky top-0 z-10">
+<!-- Header (Improved) -->
+<header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100 font-sans transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-20">
-            <!-- Logo and Brand -->
-            <a href="/GUI/home.html" class="flex items-center space-x-2">
-                 <svg class="w-10 h-10 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm4.5-12.5L12 12l-4.5-4.5L9.5 5l2.5 2.5L14.5 5zM5 9.5l2.5 2.5L5 14.5zm14 0l-2.5 2.5L19 14.5zm-7 7l-2.5-2.5L7.5 19l4.5 4.5L16.5 19l-2.5-2.5z"/></svg>
-                <span class="text-xl font-bold text-gray-800">UMBRELLA CORP</span>
-            </a>
+            
+            <!-- 1. Logo & Brand -->
+            <div class="flex-shrink-0 flex items-center">
+                <a href="/GUI/home.html" class="flex items-center gap-3 group no-underline">
+                    <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-200 group-hover:scale-105 transition-transform duration-200">
+                        <!-- Dùng FontAwesome thay cho SVG phức tạp để dễ quản lý -->
+                        <i class="fas fa-umbrella text-2xl"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-extrabold text-gray-900 tracking-tight leading-none">UMBRELLA</span>
+                        <span class="text-xs font-bold text-blue-600 uppercase tracking-widest leading-none mt-0.5">Medical Corp</span>
+                    </div>
+                </a>
+            </div>
 
-            <!-- Weather and Date -->
-            <div class="hidden md:flex items-center space-x-4 text-sm text-gray-600">
-                <div class="text-right">
-                    <p id="current-date" class="font-semibold"></p>
-                    <p id="current-time"></p>
+            <!-- 2. Desktop Navigation (Centered) -->
+            <nav class="hidden md:flex items-center space-x-1 bg-gray-50/50 p-1.5 rounded-full border border-gray-100">
+                <a href="/GUI/home.html" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-full hover:text-blue-600 hover:bg-white hover:shadow-sm transition-all duration-200 flex items-center">
+                    <i class="fas fa-home mr-2"></i> Trang chủ
+                </a>
+                <!-- Active Link Example -->
+                <a href="/GUI/Page/appointments.html" class="px-4 py-2 text-sm font-bold text-blue-600 bg-white rounded-full shadow-sm border border-gray-100 transition-all duration-200 flex items-center">
+                    <i class="fas fa-calendar-check mr-2"></i> Lịch hẹn
+                </a>
+                <a href="/GUI/Page/reminders.html" class="px-4 py-2 text-sm font-medium text-gray-600 rounded-full hover:text-blue-600 hover:bg-white hover:shadow-sm transition-all duration-200 flex items-center">
+                    <i class="fas fa-bell mr-2"></i> Thông báo
+                </a>
+            </nav>
+
+            <!-- 3. Right Section: Weather & User Profile -->
+            <div class="hidden md:flex items-center gap-5">
+                
+                <!-- Weather Widget (Compact) -->
+                <div class="hidden lg:flex flex-col items-end border-r border-gray-200 pr-5">
+                    <div class="flex items-center text-gray-700">
+                        <span id="weather-icon" class="mr-2 text-amber-400 text-lg"><i class="fas fa-cloud-sun"></i></span>
+                        <span id="weather-temp" class="font-bold text-sm">28°C</span>
+                    </div>
+                    <div class="flex gap-2 text-xs text-gray-400 font-medium">
+                        <span id="current-time">14:30</span>
+                        <span>•</span>
+                        <span id="current-date">26/11</span>
+                    </div>
                 </div>
-                <div class="flex items-center">
-                    <span id="weather-icon" class="text-2xl"></span>
-                    <span id="weather-temp" class="font-semibold text-lg ml-2"></span>
+
+                <!-- User Profile Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-3 focus:outline-none p-1 rounded-full hover:bg-gray-50 transition-colors">
+                        <div class="text-right hidden xl:block">
+                            <p id="welcome-user" class="text-sm font-bold text-gray-800 leading-tight">Nguyễn Văn A</p>
+                            <p class="text-[10px] font-semibold text-blue-600 uppercase tracking-wide bg-blue-50 px-1.5 py-0.5 rounded inline-block mt-0.5">Bệnh nhân</p>
+                        </div>
+                        <div class="relative">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden ring-1 ring-gray-100">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Avatar" class="w-full h-full object-cover">
+                            </div>
+                            <!-- Online Status Dot -->
+                            <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white"></span>
+                        </div>
+                        <i class="fas fa-chevron-down text-gray-300 text-xs group-hover:text-blue-500 transition-colors ml-1"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right scale-95 group-hover:scale-100 z-50">
+                        <div class="px-4 py-2 border-b border-gray-50 mb-1 xl:hidden">
+                            <p class="text-sm font-bold text-gray-800">Nguyễn Văn A</p>
+                            <p class="text-xs text-gray-500">nguyenvana@example.com</p>
+                        </div>
+                        
+                        <a href="/GUI/Page/profile.html" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                            <div class="w-8 flex justify-center"><i class="fas fa-user-circle"></i></div>
+                            Hồ sơ cá nhân
+                        </a>
+                        <a href="/GUI/Page/medical_history.html" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                            <div class="w-8 flex justify-center"><i class="fas fa-file-medical"></i></div>
+                            Bệnh án điện tử
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                            <div class="w-8 flex justify-center"><i class="fas fa-cog"></i></div>
+                            Cài đặt
+                        </a>
+                        
+                        <div class="border-t border-gray-100 my-1"></div>
+                        
+                        <button id="logout-button" class="w-full text-left flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <div class="w-8 flex justify-center"><i class="fas fa-sign-out-alt"></i></div>
+                            Đăng xuất
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- User Info and Logout -->
-            <div class="flex items-center space-x-4">
-                <a href="/GUI/Page/profile.html" title="Thông tin cá nhân" class="relative group">
-                    <span id="welcome-user" class="text-gray-700 font-medium"></span>
-                </a>
-                <button id="logout-button" class="flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-600 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 z-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-                    Đăng xuất
+            <!-- 4. Mobile Menu Button -->
+            <div class="md:hidden flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User" class="w-full h-full object-cover">
+                </div>
+                <button id="mobile-menu-btn" class="text-gray-500 hover:text-blue-600 focus:outline-none p-2 bg-gray-50 rounded-lg">
+                    <i class="fas fa-bars text-xl"></i>
                 </button>
             </div>
         </div>
-         <!-- Navigation -->
-        <nav class="hidden md:flex justify-center items-center h-12 border-t">
-            <a href="/GUI/home.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Trang chủ 🏠</a>
-            <a href="/GUI/Page/appointments.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Lịch hẹn 📆</a>
-            <a href="/GUI/Page/notifications.html" class="nav-link text-gray-700 hover:text-blue-600 px-4 py-2 font-medium">Thông báo 🔔</a>
-        </nav>
+    </div>
+
+    <!-- 5. Mobile Navigation Menu (Dropdown) -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100 shadow-lg absolute w-full left-0 z-40">
+        <div class="px-4 py-2 bg-blue-50 border-b border-blue-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-bold">A</div>
+                <div>
+                    <p class="text-sm font-bold text-gray-900">Nguyễn Văn A</p>
+                    <p class="text-xs text-blue-600">Thành viên hạng Bạc</p>
+                </div>
+            </div>
+        </div>
+        <div class="px-2 py-3 space-y-1">
+            <a href="/GUI/home.html" class="block px-3 py-2.5 rounded-lg text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                <i class="fas fa-home w-6 text-center"></i> Trang chủ
+            </a>
+            <a href="/GUI/Page/appointments.html" class="block px-3 py-2.5 rounded-lg text-base font-bold text-blue-700 bg-blue-50 transition-colors">
+                <i class="fas fa-calendar-check w-6 text-center"></i> Lịch hẹn
+            </a>
+            <a href="/GUI/Page/reminders.html" class="block px-3 py-2.5 rounded-lg text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                <i class="fas fa-bell w-6 text-center"></i> Thông báo <span class="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">2</span>
+            </a>
+            <a href="/GUI/Page/profile.html" class="block px-3 py-2.5 rounded-lg text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                <i class="fas fa-user w-6 text-center"></i> Hồ sơ cá nhân
+            </a>
+            <div class="border-t border-gray-100 my-2"></div>
+            <button class="w-full text-left px-3 py-2.5 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 transition-colors">
+                <i class="fas fa-sign-out-alt w-6 text-center"></i> Đăng xuất
+            </button>
+        </div>
     </div>
 </header>
+
+<script>
+    // Script xử lý Mobile Menu
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        
+        if(btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+                const icon = btn.querySelector('i');
+                if (menu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                    btn.classList.remove('bg-blue-50', 'text-blue-600');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                    btn.classList.add('bg-blue-50', 'text-blue-600');
+                }
+            });
+        }
+    });
+</script>

@@ -167,12 +167,12 @@ if (typeof window.initDoctorLichHenPage === 'undefined') {
                             statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Chờ xác nhận</span>`;
                             break;
                         case 'confirmed':
-                            rowClass += ' bg-green-50 hover:bg-green-100';
-                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Đã xác nhận</span>`;
+                            rowClass += ' bg-blue-50 hover:bg-blue-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Đã xác nhận</span>`;
                             break;
                         case 'completed':
-                            rowClass += ' bg-blue-50 hover:bg-blue-100';
-                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Đã hoàn thành</span>`;
+                            rowClass += ' bg-green-50 hover:bg-green-100';
+                            statusTag = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Đã hoàn thành</span>`;
                             break;
                         case 'cancelled':
                             rowClass += ' bg-red-50 hover:bg-red-100';

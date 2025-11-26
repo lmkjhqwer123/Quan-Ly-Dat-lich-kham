@@ -518,6 +518,75 @@ def get_appointment_by_id_logic(db, appointment_id: int):
 
     return None
 
+def get_medical_record_details_logic(db, appointment_id: int, patient_id: int):
+    """
+    Lấy chi tiết bệnh án của bệnh nhân theo appointment_id
+    Yêu cầu: appointment phải có status = 'completed' và thuộc về bệnh nhân đó
+    """
+    print(f"[DEBUG] get_medical_record_details_logic: appointment_id={appointment_id}, patient_id={patient_id}")
+    
+    # 1. Lấy appointment để kiểm tra quyền
+    appointment = data_access.get_appointment_by_id(db, appointment_id)
+    print(f"[DEBUG] appointment found: {appointment is not None}")
+    if not appointment:
+        print(f"[DEBUG] Appointment {appointment_id} not found!")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Lịch hẹn không tồn tại."
+        )
+    
+    print(f"[DEBUG] appointment.PatientId={appointment.PatientId}, patient_id={patient_id}")
+    # 2. Kiểm tra bệnh nhân có quyền xem không
+    if appointment.PatientId != patient_id:
+        print(f"[DEBUG] Patient mismatch!")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bạn không có quyền xem bệnh án này."
+        )
+    
+    print(f"[DEBUG] appointment.Status={appointment.Status}")
+    # 3. Kiểm tra lịch hẹn phải đã hoàn thành
+    if appointment.Status != 'completed':
+        print(f"[DEBUG] Appointment status is not 'completed', it's: {appointment.Status}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Chỉ có thể xem bệnh án của lịch hẹn đã hoàn thành. Trạng thái hiện tại: {appointment.Status}"
+        )
+    
+    # 4. Lấy medical record
+    print(f"[DEBUG] Getting medical record...")
+    medical_record = data_access.get_medical_record_by_appointment_id(db, appointment_id)
+    print(f"[DEBUG] medical_record found: {medical_record is not None}")
+    if not medical_record:
+        print(f"[DEBUG] Medical record for appointment {appointment_id} not found!")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Bệnh án chưa được tạo cho lịch hẹn này."
+        )
+    
+    return {
+        "MedicalRecordId": medical_record.MedicalRecordId,
+        "AppointmentId": medical_record.AppointmentId,
+        "BookingCode": medical_record.appointment.BookingCode if medical_record.appointment else None,
+        "DoctorName": medical_record.doctor.FullName if medical_record.doctor else None,
+        "SpecialtyName": appointment.specialty.Name if appointment.specialty else None,
+        "PatientName": appointment.patient.FullName if appointment.patient else None,
+        "PatientBirthDate": appointment.patient.birth_date if appointment.patient else None,
+        "PatientPhone": appointment.patient.Phone if appointment.patient else None,
+        "PatientAddress": appointment.patient.address if appointment.patient else None,
+        "PatientSymptoms": appointment.Symptoms,
+        "ExaminationDate": medical_record.ExaminationDate,
+        "DiagnosisIn": medical_record.DiagnosisIn,
+        "DiagnosisOut": medical_record.DiagnosisOut,
+        "TreatmentSummary": medical_record.TreatmentSummary,
+        "PulseRate": medical_record.PulseRate,
+        "Temperature": medical_record.Temperature,
+        "BloodPressureMMHG": medical_record.BloodPressureMMHG,
+        "SPO2Percent": medical_record.Spo2Percent,
+        "DoctorHPINotes": medical_record.DoctorHpiNotes,
+        "PhysicalExaminationNotes": medical_record.PhysicalExaminationNotes
+    }
+
 def get_all_patients_logic(db, sort_by: Optional[str] = None, sort_direction: Optional[str] = None):
     patients = data_access.get_all_patients(db, sort_by, sort_direction)
     return [

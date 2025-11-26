@@ -11,6 +11,10 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Đảm bảo tất cả input fields dùng Inter font */
+        input, select, textarea, label {
+            font-family: 'Inter', sans-serif !important;
+        }
         /* Tùy chỉnh màu viền khi focus cho hợp với theme */
         input:focus, select:focus, textarea:focus {
             border-color: #2dd4bf !important; /* Màu teal-400 */
@@ -225,6 +229,7 @@
         <!-- Footer Placeholder -->
         <div id="footer-placeholder"></div>
     </div>
+    <script src="/Js/languages.js"></script>
     <script src="/Js/main.js"></script>
     <script src="/Js/appointments.js"></script>
 </body>

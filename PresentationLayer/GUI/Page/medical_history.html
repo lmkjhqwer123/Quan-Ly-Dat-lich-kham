@@ -11,6 +11,10 @@
         body { 
             font-family: 'Inter', sans-serif; 
         }
+        /* Đảm bảo tất cả input fields dùng Inter font */
+        input, select, textarea, label {
+            font-family: 'Inter', sans-serif !important;
+        }
         /* Style cho tiêu đề phần trong modal */
         .section-header {
             background-color: #eff6ff; /* bg-blue-50 */
@@ -62,6 +66,116 @@
             margin-left: 8px;
             font-weight: normal;
         }
+        /* Styles for appointment history */
+        .appointment-history-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .appointment-history-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            gap: 1rem;
+        }
+        .appointment-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        .appointment-datetime,
+        .appointment-doctor {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .appointment-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .status-confirmed {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .status-completed {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+        .status-cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .appointment-symptoms {
+            font-size: 0.875rem;
+            color: #4b5563;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            background-color: #f9fafb;
+            border-left: 3px solid #3b82f6;
+            border-radius: 0.25rem;
+        }
+        .appointment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .view-record-btn {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .view-record-btn:hover {
+            background-color: #2563eb;
+        }
+        .text-gray-500 {
+            color: #6b7280;
+        }
+        .text-sm {
+            font-size: 0.875rem;
+        }
+        .no-data-message,
+        .error-message {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+            font-size: 1rem;
+        }
+        .error-message {
+            color: #991b1b;
+            background-color: #fee2e2;
+            border-radius: 0.375rem;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -77,16 +191,38 @@
             
             <!-- Menu bên trái -->
             <aside class="md:col-span-1 mb-8 md:mb-0">
-                <div class="bg-white p-4 rounded-lg shadow-md">
-                    <h2 class="text-lg font-semibold mb-4 border-b pb-2">Cá nhân</h2>
-                    <nav class="space-y-1">
-                        <a href="profile.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Thông tin cá nhân</a>
-                        <a href="medical_history.html" class="block px-3 py-2 text-sm font-medium text-blue-600 rounded-md bg-gray-100">Lịch sử bệnh án</a>
-                        <a href="reminders.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Nhắc nhở</a>
-                        <a href="interface_settings.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Giao diện</a>
-                        <a href="feedback.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Phản hồi</a>
-                        <a href="medical_guide.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Hướng dẫn khám</a>
-                        <a href="about_us.html" class="block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100">Về chúng tôi</a>
+                <div class="bg-white p-4 rounded-xl shadow-sm sticky top-4 border border-gray-100">
+                    <div class="flex items-center space-x-3 mb-6 px-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                            <i class="fas fa-user font-bold"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Xin chào,</p>
+                            <h2 class="text-sm font-bold text-gray-800">Nguyễn Văn A</h2>
+                        </div>
+                    </div>
+                    
+                    <nav class="space-y-1" id="sidebar-nav">
+                        <a href="profile.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-user-circle w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Thông tin cá nhân</span>
+                        </a>
+                        <a href="medical_history.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg transition-all">
+                            <i class="fas fa-file-medical w-6 text-lg"></i>
+                            <span>Lịch sử bệnh án</span>
+                        </a>
+                        <a href="reminders.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-bell w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Nhắc nhở</span>
+                        </a>
+                        <a href="medical_guide.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-book-medical w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Hướng dẫn khám</span>
+                        </a>
+                        <a href="about_us.html" class="nav-link group flex items-center px-3 py-3 text-sm font-medium text-gray-600 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-all">
+                            <i class="fas fa-info-circle w-6 text-lg group-hover:scale-110 transition-transform"></i>
+                            <span>Về chúng tôi</span>
+                        </a>
                     </nav>
                 </div>
             </aside>
@@ -97,39 +233,30 @@
                     <h1 class="text-2xl font-bold text-gray-900 mb-4 border-b pb-3">Lịch sử bệnh án</h1>
                     
                     <!-- Filter Section -->
-                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
-                        <div class="relative w-full md:w-2/3">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0 gap-4">
+                        <div class="relative w-full md:flex-1">
                             <input type="text" placeholder="Tìm kiếm theo bác sĩ, chuyên khoa, chẩn đoán..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                         </div>
-                        <div class="flex items-center space-x-4">
-                            <label for="date-filter" class="text-sm font-medium text-gray-700">Lọc theo ngày:</label>
-                            <input type="date" id="date-filter" class="border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex items-center space-x-2">
+                            <label for="date-filter" class="text-sm font-medium text-gray-700 whitespace-nowrap">Ngày:</label>
+                            <input type="date" id="date-filter" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <label for="status-filter" class="text-sm font-medium text-gray-700 whitespace-nowrap">Trạng thái:</label>
+                            <select id="status-filter" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Tất cả --</option>
+                                <option value="pending">Chờ xác nhận</option>
+                                <option value="confirmed">Đã xác nhận</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="cancelled">Đã hủy</option>
+                            </select>
                         </div>
                     </div>
 
                     <!-- History List -->
                     <div id="history-list" class="space-y-6">
-                        <!-- History Item 1 -->
-                        <div class="border rounded-lg bg-white p-4 flex justify-between items-center">
-                                <div>
-                                    <p class="font-semibold text-gray-800">Khám Tim mạch - <span class="font-normal">BS. Nguyễn Văn A</span></p>
-                                    <p class="text-sm text-gray-500">Ngày 15/06/2024</p>
-                                </div>
-                                <a href="#" class="view-record-btn text-sm font-medium text-blue-600 hover:underline" data-record-id="123">Xem chi tiết bệnh án &rarr;</a>
-                        </div>
-
-                        <!-- History Item 2 -->
-                        <div class="border rounded-lg bg-white p-4 flex justify-between items-center">
-                                <div>
-                                    <p class="font-semibold text-gray-800">Khám Tổng quát - <span class="font-normal">BS. Trần Thị B</span></p>
-                                    <p class="text-sm text-gray-500">Ngày 20/01/2024</p>
-                                </div>
-                                <a href="#" class="view-record-btn text-sm font-medium text-blue-600 hover:underline" data-record-id="456">Xem chi tiết bệnh án &rarr;</a>
-                        </div>
-
-                        <!-- Thêm các mục lịch sử khác tại đây -->
-
+                        <!-- Items will be loaded dynamically from JavaScript -->
                     </div>
 
                 </div>
@@ -273,7 +400,36 @@
 
     </div>
 
+
     <script src="/Js/main.js"></script>
     <script src="/Js/medical_history.js"></script>
+    <script>
+        // Tự động đánh dấu link active
+        function setActiveNav() {
+            const currentPage = window.location.pathname.split('/').pop() || 'profile.html';
+            const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                
+                // Xóa active styles
+                link.classList.remove('text-blue-600', 'bg-blue-50');
+                link.classList.add('text-gray-700');
+                
+                // Thêm active style nếu là trang hiện tại
+                if (href === currentPage) {
+                    link.classList.remove('text-gray-700');
+                    link.classList.add('text-blue-600', 'bg-blue-50');
+                }
+            });
+        }
+        
+        // Chạy khi DOM loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setActiveNav);
+        } else {
+            setActiveNav();
+        }
+    </script>
 </body>
 </html>

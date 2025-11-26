@@ -1,0 +1,61 @@
+<!-- Sidebar Navigation Component -->
+<aside class="md:col-span-1 mb-8 md:mb-0">
+    <div class="bg-white p-4 rounded-lg shadow-md sticky top-4">
+        <h2 class="text-lg font-semibold mb-4 border-b pb-2">Cá nhân</h2>
+        <nav class="space-y-1" id="sidebar-nav">
+            <a href="profile.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-user-circle mr-2"></i>Thông tin cá nhân
+            </a>
+            <a href="queue.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-list-ol mr-2"></i>Hàng chờ khám
+            </a>
+            <a href="history.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-history mr-2"></i>Lịch sử đặt lịch khám
+            </a>
+            <a href="medical_history.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-file-medical mr-2"></i>Lịch sử bệnh án
+            </a>
+            <a href="reminders.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-bell mr-2"></i>Nhắc nhở
+            </a>
+            <a href="feedback.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-comment-dots mr-2"></i>Phản hồi
+            </a>
+            <a href="medical_guide.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-book-medical mr-2"></i>Hướng dẫn khám
+            </a>
+            <a href="about_us.html" class="nav-link block px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 transition">
+                <i class="fas fa-info-circle mr-2"></i>Về chúng tôi
+            </a>
+        </nav>
+    </div>
+</aside>
+
+<script>
+    // Tự động đánh dấu link active
+    function setActiveNav() {
+        const currentPage = window.location.pathname.split('/').pop() || 'profile.html';
+        const navLinks = document.querySelectorAll('#sidebar-nav .nav-link');
+        
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            
+            // Xóa active styles
+            link.classList.remove('text-blue-600', 'bg-blue-50');
+            link.classList.add('text-gray-700');
+            
+            // Thêm active style nếu là trang hiện tại
+            if (href === currentPage) {
+                link.classList.remove('text-gray-700');
+                link.classList.add('text-blue-600', 'bg-blue-50');
+            }
+        });
+    }
+    
+    // Chạy khi DOM loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setActiveNav);
+    } else {
+        setActiveNav();
+    }
+</script>

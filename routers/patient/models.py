@@ -15,6 +15,7 @@ class AppointmentHistoryDto(BaseModel):
     DoctorName: Optional[str] = None
     SpecialtyName: Optional[str] = None
     Symptoms: str
+    PatientName: Optional[str] = None
 
 class PatientUpdateRequest(BaseModel):
     FullName: Optional[str] = None

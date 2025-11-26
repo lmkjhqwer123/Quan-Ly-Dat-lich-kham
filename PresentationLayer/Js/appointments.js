@@ -539,8 +539,8 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(data => {
             alert('Đặt lịch hẹn thành công! Vui lòng kiểm tra lịch sử đặt hẹn.');
-            // Redirect to the history page on success
-            window.location.href = '/PresentationLayer/GUI/Page/history.html';
+            // Redirect to the medical history page on success
+            window.location.href = '/PresentationLayer/GUI/Page/medical_history.html';
         })
         .catch(error => {
             // Catch any error thrown (from network or from the !response.ok block)

@@ -79,8 +79,8 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
 
                     const statusColors = {
                         'pending': 'bg-yellow-500',
-                        'confirmed': 'bg-green-500',
-                        'completed': 'bg-blue-500',
+                        'confirmed': 'bg-blue-500',
+                        'completed': 'bg-green-500',
                         'canceled': 'bg-red-500'
                     };
 
@@ -152,14 +152,14 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
             } else {
                 const statusColors = {
                     'pending': 'bg-yellow-500',
-                    'confirmed': 'bg-green-500',
-                    'completed': 'bg-blue-500',
+                    'confirmed': 'bg-blue-500',
+                    'completed': 'bg-green-500',
                     'canceled': 'bg-red-500'
                 };
                 const statusBgColors = {
                     'pending': 'bg-yellow-100',
-                    'confirmed': 'bg-green-100',
-                    'completed': 'bg-blue-100',
+                    'confirmed': 'bg-blue-100',
+                    'completed': 'bg-green-100',
                     'canceled': 'bg-red-100'
                 };
 

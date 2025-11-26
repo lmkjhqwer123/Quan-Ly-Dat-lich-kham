@@ -3,159 +3,282 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang Quản Trị - UMBRELLA CORP</title>
+    <title>Hệ Thống Quản Trị - UMBRELLA CORP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Đảm bảo tất cả input fields dùng Inter font */
-        input, select, textarea, label {
-            font-family: 'Inter', sans-serif !important;
-        }
-        .admin-menu a {
-            display: block;
-            padding: 0.75rem 1.5rem;
-            color: #374151;
-            font-weight: 500;
-            border-left: 3px solid transparent;
-        }
-        .admin-menu a:hover {
-            background-color: #f3f4f6;
-            border-left-color: #3b82f6;
-            color: #1f2937;
-        }
-        .admin-menu h3 {
-            padding: 1rem 1.5rem;
-            font-size: 1.25rem;
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .sidebar-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* Active Menu State */
+        .nav-link.active {
+            background-color: #2563eb; /* blue-600 */
+            color: #ffffff;
             font-weight: 600;
-            color: #111827;
         }
-        .admin-menu .separator {
-            border-top: 1px solid #e5e7eb;
-            margin: 1rem 0;
-        }
+        .nav-link.active i { color: #ffffff; }
     </style>
 </head>
-<body class="bg-gray-100">
-    <div id="header-placeholder"></div>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased overflow-hidden">
 
-    <div class="flex">
-        <!-- Left Sidebar -->
-        <aside class="w-64 bg-white shadow-md min-h-screen admin-menu">
-            <nav>
-                <h3>Dashboard</h3>
-                <a href="#dashboard">Dashboard</a>
-                <div class="separator"></div>
+    <div class="flex h-screen">
 
-                <h3>Lịch khám bệnh</h3>
-                <a href="#thu_tu_kham">Thứ tự khám</a>
-                <a href="#quan_ly_lich_lam_viec">Lịch Nghỉ phép</a>               
-                <a href="#lich_hen">Lịch hẹn</a>
-                <div class="separator"></div>
+        <!-- 1. SIDEBAR (Menu Trái) -->
+        <aside id="sidebar" class="bg-slate-900 text-slate-300 w-64 flex-shrink-0 flex flex-col transition-all duration-300 fixed md:relative z-30 h-full transform -translate-x-full md:translate-x-0">
+            
+            <!-- Brand -->
+            <div class="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800 shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-900/50">
+                        <i class="fas fa-umbrella"></i>
+                    </div>
+                    <span class="text-lg font-bold text-white tracking-wide">UMBRELLA <span class="text-blue-500 text-xs align-top">Admin</span></span>
+                </div>
+                <!-- Close Button (Mobile) -->
+                <button id="close-sidebar" class="md:hidden ml-auto text-slate-400 hover:text-white">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
 
-                <h3>Quản trị viên</h3>
-                <a href="#chuyen_khoa">Chuyên khoa</a>
-                <a href="#bac_si">Bác sĩ</a>
-                <a href="#benh_nhan">Bệnh nhân</a>
-                <a href="#dich_vu">Dịch vụ</a>
-                <div class="separator"></div>
+            <!-- Menu Items -->
+            <div class="flex-1 overflow-y-auto sidebar-scroll py-4 px-3 space-y-1 admin-menu">
+                
+                <!-- Group: Dashboard -->
+                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-2">Tổng quan</p>
+                <a href="#dashboard" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-chart-pie w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Dashboard</span>
+                </a>
 
-                <h3>Khám chữa bệnh</h3>
-                <a href="#phac_do">Phác đồ điều trị</a>
-                <a href="#benh_an">Bệnh án</a>
-                <div class="separator"></div>
+                <!-- Group: Lịch khám -->
+                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Vận hành</p>
+                <a href="#lich_hen" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="far fa-calendar-check w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Quản lý Lịch hẹn</span>
+                </a>
+                <a href="#thu_tu_kham" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-list-ol w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Thứ tự khám</span>
+                </a>
+                <a href="#quan_ly_lich_lam_viec" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-user-clock w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Lịch làm việc/Nghỉ</span>
+                </a>
 
-                <h3>Cá nhân</h3>
-                <a href="#">Thông tin cá nhân</a>
-                <a href="#">Bảo mật</a>
-            </nav>
+                <!-- Group: Quản trị -->
+                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Quản lý dữ liệu</p>
+                <a href="#bac_si" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-user-md w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Bác sĩ</span>
+                </a>
+                <a href="#benh_nhan" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-user-injured w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Bệnh nhân</span>
+                </a>
+                <a href="#chuyen_khoa" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-clinic-medical w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Chuyên khoa</span>
+                </a>
+                <a href="#dich_vu" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-briefcase-medical w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Dịch vụ</span>
+                </a>
+
+                <!-- Group: Khám chữa bệnh -->
+                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Chuyên môn</p>
+                <a href="#benh_an" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-file-medical-alt w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Hồ sơ bệnh án</span>
+                </a>
+                <a href="#phac_do" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition-all group">
+                    <i class="fas fa-notes-medical w-5 text-center text-slate-400 group-hover:text-white transition-colors"></i>
+                    <span>Phác đồ điều trị</span>
+                </a>
+
+                <!-- Divider -->
+                <div class="border-t border-slate-800 my-4 mx-2"></div>
+
+                <a href="http://127.0.0.1:8000/login.html" class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-900/30 hover:text-red-400 text-slate-400 transition-all group">
+                    <i class="fas fa-sign-out-alt w-5 text-center group-hover:text-red-400 transition-colors"></i>
+                    <span>Đăng xuất</span>
+                </a>
+            </div>
         </aside>
 
-        <!-- Main Content -->
-        <main id="main-content" class="flex-1 p-8">
-            <!-- Content will be loaded here -->
-        </main>
+        <!-- 2. MAIN LAYOUT -->
+        <div class="flex-1 flex flex-col min-w-0">
+            
+            <!-- Header -->
+            <header class="bg-white h-16 border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-20 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <button id="open-sidebar" class="md:hidden text-slate-500 hover:text-blue-600 p-2 rounded-lg hover:bg-slate-50 transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h2 id="page-title" class="text-lg font-bold text-slate-800 hidden sm:block">Dashboard</h2>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <!-- Notification -->
+                    <button class="relative p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-full transition">
+                        <i class="far fa-bell text-xl"></i>
+                        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    
+                    <!-- User Profile -->
+                    <div class="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer hover:opacity-80 transition">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-bold text-slate-700">Admin User</p>
+                            <p class="text-xs text-slate-500">Super Admin</p>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=0F172A&color=fff" class="w-9 h-9 rounded-full border border-slate-200 shadow-sm">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main id="main-content" class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-50 relative">
+                <!-- Loading Spinner (Hidden by default) -->
+                <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-50 flex items-center justify-center backdrop-blur-sm">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+
+                <!-- Dynamic Content Loads Here -->
+                <div id="content-wrapper">
+                    <!-- Default content (Dashboard) goes here if JS fails or initial load -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-slate-500 text-xs font-bold uppercase">Lịch hẹn hôm nay</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-2">124</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-slate-500 text-xs font-bold uppercase">Bác sĩ trực</p>
+                            <h3 class="text-3xl font-bold text-slate-800 mt-2">18</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                            <p class="text-slate-500 text-xs font-bold uppercase">Doanh thu (tạm tính)</p>
+                            <h3 class="text-3xl font-bold text-blue-600 mt-2">45.2M</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm h-96 flex items-center justify-center border-dashed border-2 border-slate-300">
+                        <p class="text-slate-400">Chọn một mục từ menu bên trái để bắt đầu</p>
+                    </div>
+                </div>
+            </main>
+
+        </div>
     </div>
 
-    <div id="footer-placeholder"></div>
-
+    <!-- Script Logic -->
     <script src="/Js/main.js"></script>
     <script>
-        const mainContent = document.getElementById('main-content');
-        const adminMenu = document.querySelector('.admin-menu');
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContent = document.getElementById('content-wrapper');
+            const pageTitle = document.getElementById('page-title');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay'); // You might want to add an overlay div for mobile
+            
+            // Mobile Sidebar Toggle
+            document.getElementById('open-sidebar').addEventListener('click', () => {
+                sidebar.classList.remove('-translate-x-full');
+            });
+            document.getElementById('close-sidebar').addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+            });
 
-        const loadContent = (pageUrl) => {
-            fetch(pageUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+            // Navigation Logic
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            function setActiveLink(hash) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    // Reset icon color
+                    const icon = link.querySelector('i');
+                    if(icon) icon.classList.add('text-slate-400');
+                    
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                        if(icon) icon.classList.remove('text-slate-400');
+                        
+                        // Update Header Title
+                        const text = link.querySelector('span').innerText;
+                        pageTitle.innerText = text;
                     }
-                    return response.text();
-                })
-                .then(html => {
+                });
+            }
+
+            const loadContent = async (pageUrl) => {
+                // Show loading
+                loadingSpinner.classList.remove('hidden');
+                
+                try {
+                    const response = await fetch(pageUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const html = await response.text();
                     mainContent.innerHTML = html;
-                    // Find and re-execute scripts within the loaded content
+
+                    // Re-execute scripts
                     const scripts = mainContent.querySelectorAll('script');
                     scripts.forEach(script => {
+                        const newScript = document.createElement('script');
                         if (script.src) {
-                            // Handle external scripts with cache-busting
-                            const newScript = document.createElement('script');
-                            Array.from(script.attributes).forEach(attr => {
-                                newScript.setAttribute(attr.name, attr.value);
-                            });
                             newScript.src = script.src.split('?')[0] + '?t=' + new Date().getTime();
-                            script.parentNode.removeChild(script);
-                            document.body.appendChild(newScript);
                         } else {
-                            // Handle inline scripts by evaluating their content
-                            try {
-                                eval(script.innerText);
-                            } catch (e) {
-                                console.error("Error executing inline script: ", e);
-                                console.error("Script content:", script.innerText);
-                            }
+                            newScript.textContent = script.innerText;
                         }
+                        document.body.appendChild(newScript);
                     });
-                })
-                .catch(error => {
-                    console.error('Error loading page:', error);
-                    mainContent.innerHTML = `<p class="text-center text-red-500">Failed to load content. Please check the console.</p>`;
-                });
-        };
 
-        // Use event delegation for navigation
-        adminMenu.addEventListener('click', (event) => {
-            const link = event.target.closest('a');
-            if (link && link.getAttribute('href')?.startsWith('#')) {
-                event.preventDefault();
-                const page = link.getAttribute('href').substring(1);
-                if (page) {
-                    // Construct the correct path
-                    const pagePath = `/GUI/Admin_page/${page}.html`;
-                    // Update URL hash for better history management
-                    window.location.hash = page;
+                } catch (error) {
+                    console.error('Error loading page:', error);
+                    mainContent.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-center p-8">
+                            <div class="bg-red-100 p-4 rounded-full mb-4"><i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i></div>
+                            <h3 class="text-lg font-bold text-slate-800">Không thể tải nội dung</h3>
+                            <p class="text-slate-500 mt-2">Vui lòng kiểm tra đường dẫn hoặc thử lại sau (${error.message})</p>
+                        </div>
+                    `;
+                } finally {
+                    // Hide loading
+                    loadingSpinner.classList.add('hidden');
+                    // Close sidebar on mobile after selection
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                }
+            };
+
+            const handleHashChange = () => {
+                const hash = window.location.hash || '#dashboard';
+                const page = hash.substring(1);
+                const pagePath = `/GUI/Admin_page/${page}.html`; // Adjust path as needed
+                
+                setActiveLink(hash);
+                
+                if (page === 'dashboard') {
+                    // Optional: Load specific dashboard content or keep default
+                    // loadContent('/GUI/Admin_page/dashboard.html'); 
+                    pageTitle.innerText = 'Dashboard';
+                } else {
                     loadContent(pagePath);
                 }
-            }
-        });
+            };
 
-        // Function to load content based on URL hash
-        const loadContentFromHash = () => {
-            const page = window.location.hash.substring(1) || 'dashboard'; // Default to dashboard
-            const pagePath = `/GUI/Admin_page/${page}.html`;
-            loadContent(pagePath);
-        };
-
-        // Load initial content based on the URL hash, or default to dashboard
-        loadContentFromHash();
-
-        // Listen for hash changes (e.g., browser back/forward buttons)
-        window.addEventListener('hashchange', loadContentFromHash);
-
-        document.addEventListener('DOMContentLoaded', function() {
-
+            // Listen for hash changes
+            window.addEventListener('hashchange', handleHashChange);
+            
+            // Initial Load
+            handleHashChange();
         });
     </script>
 </body>

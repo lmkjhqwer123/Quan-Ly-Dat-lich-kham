@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sau khi tải xong header, chạy các script liên quan đến header
         initializeHeaderScripts();
         highlightActiveNav();
-        applyGlobalLanguage();
+        
     };
 
     const initializeHeaderScripts = () => {
@@ -126,17 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const applyGlobalLanguage = () => {
-        // Đợi cho đến khi languages.js được tải
-        if (typeof applyLanguageGlobally === 'function') {
-            // Áp dụng ngôn ngữ được lưu từ localStorage
-            const savedLanguage = localStorage.getItem('selectedLanguage') || 'vi';
-            applyLanguageGlobally(savedLanguage);
-        } else {
-            // Nếu languages.js chưa tải, thử lại sau 100ms
-            setTimeout(applyGlobalLanguage, 100);
-        }
-    };
+    
 
     // Bắt đầu quá trình
     loadComponents();

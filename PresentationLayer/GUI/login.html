@@ -5,545 +5,453 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng Nhập - UMBRELLA MEDICAL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Animation cho chuyển đổi form */
-        .form-transition {
-            transition: all 0.3s ease-in-out;
-            opacity: 1;
-            transform: translateY(0);
+
+        /* 1. BACKGROUND PATTERN (Ô xanh mờ) */
+        .bg-blue-grid {
+            background-color: #f0f4f8;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            position: relative;
         }
-        .form-hidden {
-            display: none;
+        /* Hiệu ứng mờ ảo cho background */
+        .bg-blue-grid::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, transparent 0%, #f0f4f8 100%);
+            pointer-events: none;
+        }
+
+        /* 2. SLIDING CONTAINER STYLES */
+        .container-box {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 1000px; /* Kích thước khung to */
+            min-height: 650px;
+            background-color: #fff;
+            border-radius: 20px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.1), 0 10px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Form Container chung */
+        .form-container {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            transition: all 0.6s ease-in-out;
+        }
+
+        /* Login Form: Mặc định ở bên phải (z-index 2) */
+        .sign-in-container {
+            left: 0;
+            width: 50%;
+            z-index: 2;
+        }
+
+        /* Register Form: Mặc định ẩn ở bên trái (opacity 0) */
+        .sign-up-container {
+            left: 0;
+            width: 50%;
             opacity: 0;
-            transform: translateY(10px);
+            z-index: 1;
         }
 
-        /* Input Focus Effect */
-        .input-group:focus-within label {
-            color: #2563eb;
-        }
-        .input-group:focus-within i {
-            color: #2563eb;
-        }
-        .input-group:focus-within input {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        /* Overlay Container (Chứa hình ảnh) */
+        .overlay-container {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            transition: transform 0.6s ease-in-out;
+            z-index: 100;
         }
 
-        /* Background Image Overlay */
-        .bg-overlay {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(30, 64, 175, 0.8));
+        /* Overlay Background (Hình nền trượt) */
+        .overlay {
+            background: linear-gradient(to right, #2563eb, #4f46e5);
+            background: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2070&auto=format&fit=crop');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: 0 0;
+            color: #FFFFFF;
+            position: relative;
+            left: -100%;
+            height: 100%;
+            width: 200%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+        }
+        /* Lớp phủ màu xanh lên ảnh */
+        .overlay::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.85), rgba(30, 64, 175, 0.9));
+        }
+
+        /* Overlay Panels (Nội dung chữ trên ảnh) */
+        .overlay-panel {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 0 40px;
+            text-align: center;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            transform: translateX(0);
+            transition: transform 0.6s ease-in-out;
+            z-index: 1; /* Đặt trên lớp phủ màu */
+        }
+
+        .overlay-left {
+            transform: translateX(-20%);
+        }
+
+        .overlay-right {
+            right: 0;
+            transform: translateX(0);
+        }
+
+        /* 3. ACTIVE STATE ANIMATIONS (Khi chuyển sang Đăng ký) */
+        
+        /* Di chuyển Form Đăng ký từ trái sang phải */
+        .container-box.right-panel-active .sign-in-container {
+            transform: translateX(100%);
+        }
+
+        /* Hiện Form Đăng ký, đè lên Login */
+        .container-box.right-panel-active .sign-up-container {
+            transform: translateX(100%);
+            opacity: 1;
+            z-index: 5;
+            animation: show 0.6s;
+        }
+
+        /* Di chuyển Overlay từ phải sang trái */
+        .container-box.right-panel-active .overlay-container {
+            transform: translateX(-100%);
+        }
+
+        /* Di chuyển ảnh nền ngược lại để tạo hiệu ứng parallax nhẹ */
+        .container-box.right-panel-active .overlay {
+            transform: translateX(50%);
+        }
+
+        /* Di chuyển nội dung chữ vào vị trí */
+        .container-box.right-panel-active .overlay-left {
+            transform: translateX(0);
+        }
+
+        .container-box.right-panel-active .overlay-right {
+            transform: translateX(20%);
+        }
+
+        @keyframes show {
+            0%, 49.99% {
+                opacity: 0;
+                z-index: 1;
+            }
+            50%, 100% {
+                opacity: 1;
+                z-index: 5;
+            }
+        }
+
+        /* Input Styling */
+        .input-group:focus-within label { color: #2563eb; }
+        .input-group:focus-within i { color: #2563eb; }
+        .input-group:focus-within input { border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+        
+        /* Mobile Responsive: Ẩn hiệu ứng trượt, chuyển về dạng xếp chồng */
+        @media (max-width: 768px) {
+            .container-box { min-height: 800px; max-width: 100%; border-radius: 0; box-shadow: none; }
+            .form-container { width: 100%; position: relative; height: auto; transition: none; }
+            .sign-in-container { z-index: 10; }
+            .sign-up-container { opacity: 1; z-index: 10; display: none; }
+            .overlay-container { display: none; } /* Ẩn overlay trên mobile để gọn */
+            
+            /* Logic JS cho mobile sẽ xử lý hiển thị/ẩn bằng class 'hidden' thay vì transform */
+            .mobile-show { display: block !important; }
+            .mobile-hide { display: none !important; }
         }
     </style>
 </head>
-<body class="bg-gray-50 h-screen overflow-hidden flex items-center justify-center">
+<body class="bg-blue-grid h-screen flex items-center justify-center p-4">
 
-    <!-- Toast Notification Container -->
+    <!-- Toast Container -->
     <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3"></div>
 
-    <div class="w-full h-full flex bg-white shadow-2xl overflow-hidden rounded-none sm:rounded-2xl sm:h-[90vh] sm:w-[95vw] lg:max-w-6xl">
+    <!-- MAIN SLIDING CONTAINER -->
+    <div class="container-box" id="container">
         
-        <!-- LEFT SIDE: Image & Branding (Hidden on mobile) -->
-        <div class="hidden md:flex md:w-1/2 lg:w-5/12 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=2070&auto=format&fit=crop');">
-            <div class="absolute inset-0 bg-overlay flex flex-col justify-between p-12 text-white">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-600 shadow-lg">
-                        <i class="fas fa-umbrella text-2xl"></i>
+        <!-- 1. FORM ĐĂNG KÝ (SIGN UP) - Trái -->
+        <div class="form-container sign-up-container bg-white flex flex-col justify-center px-10 py-8 overflow-y-auto">
+            <form id="register-form" class="w-full max-w-md mx-auto space-y-4">
+                <h1 class="text-3xl font-extrabold text-blue-600 mb-2 text-center">Tạo Tài Khoản</h1>
+                <div class="flex justify-center gap-4 mb-4">
+                    <a href="#" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i class="fab fa-google"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i class="fab fa-facebook-f"></i></a>
+                </div>
+                <p class="text-center text-gray-400 text-xs mb-4">hoặc sử dụng email để đăng ký</p>
+
+                <!-- Role -->
+                <div class="hidden p-1 bg-gray-100 rounded-lg flex mb-2">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="role" value="patient" checked class="peer sr-only">
+                        <div class="text-center py-2 rounded-md text-xs font-bold text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">Bệnh nhân</div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="role" value="doctor" class="peer sr-only">
+                        <div class="text-center py-2 rounded-md text-xs font-bold text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">Bác sĩ</div>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="far fa-user text-gray-400"></i></div>
+                        <input id="reg-fullname" type="text" required class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Họ và Tên">
                     </div>
-                    <span class="text-2xl font-bold tracking-tight">UMBRELLA</span>
                 </div>
-                <div>
-                    <h2 class="text-4xl font-bold mb-6 leading-tight">Chăm sóc sức khỏe toàn diện.</h2>
-                    <p class="text-blue-100 text-lg leading-relaxed mb-8">
-                        Kết nối với hàng ngàn bác sĩ chuyên khoa, đặt lịch khám nhanh chóng và quản lý hồ sơ sức khỏe trọn đời cho cả gia đình.
-                    </p>
-                    <div class="flex gap-2">
-                        <div class="w-2 h-2 rounded-full bg-white"></div>
-                        <div class="w-2 h-2 rounded-full bg-white/50"></div>
-                        <div class="w-2 h-2 rounded-full bg-white/50"></div>
+                <div class="input-group">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="far fa-envelope text-gray-400"></i></div>
+                        <input id="reg-email" type="email" required class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Email">
                     </div>
                 </div>
-                <div class="text-sm text-blue-200">
-                    © 2025 Umbrella Medical Corp.
+                <div class="input-group">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-phone text-gray-400"></i></div>
+                        <input id="reg-phone" type="tel" required class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Số điện thoại">
+                    </div>
                 </div>
-            </div>
+                <div class="input-group">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-lock text-gray-400"></i></div>
+                        <input id="reg-password" type="password" required class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Mật khẩu">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-map-marker-alt text-gray-400"></i></div>
+                        <input id="reg-address" type="text" class="pl-10 w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Địa chỉ">
+                    </div>
+                </div>
+
+                <!-- Dynamic Fields -->
+                <div id="patient-fields" class="input-group">
+                    <input id="reg-birthdate" type="date" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500 focus:outline-none">
+                </div>
+                <div id="doctor-fields" class="hidden grid grid-cols-2 gap-2">
+                    <input id="reg-specialty" type="number" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none" placeholder="ID Chuyên khoa">
+                    <input id="reg-qualifications" type="text" class="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none" placeholder="Bằng cấp">
+                </div>
+
+                <input type="hidden" name="role" value="patient" id="hidden-role">
+
+                <button type="submit" class="btn-submit w-full py-3 px-4 rounded-xl shadow-lg shadow-blue-200 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all mt-2 transform active:scale-95">
+                    <span class="btn-text">Đăng Ký</span>
+                    <span class="btn-loader hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
+                </button>
+                
+                <!-- Mobile Switch Link -->
+                <p class="text-center text-sm mt-4 md:hidden">
+                    Đã có tài khoản? <a href="#" id="mobile-to-login" class="text-blue-600 font-bold">Đăng nhập</a>
+                </p>
+            </form>
         </div>
 
-        <!-- RIGHT SIDE: Forms -->
-        <div class="w-full md:w-1/2 lg:w-7/12 flex items-center justify-center p-8 sm:p-12 bg-white relative overflow-y-auto">
-            
-            <!-- 1. LOGIN FORM -->
-            <div id="login-page" class="w-full max-w-md form-transition">
-                <div class="text-center mb-10">
-                    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Chào mừng trở lại! 👋</h1>
-                    <p class="text-gray-500">Vui lòng đăng nhập để tiếp tục.</p>
-                </div>
-
-                <form id="login-form" class="space-y-6">
+        <!-- 2. FORM ĐĂNG NHẬP (SIGN IN) - Phải -->
+        <div class="form-container sign-in-container bg-white flex flex-col justify-center px-10 py-8 overflow-y-auto">
+            <!-- Forgot Password View (Initially Hidden) -->
+            <div id="forgot-view" class="hidden w-full max-w-md mx-auto text-center">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Quên Mật Khẩu</h1>
+                <p class="text-sm text-gray-500 mb-6">Nhập email để lấy lại mật khẩu</p>
+                <form id="forgot-password-form" class="space-y-4 text-left">
                     <div class="input-group">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập / Số điện thoại</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="far fa-user text-gray-400 transition-colors"></i>
-                            </div>
-                            <input id="username" name="username" type="text" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none transition-all" placeholder="Nhập tên đăng nhập">
-                        </div>
+                        <input id="forgot-email" type="email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none" placeholder="Email của bạn">
                     </div>
-
-                    <div class="input-group">
-                        <div class="flex justify-between items-center mb-1">
-                            <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-                            <a href="#" id="show-forgot-password-link" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">Quên mật khẩu?</a>
-                        </div>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-lock text-gray-400 transition-colors"></i>
-                            </div>
-                            <input id="password" name="password" type="password" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 focus:outline-none transition-all" placeholder="••••••••">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-submit w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-[1.02]">
-                        <span class="btn-text">Đăng Nhập</span>
-                        <span class="btn-loader hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
-                    </button>
-                </form>
-
-                <div class="mt-8 text-center">
-                    <p class="text-gray-600">
-                        Chưa có tài khoản? 
-                        <a href="#" id="show-register-link" class="font-bold text-blue-600 hover:text-blue-800 transition-colors ml-1">Tạo tài khoản mới</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- 2. REGISTER FORM -->
-            <div id="register-page" class="w-full max-w-lg form-transition form-hidden">
-                <div class="text-center mb-8">
-                    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Tạo Tài Khoản Mới 🚀</h1>
-                    <p class="text-gray-500">Tham gia cùng chúng tôi để chăm sóc sức khỏe tốt hơn.</p>
-                </div>
-
-                <form id="register-form" class="space-y-5">
-                    <!-- Role Selection -->
-                    <div class="p-1 bg-gray-100 rounded-xl flex mb-6">
-                        <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="role" value="patient" checked class="peer sr-only">
-                            <div class="text-center py-2.5 rounded-lg text-sm font-bold text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">
-                                <i class="fas fa-user-injured mr-2"></i> Bệnh nhân
-                            </div>
-                        </label>
-                        <label class="flex-1 cursor-pointer">
-                            <input type="radio" name="role" value="doctor" class="peer sr-only">
-                            <div class="text-center py-2.5 rounded-lg text-sm font-bold text-gray-500 peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition-all">
-                                <i class="fas fa-user-md mr-2"></i> Bác sĩ
-                            </div>
-                        </label>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="input-group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Họ và Tên</label>
-                            <input id="reg-fullname" type="text" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm" placeholder="Nguyễn Văn A">
-                        </div>
-                        <div class="input-group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Số điện thoại</label>
-                            <input id="reg-phone" type="tel" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm" placeholder="0912...">
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
-                        <input id="reg-email" type="email" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm" placeholder="email@example.com">
-                    </div>
-
-                    <div class="input-group">
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Mật khẩu</label>
-                        <input id="reg-password" type="password" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm" placeholder="••••••••">
-                    </div>
-
-                    <!-- Dynamic Fields -->
-                    <div id="patient-fields" class="space-y-4">
-                        <div class="input-group">
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Ngày sinh</label>
-                            <input id="reg-birthdate" type="date" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm text-gray-500">
-                        </div>
-                    </div>
-
-                    <div id="doctor-fields" class="hidden space-y-4">
-                        <div class="grid grid-cols-2 gap-5">
-                            <div class="input-group">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">ID Chuyên khoa</label>
-                                <input id="reg-specialty" type="number" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm" placeholder="VD: 1">
-                            </div>
-                            <div class="input-group">
-                                <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Bằng cấp</label>
-                                <input id="reg-qualifications" type="text" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none transition-all text-sm" placeholder="Tiến sĩ...">
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-submit w-full py-3.5 px-4 rounded-xl shadow-lg shadow-green-200 text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none transition-all transform hover:scale-[1.02] mt-6">
-                        <span class="btn-text">Đăng Ký Ngay</span>
-                        <span class="btn-loader hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
-                    </button>
-                </form>
-
-                <div class="mt-6 text-center">
-                    <p class="text-gray-600 text-sm">
-                        Đã có tài khoản? 
-                        <a href="#" id="show-login-link" class="font-bold text-blue-600 hover:text-blue-800 transition-colors ml-1">Đăng nhập</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- 3. FORGOT PASSWORD -->
-            <div id="forgot-password-page" class="w-full max-w-md form-transition form-hidden text-center">
-                <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-key text-blue-500 text-3xl"></i>
-                </div>
-                <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Quên Mật Khẩu?</h1>
-                <p class="text-gray-500 mb-8">Đừng lo, chúng tôi sẽ giúp bạn lấy lại mật khẩu.</p>
-
-                <form id="forgot-password-form" class="space-y-6 text-left">
-                    <div class="input-group">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email đăng ký</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="far fa-envelope text-gray-400"></i>
-                            </div>
-                            <input id="forgot-email" type="email" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition-all" placeholder="email@example.com">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-submit w-full py-3.5 px-4 rounded-xl shadow-lg shadow-blue-200 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all">
+                    <button type="submit" class="btn-submit w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all">
                         <span class="btn-text">Gửi Yêu Cầu</span>
                         <span class="btn-loader hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
                     </button>
                 </form>
-
-                <button id="show-login-link-from-forgot" class="mt-8 text-sm text-gray-500 hover:text-gray-800 font-medium flex items-center justify-center mx-auto gap-2 transition-colors">
-                    <i class="fas fa-arrow-left"></i> Quay lại đăng nhập
-                </button>
+                <button id="back-to-login-btn" class="mt-4 text-sm text-gray-500 hover:text-blue-600">Quay lại đăng nhập</button>
             </div>
 
-            <!-- 4. RESET PASSWORD (Hidden by default, logic same) -->
-            <div id="reset-password-page" class="w-full max-w-md form-transition form-hidden">
-                <div class="text-center mb-8">
-                    <h1 class="text-2xl font-bold text-gray-900">Đặt Lại Mật Khẩu</h1>
-                    <p class="text-gray-500 mt-2">Nhập mật khẩu mới của bạn bên dưới.</p>
-                </div>
-                <form id="reset-password-form" class="space-y-5">
-                    <input type="hidden" id="reset-token">
+            <!-- Reset Password View (Initially Hidden) -->
+            <div id="reset-view" class="hidden w-full max-w-md mx-auto text-center">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Đặt Lại Mật Khẩu</h1>
+                <p class="text-sm text-gray-500 mb-6">Nhập mật khẩu mới của bạn</p>
+                <form id="reset-password-form" class="space-y-4 text-left">
                     <div class="input-group">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu mới</label>
-                        <input id="new-password" type="password" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition-all">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-lock text-gray-400"></i></div>
+                            <input id="reset-new-password" type="password" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Mật khẩu mới">
+                        </div>
                     </div>
                     <div class="input-group">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Xác nhận mật khẩu</label>
-                        <input id="confirm-password" type="password" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none transition-all">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-lock text-gray-400"></i></div>
+                            <input id="reset-confirm-password" type="password" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Xác nhận mật khẩu">
+                        </div>
                     </div>
-                    <button type="submit" class="btn-submit w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all">
-                        <span class="btn-text">Xác Nhận</span>
+                    <button type="submit" class="btn-submit w-full py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all">
+                        <span class="btn-text">Đặt Lại Mật Khẩu</span>
                         <span class="btn-loader hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
                     </button>
                 </form>
+                <button id="back-to-login-btn-2" class="mt-4 text-sm text-gray-500 hover:text-blue-600">Quay lại đăng nhập</button>
             </div>
 
+            <!-- Login View -->
+            <div id="login-view" class="w-full max-w-md mx-auto">
+                <form id="login-form" class="space-y-6">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Đăng Nhập</h1>
+                        <p class="text-gray-400 text-sm">Chào mừng bạn đến với Umbrella - Nền tảng đặt lịch khám hàng đầu</p>
+                    </div>
+                    
+                    <div class="flex justify-center gap-4 my-4">
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i class="fab fa-google"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition"><i class="fab fa-facebook-f"></i></a>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="far fa-user text-gray-400"></i></div>
+                            <input id="username" name="username" type="text" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Tên đăng nhập / SĐT">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-lock text-gray-400"></i></div>
+                            <input id="password" name="password" type="password" required class="pl-10 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none transition-all" placeholder="Mật khẩu">
+                        </div>
+                        <div class="text-right mt-2">
+                            <a href="#" id="go-to-forgot" class="text-xs text-blue-600 hover:text-blue-800 font-semibold">Quên mật khẩu?</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit w-full py-3 px-4 rounded-xl shadow-lg shadow-blue-200 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all transform hover:scale-[1.02]">
+                        <span class="btn-text">Đăng Nhập</span>
+                        <span class="btn-loader hidden"><i class="fas fa-circle-notch fa-spin"></i></span>
+                    </button>
+
+                    <!-- Mobile Switch Link -->
+                    <p class="text-center text-sm mt-6 md:hidden">
+                        Chưa có tài khoản? <a href="#" id="mobile-to-register" class="text-blue-600 font-bold">Đăng ký ngay</a>
+                    </p>
+                </form>
+            </div>
         </div>
+
+        <!-- 3. OVERLAY CONTAINER (Chứa Ảnh & Chữ) -->
+        <div class="overlay-container">
+            <div class="overlay">
+                <!-- Panel Left (Hiển thị khi đang ở form Đăng Ký) -->
+                <div class="overlay-panel overlay-left">
+                    <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-calendar-check text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-4">Chào bạn trở lại!</h1>
+                    <p class="text-sm leading-relaxed mb-6 text-blue-100">
+                        Truy cập vào hệ thống Umbrella để quản lý lịch khám và theo dõi sức khỏe của bạn.
+                    </p>
+                    
+                    <div class="space-y-4 mb-8 text-left">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-check-circle text-green-400 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Kiểm tra lịch khám</h4>
+                                <p class="text-xs text-blue-100">Xem toàn bộ lịch khám sắp tới của bạn</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-check-circle text-green-400 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Quản lý hồ sơ bệnh án</h4>
+                                <p class="text-xs text-blue-100">Lưu trữ và truy cập hồ sơ y tế của bạn</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-check-circle text-green-400 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Nhận thông báo</h4>
+                                <p class="text-xs text-blue-100">Được nhắc nhở trước các cuộc khám</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="ghost bg-transparent border border-white text-white px-8 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-blue-600 transition-all" id="signIn">
+                        Đăng Nhập Ngay
+                    </button>
+                </div>
+
+                <!-- Panel Right (Hiển thị khi đang ở form Đăng Nhập - Mặc định) -->
+                <div class="overlay-panel overlay-right">
+                    <div class="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fas fa-stethoscope text-3xl text-white"></i>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-4">Chào mừng đến Umbrella!</h1>
+                    <p class="text-sm leading-relaxed mb-6 text-blue-100">
+                        Tạo tài khoản để bắt đầu hành trình chăm sóc sức khỏe toàn diện cùng Umbrella.
+                    </p>
+                    
+                    <div class="space-y-4 mb-8 text-left">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-stethoscope text-cyan-300 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Đặt lịch khám dễ dàng</h4>
+                                <p class="text-xs text-blue-100">Chọn bác sĩ và thời gian phù hợp với bạn</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-heart text-red-300 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Chăm sóc sức khỏe</h4>
+                                <p class="text-xs text-blue-100">Tư vấn từ các chuyên gia y tế uy tín</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-lock text-yellow-300 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Bảo mật dữ liệu</h4>
+                                <p class="text-xs text-blue-100">Thông tin cá nhân được bảo vệ tuyệt đối</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0"><i class="fas fa-mobile-alt text-purple-300 text-lg mt-1"></i></div>
+                            <div>
+                                <h4 class="font-semibold text-white text-sm">Truy cập mọi lúc, mọi nơi</h4>
+                                <p class="text-xs text-blue-100">Sử dụng trên web để quản lý sức khỏe của bạn</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="ghost bg-transparent border border-white text-white px-8 py-3 rounded-full font-bold text-sm uppercase tracking-wider hover:bg-white hover:text-blue-600 transition-all" id="signUp">
+                        Đăng Ký Ngay
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // --- Helper: Toast Notifications ---
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            const icon = type === 'success' ? '<i class="fas fa-check-circle text-green-500 text-xl"></i>' : '<i class="fas fa-exclamation-circle text-red-500 text-xl"></i>';
-            const borderClass = type === 'success' ? 'border-green-500' : 'border-red-500';
-            
-            toast.className = `flex items-center gap-3 bg-white px-4 py-3 rounded-lg shadow-xl border-l-4 ${borderClass} transform transition-all duration-300 translate-x-full`;
-            toast.innerHTML = `
-                ${icon}
-                <div>
-                    <h4 class="font-bold text-gray-800 text-sm">${type === 'success' ? 'Thành công' : 'Lỗi'}</h4>
-                    <p class="text-gray-500 text-xs">${message}</p>
-                </div>
-            `;
-            
-            container.appendChild(toast);
-            
-            // Animate in
-            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
-            
-            // Remove after 3s
-            setTimeout(() => {
-                toast.classList.add('translate-x-full', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // --- Helper: Button Loading State ---
-        function setBtnLoading(formId, isLoading) {
-            const btn = document.querySelector(`#${formId} .btn-submit`);
-            const textSpan = btn.querySelector('.btn-text');
-            const loaderSpan = btn.querySelector('.btn-loader');
-            
-            if (isLoading) {
-                btn.disabled = true;
-                btn.classList.add('opacity-70', 'cursor-not-allowed');
-                textSpan.classList.add('hidden');
-                loaderSpan.classList.remove('hidden');
-            } else {
-                btn.disabled = false;
-                btn.classList.remove('opacity-70', 'cursor-not-allowed');
-                textSpan.classList.remove('hidden');
-                loaderSpan.classList.add('hidden');
-            }
-        }
-
-        // --- UI Page Switching ---
-        const pages = {
-            login: document.getElementById('login-page'),
-            register: document.getElementById('register-page'),
-            forgot: document.getElementById('forgot-password-page'),
-            reset: document.getElementById('reset-password-page')
-        };
-
-        function switchPage(targetPageId) {
-            Object.values(pages).forEach(page => {
-                page.classList.add('form-hidden');
-            });
-            
-            // Wait for transition out
-            setTimeout(() => {
-                Object.values(pages).forEach(p => p.style.display = 'none'); // Hide entirely
-                const target = pages[targetPageId];
-                if(target) {
-                    target.style.display = 'block';
-                    // Small delay to allow display block to apply before removing hidden class for animation
-                    setTimeout(() => target.classList.remove('form-hidden'), 50);
-                }
-            }, 300);
-        }
-
-        // Init: Hide all except Login
-        Object.values(pages).forEach(p => {
-            if(p !== pages.login) p.style.display = 'none';
-        });
-
-        // Event Listeners for Links
-        document.getElementById('show-register-link').addEventListener('click', (e) => { e.preventDefault(); switchPage('register'); });
-        document.getElementById('show-login-link').addEventListener('click', (e) => { e.preventDefault(); switchPage('login'); });
-        document.getElementById('show-forgot-password-link').addEventListener('click', (e) => { e.preventDefault(); switchPage('forgot'); });
-        document.getElementById('show-login-link-from-forgot').addEventListener('click', (e) => { e.preventDefault(); switchPage('login'); });
-
-        // --- Role Toggle Logic ---
-        const roleRadios = document.querySelectorAll('input[name="role"]');
-        const doctorFields = document.getElementById('doctor-fields');
-        const patientFields = document.getElementById('patient-fields');
-
-        roleRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.value === 'doctor') {
-                    doctorFields.classList.remove('hidden');
-                    patientFields.classList.add('hidden');
-                } else {
-                    doctorFields.classList.add('hidden');
-                    patientFields.classList.remove('hidden');
-                }
-            });
-        });
-
-        // --- LOG ACTIVITY HELPER ---
-        function logActivity(user, action) {
-            const history = JSON.parse(localStorage.getItem('activityHistory')) || [];
-            const newLog = {
-                user: user,
-                action: action,
-                timestamp: new Date().toLocaleString('vi-VN')
-            };
-            history.unshift(newLog); 
-            localStorage.setItem('activityHistory', JSON.stringify(history.slice(0, 50)));
-        }
-
-        // --- 1. LOGIN SUBMIT ---
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            setBtnLoading('login-form', true);
-            
-            const usernameInput = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            let loginData = {};
-            if (!isNaN(usernameInput) && usernameInput.trim() !== '') {
-                loginData = { Phone: usernameInput, Password: password };
-            } else {
-                loginData = { Username: usernameInput, Password: password };
-            }
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(loginData)
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    sessionStorage.setItem('accessToken', data.access_token);
-                    sessionStorage.setItem('loggedInUser', JSON.stringify(data.user));
-                    sessionStorage.setItem('userRole', data.user.role);
-                    logActivity(data.user.name || data.user.Username, 'Đăng nhập thành công');
-                    
-                    showToast('Đăng nhập thành công! Đang chuyển hướng...', 'success');
-                    setTimeout(() => window.location.href = data.redirect_url, 1000);
-                } else {
-                    showToast('Tên đăng nhập hoặc mật khẩu không đúng.', 'error');
-                    setBtnLoading('login-form', false);
-                }
-            } catch (error) {
-                showToast('Không thể kết nối đến máy chủ.', 'error');
-                setBtnLoading('login-form', false);
-            }
-        });
-
-        // --- 2. REGISTER SUBMIT ---
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            setBtnLoading('register-form', true);
-
-            const role = document.querySelector('input[name="role"]:checked').value;
-            const fullName = document.getElementById('reg-fullname').value;
-            const email = document.getElementById('reg-email').value;
-            const phone = document.getElementById('reg-phone').value;
-            const password = document.getElementById('reg-password').value;
-
-            let payload = { role: role };
-
-            if (role === 'patient') {
-                payload.patient_data = {
-                    FullName: fullName,
-                    Email: email,
-                    Phone: phone,
-                    Password: password,
-                    birth_date: document.getElementById('reg-birthdate').value
-                };
-            } else {
-                payload.doctor_data = {
-                    FullName: fullName,
-                    Email: email,
-                    Phone: phone,
-                    Password: password,
-                    SpecialtyId: parseInt(document.getElementById('reg-specialty').value),
-                    Qualifications: document.getElementById('reg-qualifications').value
-                };
-            }
-
-            try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    showToast('Đăng ký thành công! Vui lòng đăng nhập.', 'success');
-                    document.getElementById('register-form').reset();
-                    setTimeout(() => switchPage('login'), 1500);
-                } else {
-                    showToast(result.detail || 'Đăng ký thất bại.', 'error');
-                }
-            } catch (error) {
-                showToast('Lỗi kết nối máy chủ.', 'error');
-            } finally {
-                setBtnLoading('register-form', false);
-            }
-        });
-
-        // --- 3. FORGOT PASSWORD SUBMIT ---
-        document.getElementById('forgot-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            setBtnLoading('forgot-password-form', true);
-            
-            const email = document.getElementById('forgot-email').value;
-            
-            try {
-                const response = await fetch('/api/auth/request-password-reset', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-                
-                if (response.ok) {
-                    showToast('Email khôi phục đã được gửi. Vui lòng kiểm tra hộp thư.', 'success');
-                    setTimeout(() => switchPage('login'), 3000);
-                } else {
-                    const error = await response.json();
-                    showToast(error.detail || 'Không tìm thấy email này.', 'error');
-                }
-            } catch (err) {
-                showToast('Lỗi hệ thống.', 'error');
-            } finally {
-                setBtnLoading('forgot-password-form', false);
-            }
-        });
-
-        // --- RESET PASSWORD TOKEN CHECK ---
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
-            if (token && window.location.hash === '#reset-password') {
-                document.getElementById('reset-token').value = token;
-                switchPage('reset');
-            }
-        });
-
-        // --- 4. RESET PASSWORD SUBMIT ---
-        document.getElementById('reset-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            setBtnLoading('reset-password-form', true);
-
-            const token = document.getElementById('reset-token').value;
-            const newPass = document.getElementById('new-password').value;
-            const confirmPass = document.getElementById('confirm-password').value;
-
-            if(newPass !== confirmPass) {
-                showToast('Mật khẩu xác nhận không khớp.', 'error');
-                setBtnLoading('reset-password-form', false);
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/auth/reset-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: token, new_password: newPass })
-                });
-
-                if(response.ok) {
-                    showToast('Đặt lại mật khẩu thành công!', 'success');
-                    setTimeout(() => {
-                        window.location.href = window.location.pathname; // Clear params
-                    }, 2000);
-                } else {
-                    const error = await response.json();
-                    showToast(error.detail || 'Liên kết đã hết hạn.', 'error');
-                }
-            } catch(err) {
-                showToast('Lỗi kết nối.', 'error');
-            } finally {
-                setBtnLoading('reset-password-form', false);
-            }
-        });
-
-    </script>
+    <!-- Link đến file JavaScript riêng -->
+    <script src="../Js/login.js"></script>
 </body>
 </html>

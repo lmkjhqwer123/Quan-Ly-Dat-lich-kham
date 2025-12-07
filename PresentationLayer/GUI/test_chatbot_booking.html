@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chatbot Booking - UMBRELLA CORP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-md">
+            <div class="max-w-6xl mx-auto px-4 py-6">
+                <h1 class="text-3xl font-bold text-gray-900">🤖 Test Chatbot + Form Đặt Lịch</h1>
+                <p class="text-gray-600 mt-2">Test tính năng tự động điền form từ chatbot</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Instructions -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">📋 Hướng dẫn</h2>
+                        <div class="space-y-4 text-sm text-gray-700">
+                            <div>
+                                <h3 class="font-semibold text-blue-600">Bước 1: Mở Chatbot</h3>
+                                <p>Click vào icon chat bên phải dưới</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-blue-600">Bước 2: Hỏi Chatbot</h3>
+                                <p>Ví dụ: "Bác sĩ Trần Thị B vào ngày 5/12 có bận không?"</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-blue-600">Bước 3: Click "Đặt lịch"</h3>
+                                <p>Nếu có slot rảnh, sẽ có button "📅 Đặt lịch ngay"</p>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-blue-600">Bước 4: Form tự điền</h3>
+                                <p>Form dưới sẽ tự động điền đầy đủ thông tin</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded">
+                            <p class="text-sm text-blue-800">
+                                <strong>Test Scenarios:</strong>
+                                <ul class="list-disc list-inside mt-2">
+                                    <li>"Tôi muốn khám Nội tổng hợp"</li>
+                                    <li>"Bác sĩ B vào ngày 5/12 rảnh không?"</li>
+                                    <li>"Xem lịch rảnh tuần tới"</li>
+                                </ul>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md p-8">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">📝 Form Đặt Lịch Khám</h2>
+                        
+                        <form id="booking-form" class="space-y-6">
+                            <!-- Consultation Details -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Chi tiết khám</h3>
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div>
+                                        <label for="specialty" class="block text-sm font-medium text-gray-700 mb-2">Chuyên khoa <span class="text-red-500">*</span></label>
+                                        <select id="specialty" name="specialty" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            <option value="">-- Chọn chuyên khoa --</option>
+                                            <option value="1">Khoa Nội tổng hợp</option>
+                                            <option value="2">Khoa Ngoại tổng quát</option>
+                                            <option value="3">Khoa Sản</option>
+                                            <option value="4">Khoa Nhi</option>
+                                            <option value="5">Khoa Da liễu</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="doctor" class="block text-sm font-medium text-gray-700 mb-2">Bác sĩ</label>
+                                        <select id="doctor" name="doctor" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" disabled>
+                                            <option value="">-- Chọn chuyên khoa trước --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Time Selection -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Thời gian khám</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="appointment-date" class="block text-sm font-medium text-gray-700 mb-2">Ngày khám <span class="text-red-500">*</span></label>
+                                        <input type="date" id="appointment-date" name="appointment-date" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Giờ khám <span class="text-red-500">*</span></label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button type="button" class="time-slot-button px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:bg-blue-50 transition" data-time="07:00-09:00">7:00 - 9:00</button>
+                                            <button type="button" class="time-slot-button px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:bg-blue-50 transition" data-time="09:00-11:00">9:00 - 11:00</button>
+                                            <button type="button" class="time-slot-button px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:bg-blue-50 transition" data-time="13:00-15:00">13:00 - 15:00</button>
+                                            <button type="button" class="time-slot-button px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-medium hover:bg-blue-50 transition" data-time="15:00-17:00">15:00 - 17:00</button>
+                                        </div>
+                                        <input type="hidden" id="appointment-time" name="appointment-time" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reason -->
+                            <div>
+                                <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">Lý do khám <span class="text-red-500">*</span></label>
+                                <textarea id="reason" name="reason" rows="3" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Mô tả lý do bạn đến khám..."></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="flex gap-4">
+                                <button type="submit" class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition">
+                                    <i class="fas fa-check mr-2"></i>Gửi thông tin
+                                </button>
+                                <button type="reset" class="px-6 bg-gray-300 text-gray-800 font-semibold py-3 rounded-lg hover:bg-gray-400 transition">
+                                    <i class="fas fa-redo mr-2"></i>Xóa
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Status Message -->
+                        <div id="status-message" class="mt-6 hidden p-4 rounded-lg text-sm font-medium"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load Chatbot Widget -->
+    <script src="/Js/load_chatbot.js"></script>
+
+    <script>
+        // Time slot selection
+        document.querySelectorAll('.time-slot-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.time-slot-button').forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+                    b.classList.add('border-gray-300');
+                });
+                btn.classList.remove('border-gray-300');
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+                document.getElementById('appointment-time').value = btn.getAttribute('data-time');
+            });
+        });
+
+        // Form submission
+        document.getElementById('booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const specialty = document.getElementById('specialty').value;
+            const doctor = document.getElementById('doctor').value;
+            const date = document.getElementById('appointment-date').value;
+            const time = document.getElementById('appointment-time').value;
+            const reason = document.getElementById('reason').value;
+
+            if (!specialty || !doctor || !date || !time || !reason) {
+                showStatus('Vui lòng điền đầy đủ thông tin', 'error');
+                return;
+            }
+
+            showStatus('✅ Lịch khám đã được gửi thành công! Bạn sẽ nhận được xác nhận qua email.', 'success');
+        });
+
+        // Show status message
+        function showStatus(message, type) {
+            const el = document.getElementById('status-message');
+            el.textContent = message;
+            el.classList.remove('hidden', 'bg-green-50', 'text-green-800', 'bg-red-50', 'text-red-800');
+            if (type === 'success') {
+                el.classList.add('bg-green-50', 'text-green-800');
+            } else {
+                el.classList.add('bg-red-50', 'text-red-800');
+            }
+        }
+    </script>
+</body>
+</html>

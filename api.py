@@ -10,6 +10,7 @@ from typing import List, Optional
 import datetime
 
 from routers import patient_router, doctor_router, specialty_router, service_router, public_router
+from routers.chatbot import chatbot_router
 from fastapi.staticfiles import StaticFiles
 
 from BusinessLogicLayer import business_logic
@@ -588,6 +589,9 @@ app.include_router(specialty_router.router)
 app.include_router(service_router.router)
 app.include_router(public_router.router)
 
+# Chatbot Router
+app.include_router(chatbot_router)
+
 
 
 
@@ -675,28 +679,6 @@ def book_appointment_for_patient(patient_id: int, booking_dto: BookAppointmentDt
     return result
 
 
-
-
-
-
-
-
-
-
-
-@app.post("/api/patients/me/appointments", tags=["Patients"])
-
-
-
-def book_appointment_for_me(booking_dto: BookAppointmentDto, db: Session = Depends(data_access.get_db), current_user = Depends(auth.get_current_user)):
-
-
-
-    result = business_logic.book_appointment_logic(db, current_user.id, booking_dto.model_dump())
-
-
-
-    return result
 
 
 

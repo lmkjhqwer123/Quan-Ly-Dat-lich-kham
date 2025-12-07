@@ -274,6 +274,33 @@ GO
 PRINT N'✅ Đã thêm các trường Dấu hiệu Sinh tồn và Ghi nhận bổ sung vào bảng MEDICAL_RECORDS.';
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Xóa bản ghi nghỉ phép của Bác sĩ D nếu có
 DELETE FROM DOCTOR_LEAVES
 WHERE doctor_id IN (

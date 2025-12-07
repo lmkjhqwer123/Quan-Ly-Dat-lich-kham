@@ -77,11 +77,13 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                     appointmentsContainer.className = 'appointments-container mt-1 text-xs space-y-0.5';
                     dayCell.appendChild(appointmentsContainer);
 
+                    // Status colors - PHẢI dùng lowercase (pending, confirmed, completed, cancelled)
+                    // Matching database constraint: CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed'))
                     const statusColors = {
-                        'pending': 'bg-yellow-500',
-                        'confirmed': 'bg-blue-500',
-                        'completed': 'bg-green-500',
-                        'canceled': 'bg-red-500'
+                        'pending': 'bg-yellow-500',      // Đang chờ - Vàng
+                        'confirmed': 'bg-green-500',     // Đã xác nhận - Xanh lá cây
+                        'completed': 'bg-blue-600',      // Hoàn thành - Xanh dương đậm
+                        'cancelled': 'bg-red-500'        // Đã hủy - Đỏ
                     };
 
                     const displayLimit = 2;
@@ -151,16 +153,16 @@ if (typeof window.initDoctorLichLamViecPage === 'undefined') {
                 modalAppointmentsList.innerHTML = '<p class="text-gray-600">Không có lịch hẹn nào.</p>';
             } else {
                 const statusColors = {
-                    'pending': 'bg-yellow-500',
-                    'confirmed': 'bg-blue-500',
-                    'completed': 'bg-green-500',
-                    'canceled': 'bg-red-500'
+                    'pending': 'bg-yellow-500',      // Đang chờ - Vàng
+                    'confirmed': 'bg-green-500',     // Đã xác nhận - Xanh lá cây
+                    'completed': 'bg-blue-600',      // Hoàn thành - Xanh dương đậm
+                    'cancelled': 'bg-red-500'        // Đã hủy - Đỏ
                 };
                 const statusBgColors = {
                     'pending': 'bg-yellow-100',
-                    'confirmed': 'bg-blue-100',
-                    'completed': 'bg-green-100',
-                    'canceled': 'bg-red-100'
+                    'confirmed': 'bg-green-100',
+                    'completed': 'bg-blue-100',      // Thay từ bg-green-100
+                    'cancelled': 'bg-red-100'
                 };
 
                 dayAppointments.forEach(app => {

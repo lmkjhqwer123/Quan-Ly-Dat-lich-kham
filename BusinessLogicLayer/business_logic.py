@@ -77,7 +77,7 @@ def request_password_reset_logic(db, email: str):
 
     data_access.create_password_reset_token(db, user_id, role, token, expires_at)
 
-    reset_link = f"http://localhost:8000/login.html?token={token}#reset-password"
+    reset_link = f"http://localhost:8000/GUI/login.html?token={token}#reset-password"
     mail.send_reset_password_email(email, reset_link)
 
     return {"message": "Password reset email sent"}

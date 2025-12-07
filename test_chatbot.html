@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chatbot - Trợ Lý Y Tế</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-md bg-white rounded-lg shadow-lg flex flex-col" style="height: 600px;">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-t-lg">
+                <h1 class="font-bold text-xl">🏥 Trợ Lý Y Tế</h1>
+                <p class="text-sm text-blue-100">Gemini AI Chatbot Test</p>
+            </div>
+
+            <!-- Messages Container -->
+            <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
+                <div class="flex items-start gap-2">
+                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 shadow-sm">
+                        <p class="text-gray-800 text-sm">Xin chào! 👋 Tôi có thể giúp gì cho bạn hôm nay?</p>
+                        <span class="text-xs text-gray-400 mt-1 block">Gemini AI</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="border-t border-gray-200 p-4 bg-white rounded-b-lg">
+                <form id="chatForm" class="flex gap-2">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Nhập câu hỏi của bạn..." 
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 text-sm"
+                        autocomplete="off"
+                    />
+                    <button 
+                        type="submit" 
+                        id="sendBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-semibold"
+                    >
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8000/api/chatbot';
+        let conversationId = null;
+        let isLoading = false;
+
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatForm = document.getElementById('chatForm');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createNewConversation();
+            
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                
+                if (!message || isLoading) return;
+                
+                // Display user message
+                displayMessage(message, 'user');
+                messageInput.value = '';
+                
+                // Send to API
+                await sendMessage(message);
+            });
+
+            // Allow Enter to send
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !isLoading) {
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            });
+        });
+
+        async function createNewConversation() {
+            try {
+                const response = await fetch(`${API_BASE}/new-conversation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    conversationId = data.conversation_id;
+                    console.log('✅ Conversation created:', conversationId);
+                    addSystemMessage('✅ Kết nối thành công!');
+                } else {
+                    addSystemMessage('❌ Không thể kết nối tới server');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addSystemMessage('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function sendMessage(userMessage) {
+            if (!conversationId) {
+                addSystemMessage('❌ Chưa kết nối tới server');
+                return;
+            }
+
+            isLoading = true;
+            sendBtn.disabled = true;
+            displayLoadingIndicator();
+
+            try {
+                const response = await fetch(`${API_BASE}/send-message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        conversation_id: conversationId,
+                        message: userMessage
+                    })
+                });
+
+                removeLoadingIndicator();
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Response:', data);
+                    
+                    let botResponse = data.response;
+                    if (data.tool_used) {
+                        botResponse += `\n\n🔧 Tool: ${data.tool_used}`;
+                    }
+                    
+                    displayMessage(botResponse, 'bot');
+                } else {
+                    const error = await response.text();
+                    addSystemMessage('❌ Lỗi: ' + error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                removeLoadingIndicator();
+                addSystemMessage('❌ Lỗi khi gửi tin nhắn: ' + error.message);
+            } finally {
+                isLoading = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function displayMessage(text, sender) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'flex items-start gap-2 animate-pulse';
+            
+            if (sender === 'user') {
+                messageEl.innerHTML = `
+                    <div class="ml-auto bg-blue-600 text-white rounded-lg p-3 shadow-sm max-w-xs">
+                        <p class="text-sm">${escapeHtml(text)}</p>
+                        <span class="text-xs text-blue-100 mt-1 block">Bạn</span>
+                    </div>
+                `;
+            } else {
+                messageEl.innerHTML = `
+                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-robot text-sm"></i>
+                    </div>
+                    <div class="bg-white rounded-lg p-3 shadow-sm max-w-xs">
+                        <p class="text-gray-800 text-sm whitespace-pre-wrap">${escapeHtml(text)}</p>
+                        <span class="text-xs text-gray-400 mt-1 block">Gemini AI</span>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Remove animation after it completes
+            setTimeout(() => messageEl.classList.remove('animate-pulse'), 600);
+        }
+
+        function displayLoadingIndicator() {
+            const loadingEl = document.createElement('div');
+            loadingEl.id = 'loadingIndicator';
+            loadingEl.className = 'flex items-start gap-2';
+            loadingEl.innerHTML = `
+                <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-robot text-sm"></i>
+                </div>
+                <div class="bg-white rounded-lg p-3 shadow-sm">
+                    <div class="flex gap-2">
+                        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeLoadingIndicator() {
+            const loadingEl = document.getElementById('loadingIndicator');
+            if (loadingEl) loadingEl.remove();
+        }
+
+        function addSystemMessage(message) {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-yellow-800 text-sm';
+            messageEl.textContent = message;
+            messagesContainer.appendChild(messageEl);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+    </script>
+</body>
+</html>

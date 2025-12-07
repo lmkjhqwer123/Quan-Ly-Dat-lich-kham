@@ -9,3 +9,11 @@ passlib[bcrypt]
 python-dotenv==0.21.1
 python-multipart
 requests
+
+# ============================================
+# Dependencies cho Intelligent Medical Chatbot
+# ============================================
+google-generativeai>=0.3.0
+pyodbc>=5.1.0
+python-dotenv>=0.21.0
+requests>=2.31.0

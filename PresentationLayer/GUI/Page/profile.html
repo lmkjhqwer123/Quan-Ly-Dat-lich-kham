@@ -283,17 +283,17 @@
         // helper: populate UI from user object
         function populateUI(user) {
             if (!user) return;
-            // Update Text Contents
+            // Update Text Contents - Map API response fields to UI elements
             const els = {
-                'user-fullname': user.FullName,
-                'user-email': user.Email,
-                'user-phone': user.Phone,
+                'user-fullname': user.FullName || user.full_name,
+                'user-email': user.Email || user.email,
+                'user-phone': user.Phone || user.phone,
                 'user-address': user.address
             };
 
             for (const [id, val] of Object.entries(els)) {
                 const el = document.getElementById(id);
-                if(el) el.textContent = val || 'Chưa cập nhật';
+                if(el) el.textContent = (val && val.trim() !== '') ? val : 'Chưa cập nhật';
             }
         }
 
@@ -311,15 +311,46 @@
         // REAL LOGIC
         let user = null;
         try {
-            // Giả lập logic lấy data, bạn giữ nguyên logic fetch của bạn ở đây
-             user = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null');
-             if(!user) {
-                 // Fetch logic...
-             }
+            user = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null');
+            if(!user) {
+                // Fetch từ API nếu sessionStorage rỗng
+                const token = sessionStorage.getItem('accessToken');
+                if (!token) {
+                    // Uncomment in production: window.location.href = '/GUI/login.html';
+                    console.warn('No access token found');
+                } else {
+                    // Sử dụng endpoint /api/patients/me cho bệnh nhân
+                    let endpoint = '/api/patients/me';
+                    
+                    fetch(endpoint, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data) {
+                            user = data;
+                            sessionStorage.setItem('loggedInUser', JSON.stringify(user));
+                            populateUI(user);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error fetching profile:', err);
+                        // Fallback: hiển thị form kosong
+                        populateUI(null);
+                    });
+                }
+            } else {
+                populateUI(user);
+            }
         } catch (e) {
-             user = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null');
+            console.error('Error:', e);
+            user = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null');
+            populateUI(user);
         }
-        populateUI(user);
 
 
         // Modal Logic
@@ -332,9 +363,9 @@
 
         function openModal() {
             const u = JSON.parse(sessionStorage.getItem('loggedInUser') || 'null') || user || {};
-            document.getElementById('edit-fullname').value = u.FullName || '';
-            document.getElementById('edit-email').value = u.Email || ''; // Readonly
-            document.getElementById('edit-phone').value = u.Phone || '';
+            document.getElementById('edit-fullname').value = u.FullName || u.full_name || '';
+            document.getElementById('edit-email').value = u.Email || u.email || ''; // Readonly
+            document.getElementById('edit-phone').value = u.Phone || u.phone || '';
             document.getElementById('edit-address').value = u.address || '';
             
             modal.classList.remove('hidden');
@@ -369,7 +400,6 @@
                 return;
             }
 
-            // Simulate loading state
             const submitBtn = editForm.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
@@ -383,17 +413,53 @@
             };
 
             try {
-                // FETCH LOGIC HERE (Giữ nguyên logic của bạn)
-                // const profileResponse = await fetch(...)
+                const token = sessionStorage.getItem('accessToken');
+                const endpoint = '/api/patients/me';
                 
-                // --- Simulating Success for UI Demo ---
-                await new Promise(r => setTimeout(r, 800)); // Fake delay
-                const updatedUser = { ...JSON.parse(sessionStorage.getItem('loggedInUser') || '{}'), ...profileData };
+                // Update profile info
+                const response = await fetch(endpoint, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(profileData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Lỗi khi cập nhật hồ sơ');
+                }
+
+                // Update password nếu có
+                if (newPassword) {
+                    const currentPassword = document.getElementById('current-password').value;
+                    const passwordResponse = await fetch('/api/patient/update-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            current_password: currentPassword,
+                            new_password: newPassword,
+                            confirm_new_password: confirmPassword
+                        })
+                    });
+
+                    if (!passwordResponse.ok) {
+                        const error = await passwordResponse.json();
+                        throw new Error(error.detail || 'Lỗi khi cập nhật mật khẩu');
+                    }
+                }
+                
+                // Cập nhật sessionStorage
+                const updatedUser = { ...user, ...profileData };
                 sessionStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
                 populateUI(updatedUser);
-                alert('Cập nhật thông tin thành công!');
+                
+                alert('✅ Cập nhật thông tin thành công!');
                 closeModal();
-                // --------------------------------------
 
             } catch (error) {
                 errorMessage.querySelector('span').textContent = error.message;
@@ -428,5 +494,6 @@
     }
     </script>
     <script src="/Js/main.js"></script>
+    <script src="/Js/load_chatbot.js"></script>
 </body>
 </html>
